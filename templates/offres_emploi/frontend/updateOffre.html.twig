@@ -1,0 +1,120 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier l'offre : {{ offre.nomEntreprise }}{% endblock %}
+
+{% block body %}
+
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-content">
+            <div class="hero-icon">
+                <i class="lni lni-pencil"></i>
+            </div>
+            <h1>Modifier l'Offre</h1>
+            <p>Mettez à jour les informations de l'offre d'emploi pour <strong>{{ offre.nomEntreprise }}</strong>.</p>
+        </div>
+    </div>
+</section>
+
+<div class="main-content">
+    <div class="container">
+
+        <a href="{{ path('showOffre') }}" class="back-link">
+            <i class="lni lni-arrow-left"></i> Retour à la liste
+        </a>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="formation-form-wrapper">
+                    <div class="section-title mb-4">
+                        <h2 style="font-size: 24px;">Édition de l'offre #{{ offre.idOffre }}</h2>
+                        <div class="title-line"></div>
+                    </div>
+
+                    {# OUVERTURE DU FORMULAIRE SYMFONY #}
+                    {{ form_start(formOffre, {'attr': {'novalidate': 'novalidate'}}) }}
+                        
+                        <div class="row">
+                            {# Entreprise #}
+                            <div class="col-md-12">
+                                <div class="form-group-custom">
+                                    <label>Nom de l'Entreprise <span class="required">*</span></label>
+                                    {{ form_widget(formOffre.nom_entreprise, {'attr': {'class': 'form-control-custom'}}) }}
+                                    {{ form_errors(formOffre.nom_entreprise) }}
+                                </div>
+                            </div>
+
+                            {# Description #}
+                            <div class="col-md-12">
+                                <div class="form-group-custom">
+                                    <label>Description du poste <span class="required">*</span></label>
+                                    {{ form_widget(formOffre.description, {'attr': {'class': 'form-control-custom', 'rows': '4'}}) }}
+                                    {{ form_errors(formOffre.description) }}
+                                </div>
+                            </div>
+
+                            {# Type de Contrat - Symfony gérera automatiquement la sélection (ex: Freelance) #}
+                            <div class="col-md-12">
+                                <div class="form-group-custom">
+                                    <label>Type de Contrat <span class="required">*</span></label>
+                                    {{ form_widget(formOffre.type_contrat, {'attr': {'class': 'form-control-custom'}}) }}
+                                    {{ form_errors(formOffre.type_contrat) }}
+                                </div>
+                            </div>
+
+                            {# Statut #}
+                            <div class="col-md-6">
+                                <div class="form-group-custom">
+                                    <label>Statut de l'offre <span class="required">*</span></label>
+                                    {{ form_widget(formOffre.statut) }}
+                                    {{ form_errors(formOffre.statut) }}
+                                </div>
+                            </div>
+
+                            {# Salaire #}
+                            <div class="col-md-6">
+                                <div class="form-group-custom">
+                                    <label>Salaire (€)</label>
+                                    {{ form_widget(formOffre.salaire, {'attr': {'class': 'form-control-custom'}}) }}
+                                    {{ form_errors(formOffre.salaire) }}
+                                </div>
+                            </div>
+
+                            {# Date de début #}
+                            <div class="col-md-6">
+                                <div class="form-group-custom">
+                                    <label>Date de début <span class="required">*</span></label>
+                                    {{ form_widget(formOffre.date_debut, {'attr': {'class': 'form-control-custom'}}) }}
+                                    {{ form_errors(formOffre.date_debut) }}
+                                </div>
+                            </div>
+
+                            {# Date d'expiration #}
+                            <div class="col-md-6">
+                                <div class="form-group-custom">
+                                    <label>Date d'expiration</label>
+                                    {{ form_widget(formOffre.date_expiration, {'attr': {'class': 'form-control-custom'}}) }}
+                                    {{ form_errors(formOffre.date_expiration) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-success-custom">
+                                <i class="lni lni-save"></i> Enregistrer les modifications
+                            </button>
+                            <a href="{{ path('showOffre') }}" class="btn-secondary-custom">
+                                Annuler
+                            </a>
+                        </div>
+
+                    {# FERMETURE DU FORMULAIRE (Gère automatiquement le jeton CSRF pour la redirection) #}
+                    {{ form_end(formOffre) }}
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

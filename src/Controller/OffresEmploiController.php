@@ -8,14 +8,14 @@ use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\OffreEmploiRepository;
 use App\Entity\OffreEmploi;
-//use App\Form\FormPlayerType;
+use App\Form\OffreFormType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 
 final class OffresEmploiController extends AbstractController
 {
     #[Route('/showOffre', name:'showOffre')]
-    public function listOffresfromDB(OffreEmploiRepository $repo)  // Changed BookRepository to BooksRepository
+    public function listOffresfromDB(OffreEmploiRepository $repo)  
     {
         return $this->render('offres_emploi/frontend/showOffre.html.twig', ["list" => $repo->findAll()]);
     }
@@ -29,5 +29,25 @@ final class OffresEmploiController extends AbstractController
         $em->flush();
         return $this->redirectToRoute('showOffre');
 
+    }
+
+    #[Route('/updateOffre/{id}', name:'updateOffre')]
+    public function updateOffre($id, ManagerRegistry $Manager, OffreEmploiRepository $repo, Request $request)
+    {
+        $em = $Manager->getManager();
+        $offre = $repo->find($id); 
+        
+        $form = $this->createForm(OffreFormType::class, $offre);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->flush(); 
+            return $this->redirectToRoute('showOffre'); 
+        }
+
+        return $this->render('offres_emploi/frontend/updateOffre.html.twig', [
+            'formOffre' => $form->createView(),
+            'offre' => $offre
+        ]);
     }
 }
