@@ -1,0 +1,486 @@
+/* Garde l'intégralité du code CSS que tu as fourni ici */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+
+:root {
+    --blue-primary: #2563eb;
+    --blue-light: #3b82f6;
+    --blue-soft: #dbeafe;
+    --blue-muted: #93c5fd;
+    --navy: #1e3a5f;
+    --text-dark: #1e293b;
+    --text-mid: #475569;
+    --text-light: #94a3b8;
+    --bg-page: #ffffff;
+    --bg-card: #ffffff;
+    --border: #e2e8f0;
+    --radius: 16px;
+    --radius-sm: 8px;
+    --shadow-md: 0 4px 24px rgba(37,99,235,0.10), 0 1px 4px rgba(0,0,0,0.04);
+}
+
+
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: var(--bg-page);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-dark);
+}
+
+/* ════════════════════════════════
+   NAVBAR
+════════════════════════════════ */
+.intellink-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 48px;
+    height: 64px;
+    background: #ffffff;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 8px rgba(37,99,235,0.06);
+}
+
+/* Logo */
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.nav-logo-icon {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, var(--navy), var(--blue-primary));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-logo-icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: #fff;
+    fill: none;
+}
+
+.nav-logo-text {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 1.15rem;
+    color: var(--navy);
+    letter-spacing: -0.01em;
+}
+
+.nav-logo-text span {
+    color: var(--blue-primary);
+}
+
+/* Nav links */
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    list-style: none;
+}
+
+.nav-links a {
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-mid);
+    padding: 6px 14px;
+    border-radius: 20px;
+    transition: color 0.18s, background 0.18s;
+}
+
+.nav-links a:hover {
+    color: var(--blue-primary);
+    background: var(--blue-soft);
+}
+
+.nav-links a.active {
+    color: var(--blue-primary);
+    background: var(--blue-soft);
+    font-weight: 700;
+    border: 1.5px solid var(--blue-muted);
+}
+
+/* Nav icons (user + bell) */
+.nav-icons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-mid);
+    transition: background 0.18s, color 0.18s;
+    text-decoration: none;
+}
+
+.nav-icon-btn:hover {
+    background: var(--blue-soft);
+    color: var(--blue-primary);
+}
+
+.nav-icon-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+}
+
+/* ════════════════════════════════
+   PAGE HEADER
+════════════════════════════════ */
+.page-header {
+    text-align: center;
+    padding: 52px 24px 36px;
+}
+
+.page-header h1 {
+    font-family: 'Nunito', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+}
+
+.page-header p {
+    color: var(--text-mid);
+    font-size: 0.97rem;
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* ════════════════════════════════
+   TOP BAR
+════════════════════════════════ */
+.top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.results-count {
+    font-size: 0.85rem;
+    color: var(--text-mid);
+}
+
+.results-count strong {
+    color: var(--blue-primary);
+    font-weight: 700;
+}
+
+.btn-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 20px;
+    background: linear-gradient(135deg, var(--blue-primary), var(--blue-light));
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(37,99,235,0.30);
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.btn-add:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    color: #fff;
+}
+
+/* ════════════════════════════════
+   TABLE CARD
+════════════════════════════════ */
+.offers-wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px 64px;
+}
+
+.table-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.table-card table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+/* Table Head */
+.table-card thead {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--blue-primary) 100%);
+}
+
+.table-card thead th {
+    padding: 14px 18px;
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    border: none;
+}
+
+/* Table Rows */
+.table-card tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.18s;
+}
+
+.table-card tbody tr:last-child {
+    border-bottom: none;
+}
+
+.table-card tbody tr:hover {
+    background: #f0f7ff;
+}
+
+.table-card tbody td {
+    padding: 14px 18px;
+    color: var(--text-dark);
+    vertical-align: middle;
+}
+
+/* ════════════════════════════════
+   CELL STYLES
+════════════════════════════════ */
+
+/* ID */
+.id-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--blue-soft);
+    color: var(--blue-primary);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.78rem;
+}
+
+/* Company */
+.company-name {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+/* Description */
+.desc-text {
+    color: var(--text-mid);
+    font-size: 0.83rem;
+    line-height: 1.5;
+    max-width: 200px;
+}
+
+/* Contract badge */
+.badge-contract {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: var(--blue-soft);
+    color: var(--blue-primary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin: 2px 2px 2px 0;
+    border: 1px solid var(--blue-muted);
+}
+
+/* Salary */
+.salary-cell {
+    font-weight: 600;
+    color: var(--navy);
+    white-space: nowrap;
+}
+
+.salary-neg {
+    color: var(--text-light);
+    font-style: italic;
+    font-weight: 400;
+}
+
+/* Status */
+.badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.badge-status::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.badge-open {
+    background: #dcfce7;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+}
+
+.badge-open::before { background: #16a34a; }
+
+.badge-closed {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+.badge-closed::before { background: #94a3b8; }
+
+/* Dates */
+.dates-cell {
+    font-size: 0.8rem;
+    color: var(--text-mid);
+    line-height: 1.8;
+}
+
+.dates-cell strong {
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+/* Action buttons */
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    transition: background 0.18s, transform 0.15s;
+    text-decoration: none;
+    font-size: 0.82rem;
+}
+
+.btn-edit {
+    background: var(--blue-soft);
+    color: var(--blue-primary);
+}
+
+.btn-edit:hover {
+    background: var(--blue-primary);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.btn-delete {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.btn-delete:hover {
+    background: #ef4444;
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.actions-group {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+/* ════════════════════════════════
+   EMPTY STATE
+════════════════════════════════ */
+.empty-state {
+    text-align: center;
+    padding: 48px 24px;
+}
+
+.empty-icon {
+    width: 52px;
+    height: 52px;
+    background: var(--blue-soft);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+}
+
+.empty-icon svg {
+    width: 24px;
+    height: 24px;
+    stroke: var(--blue-primary);
+    fill: none;
+    stroke-width: 1.8;
+}
+
+.empty-state p {
+    font-size: 0.9rem;
+    color: var(--text-mid);
+}
+
+/* ════════════════════════════════
+   RESPONSIVE
+════════════════════════════════ */
+@media (max-width: 768px) {
+    .intellink-nav {
+        padding: 0 20px;
+    }
+    .nav-links {
+        display: none;
+    }
+    .table-card {
+        border-radius: 12px;
+        overflow-x: auto;
+    }
+    .page-header h1 {
+        font-size: 1.5rem;
+    }
+}
