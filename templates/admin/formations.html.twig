@@ -1,0 +1,264 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Formations{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <h3 class="fw-bold mb-3">Gestion des Formations</h3>
+    <ul class="breadcrumbs mb-3">
+        <li class="nav-home"><a href="#"><i class="icon-home"></i></a></li>
+        <li class="separator"><i class="icon-arrow-right"></i></li>
+        <li class="nav-item"><a href="#">Formations</a></li>
+        <li class="separator"><i class="icon-arrow-right"></i></li>
+        <li class="nav-item"><a href="#">Liste</a></li>
+    </ul>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex align-items-center flex-wrap gap-3">
+                    <h4 class="card-title mb-0">Liste des Formations</h4>
+
+                    <!-- BARRE DE RECHERCHE + FILTRES -->
+                    <div class="d-flex align-items-center gap-2 ms-auto flex-wrap">
+                        <div style="position: relative;">
+                            <i class="fa fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 14px;"></i>
+                            <input type="text" id="searchInput" placeholder="Rechercher une formation..."
+                                style="padding: 8px 14px 8px 36px; border: 1.5px solid #e0e0e0; border-radius: 25px;
+                                       font-size: 14px; width: 240px; outline: none; transition: border-color 0.2s;"
+                                onfocus="this.style.borderColor='#4d8aff'"
+                                onblur="this.style.borderColor='#e0e0e0'">
+                        </div>
+
+                        <select id="filterDomaine"
+                            style="padding: 8px 16px; border: 1.5px solid #e0e0e0; border-radius: 25px;
+                                   font-size: 14px; outline: none; cursor: pointer; background: #f8f9fa;">
+                            <option value="">Tous les domaines</option>
+                            {% set domaines = [] %}
+                            {% for formation in formations %}
+                                {% if formation.domaine and formation.domaine not in domaines %}
+                                    {% set domaines = domaines|merge([formation.domaine]) %}
+                                    <option value="{{ formation.domaine|lower }}">{{ formation.domaine }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+
+                        <select id="filterNiveau"
+                            style="padding: 8px 16px; border: 1.5px solid #e0e0e0; border-radius: 25px;
+                                   font-size: 14px; outline: none; cursor: pointer; background: #f8f9fa;">
+                            <option value="">Tous les niveaux</option>
+                            <option value="débutant">Débutant</option>
+                            <option value="intermédiaire">Intermédiaire</option>
+                            <option value="avancé">Avancé</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+
+                {% for message in app.flashes('success') %}
+                    <div class="alert alert-success">{{ message }}</div>
+                {% endfor %}
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover" style="font-size: 15px;">
+                        <thead>
+                            <tr style="font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                <th>Titre</th>
+                                <th>Domaine</th>
+                                <th>Niveau</th>
+                                <th>Inscrits</th>
+                                <th style="width: 160px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for formation in formations %}
+                            <tr class="formation-row"
+                                data-titre="{{ formation.titre|lower }}"
+                                data-domaine="{{ formation.domaine|lower }}"
+                                data-niveau="{{ formation.niveau|lower }}">
+
+                                <td style="vertical-align: middle;">
+                                    <strong style="font-size: 15px;">{{ formation.titre }}</strong>
+                                </td>
+
+                                <td style="vertical-align: middle;">
+                                    {% if formation.domaine %}
+                                        <span class="badge badge-info" style="font-size: 13px; padding: 6px 12px;">{{ formation.domaine }}</span>
+                                    {% else %}—{% endif %}
+                                </td>
+
+                                <td style="vertical-align: middle;">
+                                    {% if formation.niveau == 'Débutant' %}
+                                        <span class="badge badge-success" style="font-size: 13px; padding: 6px 12px;">{{ formation.niveau }}</span>
+                                    {% elseif formation.niveau == 'Intermédiaire' %}
+                                        <span class="badge badge-warning" style="font-size: 13px; padding: 6px 12px;">{{ formation.niveau }}</span>
+                                    {% else %}
+                                        <span class="badge badge-danger" style="font-size: 13px; padding: 6px 12px;">{{ formation.niveau }}</span>
+                                    {% endif %}
+                                </td>
+
+                                <td style="vertical-align: middle;">
+                                    <span class="badge badge-primary" style="font-size: 13px; padding: 6px 12px;">
+                                        <i class="fas fa-users me-1"></i>{{ formation.participations|length }}
+                                    </span>
+                                </td>
+
+                                <td style="vertical-align: middle;">
+                                    <div class="d-flex align-items-center gap-1">
+
+                                        <!-- Bouton Vidéo -->
+                                        <button type="button"
+                                            class="btn btn-info btn-sm"
+                                            title="Voir la vidéo"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#videoModal"
+                                            data-url="{{ formation.urlVideo }}"
+                                            data-titre="{{ formation.titre }}"
+                                            data-description="{{ formation.description ?? 'Aucune description disponible.' }}"
+                                            style="padding: 6px 10px; font-size: 15px;">
+                                            <i class="fa fa-play-circle"></i>
+                                        </button>
+
+                                        <!-- Bouton Participations -->
+                                        <a href="{{ path('app_admin_participations', {id: formation.idFormation}) }}"
+                                           class="btn btn-success btn-sm"
+                                           title="Voir les participations"
+                                           style="padding: 6px 10px; font-size: 15px;">
+                                            <i class="fas fa-users"></i>
+                                        </a>
+
+                                        <!-- Bouton Supprimer -->
+                                        <a href="{{ path('app_formation_delete', {id: formation.idFormation}) }}"
+                                           class="btn btn-danger btn-sm"
+                                           title="Supprimer"
+                                           onclick="return confirm('Supprimer cette formation ?')"
+                                           style="padding: 6px 10px; font-size: 15px;">
+                                            <i class="fa fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <!-- Empty state après filtre -->
+                    <div id="noResults" style="display:none; text-align:center; padding: 40px;">
+                        <i class="fa fa-search fa-3x text-muted mb-3"></i>
+                        <p class="text-muted" style="font-size: 16px;">Aucune formation ne correspond à votre recherche.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL VIDEO -->
+<div class="modal fade" id="videoModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background: #1a1c38; border: none;">
+                <h5 class="modal-title text-white" id="videoModalTitle">
+                    <i class="fa fa-play-circle me-2"></i> Vidéo de formation
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <!-- Vidéo -->
+                <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000;">
+                    <iframe id="videoFrame"
+                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"
+                        src=""
+                        allowfullscreen>
+                    </iframe>
+                </div>
+                <!-- Description sous la vidéo -->
+                <div style="padding: 20px 24px; border-top: 3px solid #4d8aff; background: #fff;">
+                    <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px;
+                                color: #999; font-weight: 600; margin-bottom: 8px;">
+                        <i class="fa fa-align-left me-1"></i> Description
+                    </div>
+                    <p id="videoDescText" style="color: #555; font-size: 15px; line-height: 1.7; margin: 0;">
+                        Aucune description disponible.
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer" style="border: none; background: #f8f9fa;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fa fa-times me-1"></i> Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+$(document).ready(function () {
+
+    // Recherche + Filtre
+    function filterRows() {
+        var search = $('#searchInput').val().toLowerCase();
+        var domaine = $('#filterDomaine').val().toLowerCase();
+        var niveau = $('#filterNiveau').val().toLowerCase();
+        var visible = 0;
+
+        $('.formation-row').each(function () {
+            var titre = $(this).data('titre');
+            var rowDomaine = $(this).data('domaine');
+            var rowNiveau = $(this).data('niveau');
+
+            var matchSearch = titre.includes(search);
+            var matchDomaine = domaine === '' || rowDomaine === domaine;
+            var matchNiveau = niveau === '' || rowNiveau === niveau;
+
+            if (matchSearch && matchDomaine && matchNiveau) {
+                $(this).show();
+                visible++;
+            } else {
+                $(this).hide();
+            }
+        });
+
+        $('#noResults').toggle(visible === 0);
+    }
+
+    $('#searchInput').on('input', filterRows);
+    $('#filterDomaine').on('change', filterRows);
+    $('#filterNiveau').on('change', filterRows);
+
+    // Modal vidéo
+    $('#videoModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var url = button.data('url');
+        var titre = button.data('titre');
+        var description = button.data('description');
+
+        $('#videoModalTitle').html('<i class="fa fa-play-circle me-2"></i>' + titre);
+        $('#videoDescText').text(description);
+
+        var embedUrl = url;
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+            var videoId = '';
+            if (url.includes('v=')) {
+                videoId = url.split('v=')[1].split('&')[0];
+            } else if (url.includes('youtu.be/')) {
+                videoId = url.split('youtu.be/')[1].split('?')[0];
+            }
+            embedUrl = 'https://www.youtube.com/embed/' + videoId;
+        }
+
+        $('#videoFrame').attr('src', embedUrl);
+    });
+
+    $('#videoModal').on('hide.bs.modal', function () {
+        $('#videoFrame').attr('src', '');
+    });
+});
+</script>
+{% endblock %}

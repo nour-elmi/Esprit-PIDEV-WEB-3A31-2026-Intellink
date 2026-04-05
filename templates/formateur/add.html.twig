@@ -1,0 +1,108 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter une Formation{% endblock %}
+{% block role_badge_class %}badge-formateur{% endblock %}
+{% block role_label %}Formateur{% endblock %}
+
+{% block body %}
+
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-content">
+            
+            <h1>Ajouter une Formation</h1>
+            <p>Remplissez les informations pour créer une nouvelle formation.</p>
+        </div>
+    </div>
+</section>
+
+<div class="main-content">
+    <div class="container">
+
+        <a href="{{ path('app_formation_index') }}" class="back-link">
+            <i class="lni lni-arrow-left"></i> Retour aux formations
+        </a>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="formation-form-wrapper">
+                    <div class="section-title mb-4">
+                        <h2 style="font-size: 24px;">Nouvelle Formation</h2>
+                        <div class="title-line"></div>
+                    </div>
+
+<form method="POST">
+
+    {% if errors is defined and errors|length > 0 %}
+        <div class="alert alert-danger">
+            Veuillez corriger les erreurs ci-dessous.
+        </div>
+    {% endif %}
+
+    <div class="form-group-custom">
+        <label>Titre *</label>
+        <input type="text" name="titre" class="form-control-custom"
+               value="{{ old.titre ?? '' }}"
+               placeholder="Ex: Introduction à Python">
+
+        {% if errors.titre is defined %}
+            <small style="color:red">{{ errors.titre }}</small>
+        {% endif %}
+    </div>
+<div class="form-group-custom">
+    <label>Domaine *</label>
+    <input type="text" name="domaine" class="form-control-custom"
+           value="{{ old.domaine ?? '' }}"
+           placeholder="Ex: Informatique, Marketing...">
+
+    {% if errors.domaine is defined %}
+        <small style="color:red">{{ errors.domaine }}</small>
+    {% endif %}
+</div>
+
+    <div class="form-group-custom">
+        <label>Niveau</label>
+        {% set niveauValue = old.niveau ?? 'Débutant' %}
+
+<select name="niveau" class="form-control-custom">
+    <option value="Débutant" {{ niveauValue == 'Débutant' ? 'selected' : '' }}>Débutant</option>
+    <option value="Intermédiaire" {{ niveauValue == 'Intermédiaire' ? 'selected' : '' }}>Intermédiaire</option>
+    <option value="Avancé" {{ niveauValue == 'Avancé' ? 'selected' : '' }}>Avancé</option>
+</select>
+    </div>
+
+    <div class="form-group-custom">
+        <label>Description *</label>
+        <textarea name="description" class="form-control-custom"
+                  placeholder="Décrivez la formation...">{{ old.description ?? '' }}</textarea>
+
+        {% if errors.description is defined %}
+            <small style="color:red">{{ errors.description }}</small>
+        {% endif %}
+    </div>
+
+    <div class="form-group-custom">
+        <label>URL Vidéo *</label>
+        <input type="text" name="urlVideo" class="form-control-custom"
+               value="{{ old.urlVideo ?? '' }}"
+               placeholder="https://www.youtube.com/...">
+
+        {% if errors.urlVideo is defined %}
+            <small style="color:red">{{ errors.urlVideo }}</small>
+        {% endif %}
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn-success-custom">
+            Enregistrer la formation
+        </button>
+    </div>
+
+</form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
