@@ -519,9 +519,66 @@ body {
     color: white;
 }
 
-/* Assure-toi que les actions sont bien alignées */
-.actions-group {
+/*searchbar*/
+.search-container {
+    margin: 30px 0;
     display: flex;
-    gap: 8px;
-    justify-content: center;
+    justify-content: center; /* Centré pour plus d'impact visuel */
+}
+
+.search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 600px; /* Barre plus longue */
+    background: #fff;
+    padding: 6px;
+    border-radius: 50px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); /* Ombre douce */
+    transition: all 0.3s ease;
+    border: 1px solid #ececec;
+}
+
+.search-wrapper:focus-within {
+    box-shadow: 0 12px 30px rgba(74, 105, 189, 0.15);
+    transform: translateY(-2px);
+}
+
+.search-icon {
+    margin-left: 20px;
+    color: #4A69BD;
+    font-size: 18px;
+}
+
+.search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 12px 15px;
+    font-size: 15px;
+    background: transparent;
+    color: #333;
+}
+
+.search-input::placeholder {
+    color: #999;
+    font-weight: 400;
+}
+
+.search-btn {
+    background: linear-gradient(135deg, #4A69BD 0%, #324191 100%); /* Dégradé pro */
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 40px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin-right: 2px;
+}
+
+.search-btn:hover {
+    background: linear-gradient(135deg, #324191 0%, #242f6b 100%);
+    box-shadow: 0 4px 12px rgba(50, 65, 145, 0.3);
 }

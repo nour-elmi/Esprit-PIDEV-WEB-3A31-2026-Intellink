@@ -16,6 +16,20 @@ class OffreEmploiRepository extends ServiceEntityRepository
         parent::__construct($registry, OffreEmploi::class);
     }
 
+    public function searchOffres(?string $term)
+    {
+        $qb = $this->createQueryBuilder('o');
+
+        if ($term) {
+            $qb->andWhere('o.nom_entreprise LIKE :term OR o.description LIKE :term')
+            ->setParameter('term', '%' . $term . '%');
+        }
+
+        $qb->orderBy('o.id_offre', 'DESC'); 
+
+        return $qb->getQuery()->getResult();
+    }
+
 //    /**
 //     * @return OffreEmploi[] Returns an array of OffreEmploi objects
 //     */

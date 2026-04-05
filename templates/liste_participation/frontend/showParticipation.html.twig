@@ -11,6 +11,11 @@
 
 {# ── Page Header ── #}
 <div class="page-header">
+{% if app.user %}
+    <div class="user-info">
+        <p>Bienvenue, <strong>{{ app.user.nom }}</strong> !</p>
+    </div>
+{% endif %}
     <h1>Candidatures & Participations</h1>
     <p>Suivez et gérez les dossiers des candidats ayant postulé à vos offres d'emploi.</p>
 </div>

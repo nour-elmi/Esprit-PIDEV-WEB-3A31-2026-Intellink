@@ -15,9 +15,15 @@ use Symfony\Component\HttpFoundation\Request;
 final class OffresEmploiController extends AbstractController
 {
     #[Route('/showOffre', name:'showOffre')]
-    public function listOffresfromDB(OffreEmploiRepository $repo)  
+    public function listOffresfromDB(Request $request, OffreEmploiRepository $repo): Response 
     {
-        return $this->render('offres_emploi/frontend/showOffre.html.twig', ["list" => $repo->findAll()]);
+        $searchTerm = $request->query->get('query');
+
+        $offres = $repo->searchOffres($searchTerm);
+
+        return $this->render('offres_emploi/frontend/showOffre.html.twig', [
+            "list" => $offres
+        ]);
     }
 
     #[Route('/showOffreUser', name:'showOffreUser')]
@@ -75,4 +81,15 @@ final class OffresEmploiController extends AbstractController
         return $this->render('offres_emploi/frontend/addOffre.html.twig', ['formOffre' => $form]);
 
     }
+
+    public function index(Request $request, OffreEmploiRepository $repository): Response
+{
+    $searchTerm = $request->query->get('query'); 
+
+    $offres = $repository->searchOffres($searchTerm);
+
+    return $this->render('offre_emploi/index.html.twig', [
+        'offres' => $offres,
+    ]);
+}
 }

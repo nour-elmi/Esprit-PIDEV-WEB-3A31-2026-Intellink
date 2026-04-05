@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\ListeParticipation;
 use App\Entity\OffreEmploi;
+use App\Entity\Utilisateur;
 use App\Form\ListeFormType; // Assurez-vous que ce formulaire existe
 use App\Repository\ListeParticipationRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -12,6 +13,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Repository\OffreEmploiRepository;
+//use Symfony\Component\Security\Http\Attribute\IsGranted;
+
 
 final class ListeParticipationController extends AbstractController
 {
@@ -28,11 +31,12 @@ final class ListeParticipationController extends AbstractController
     public function listParticipationsUfromDB(ListeParticipationRepository $repo): Response
     {
         return $this->render('liste_participation/frontend/showParticipationUser.html.twig', [
-            "list" => $repo->findAll()
+            "list" => $repo
         ]);
     }
 
     #[Route('/deleteParticipation/{id}', name: 'deleteParticipation')]
+    //#[IsGranted('ROLE_USER')]
     public function deleteParticipation($id, ManagerRegistry $Manager, ListeParticipationRepository $repo): Response
     {
         $em = $Manager->getManager();
@@ -47,6 +51,7 @@ final class ListeParticipationController extends AbstractController
     }
 
     #[Route('/updateParticipation/{id}', name: 'updateParticipation')]
+    //#[IsGranted('ROLE_USER')]
     public function updateParticipation($id, ManagerRegistry $Manager, ListeParticipationRepository $repo, Request $request): Response
     {
         $em = $Manager->getManager();
@@ -72,10 +77,11 @@ final class ListeParticipationController extends AbstractController
     {
         $em = $Manager->getManager();
         $offre = $offreRepo->find($id_offre);
+    
 
         $newParticipation = new ListeParticipation();
         $newParticipation->setDateParticipation(new \DateTime());
-        $newParticipation->setIdUser(1); 
+        //$newParticipation->setIdUser($user->getId());
         $newParticipation->setIdOffre($offre); 
 
         $form = $this->createForm(ListeFormType::class, $newParticipation);
