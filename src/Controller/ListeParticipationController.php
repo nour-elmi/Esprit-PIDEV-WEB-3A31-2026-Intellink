@@ -35,13 +35,21 @@ final class ListeParticipationController extends AbstractController
         ]);
     }
 
-    #[Route('/showParticipationUser', name: 'showParticipationUser')]
-    public function listParticipationsUfromDB(ListeParticipationRepository $repo): Response
-    {
-        return $this->render('liste_participation/frontend/showParticipationUser.html.twig', [
-            "list" => $repo
-        ]);
+    #[Route('/showParticipationUser/{id}', name: 'showParticipationUser')]
+public function listParticipationsUfromDB(OffreEmploi $offre, Request $request, ListeParticipationRepository $repo): Response {
+    $searchTerm = $request->query->get('query');
+
+    if ($searchTerm) {
+        $participations = $repo->searchParticipations($offre, $searchTerm);
+    } else {
+        $participations = $offre->getParticipations();
     }
+
+    return $this->render('liste_participation/frontend/showParticipationUser.html.twig', [
+        "offre" => $offre,   
+        "list" => $participations    
+    ]);
+}
 
     #[Route('/deleteParticipation/{id}', name: 'deleteParticipation')]
     //#[IsGranted('ROLE_USER')]
