@@ -42,7 +42,6 @@
                     <th>Score</th>
                     <th>Statut</th>
                     <th>Dates</th>
-                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -96,7 +95,7 @@
                             </div>
                         </td>
 
-                        {# Actions #}
+                        {# Actions
                         <td>
                             <div class="actions-group">
                                 <a href="{{ path('updateParticipation', { id: participation.idParticipation }) }}" class="btn-action btn-edit" title="Modifier">
@@ -115,6 +114,7 @@
                                 </a>
                             </div>
                         </td>
+                        #}
 
                     </tr>
                 {% else %}

@@ -1,0 +1,107 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Offres Disponibles - Intellink{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('offres_emploi.css') }}">
+{% endblock %}
+
+{% block body %}
+
+{# ── Page Header ── #}
+<div class="page-header">
+    <h1>Offres d'emploi disponibles</h1>
+    <p>Trouvez l'opportunité qui vous correspond et postulez en un clic.</p>
+</div>
+
+{# ── Top Bar ── #}
+<div class="top-bar">
+    <span class="results-count">
+        <strong>{{ list|length }}</strong> offre{{ list|length != 1 ? 's' : '' }} trouvée{{ list|length != 1 ? 's' : '' }}
+    </span>
+</div>
+
+{# ── Table ── #}
+<div class="offers-wrapper">
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Entreprise</th>
+                    <th>Description</th>
+                    <th>Contrat</th>
+                    <th>Salaire</th>
+                    <th>Statut</th>
+                    <th>Date limite</th>
+                    <th style="text-align: center;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for offre in list %}
+                    <tr>
+                        {# ID #}
+                        <td><span class="id-badge">{{ loop.index }}</span></td>
+
+                        {# Entreprise #}
+                        <td><span class="company-name">{{ offre.nomEntreprise }}</span></td>
+
+                        {# Description #}
+                        <td><span class="desc-text">{{ offre.description|slice(0, 80) }}…</span></td>
+
+                        {# Type de contrat #}
+                        <td>
+                            {% for type in offre.typeContrat %}
+                                <span class="badge-contract">{{ type.value }}</span>
+                            {% endfor %}
+                        </td>
+
+                        {# Salaire #}
+                        <td>
+                            {% if offre.salaire %}
+                                <span class="salary-cell">{{ offre.salaire }} €</span>
+                            {% else %}
+                                <span class="salary-neg">À négocier</span>
+                            {% endif %}
+                        </td>
+
+                        {# Statut #}
+                        <td>
+                            <span class="badge-status {{ offre.statut.value == 'ouverte' ? 'badge-open' : 'badge-closed' }}">
+                                {{ offre.statut.value }}
+                            </span>
+                        </td>
+
+                        {# Date Expiration #}
+                        <td>
+                            <span class="date-text">
+                                {{ offre.dateExpiration ? offre.dateExpiration|date('d/m/Y') : '—' }}
+                            </span>
+                        </td>
+
+                        {# Action : Participer/Postuler #}
+                        <td style="text-align: center;">
+                            <a href="{{ path('addParticipation', { 'idOffre': offre.idOffre }) }}" class="btn-postuler">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 5px;">
+                                    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                                </svg>
+                                Postuler
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-state">
+                                <p>Aucune offre ne correspond à votre recherche actuellement.</p>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

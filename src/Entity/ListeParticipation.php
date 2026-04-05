@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\ListeParticipationRepository;
+use App\Entity\OffreEmploi;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -23,8 +24,9 @@ class ListeParticipation
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $date_reponse = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?int $id_offre = null;
+    #[ORM\ManyToOne(targetEntity: OffreEmploi::class)]
+    #[ORM\JoinColumn(name: "id_offre", referencedColumnName: "id_offre", nullable: true)]
+    private ?OffreEmploi $id_offre = null;
 
     #[ORM\Column(nullable: true)]
     private ?int $id_user = null;
@@ -44,7 +46,6 @@ class ListeParticipation
     #[ORM\Column(options: ["default" => 0])]
     private ?int $score = 0;
 
-    // --- GETTERS & SETTERS ---
 
     public function getIdParticipation(): ?int
     {
@@ -84,12 +85,12 @@ class ListeParticipation
         return $this;
     }
 
-    public function getIdOffre(): ?int
+    public function getIdOffre(): ?OffreEmploi
     {
         return $this->id_offre;
     }
 
-    public function setIdOffre(?int $id_offre): static
+    public function setIdOffre(?OffreEmploi $id_offre): static
     {
         $this->id_offre = $id_offre;
         return $this;
