@@ -13,7 +13,6 @@
            ========================================================================= */
         html { scroll-behavior: smooth; overflow-x: hidden; }
         body { 
-            /* CORRECTION : Rétablissement de l'arrière-plan original */
             background-color: #e2e8f0 !important; 
             background-image: 
                 radial-gradient(rgba(47, 128, 237, 0.05) 1px, transparent 1px),
@@ -53,7 +52,6 @@
         .form-control-custom { width: 100%; padding: 13px 18px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 15px; color: #0f172a; background: #ffffff; transition: all 0.3s ease; outline: none; }
         .form-control-custom:focus { border-color: #2F80ED; box-shadow: 0 0 0 4px rgba(47, 128, 237, 0.1); }
 
-        /* MODIFICATIONS GRID CARD (Effets graphiques originaux conservés) */
         .rec-card { 
             background: #ffffff !important; 
             border: 1px solid #cbd5e1 !important; 
@@ -66,7 +64,7 @@
         .rec-card::before { content: ""; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: linear-gradient(180deg, #2F80ED, #56CCF2); transform: scaleY(0); transform-origin: top; transition: transform 0.4s ease; }
         .rec-card:hover::before { transform: scaleY(1); }
         
-        .badge-status { padding: 5px 12px; border-radius: 20px; color: white; font-weight: bold; font-size: 11px; letter-spacing: 0.5px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); white-space: nowrap; }
+        .badge-status { padding: 6px 15px; border-radius: 20px; color: white; font-weight: bold; font-size: 12px; letter-spacing: 0.5px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
     </style>
 {% endblock %}
 
@@ -108,7 +106,7 @@
     </header>
 
     <div class="main-content" style="padding: 40px 0;">
-        <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+        <div style="max-width: 1100px; margin: 0 auto; padding: 0 20px;">
             <a href="{{ path('app_home') }}" class="btn-outline-custom" style="margin-bottom: 20px;" data-aos="fade-right">&larr; Retour</a>
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; flex-wrap: wrap; gap: 20px;" data-aos="fade-up">
@@ -133,39 +131,33 @@
                 </select>
             </div>
 
-            <div id="reclamationsList" class="row">
+            <div id="reclamationsList">
                 {% for rec in reclamations %}
-                    <div class="col-12 col-md-6 col-lg-4 mb-4 rec-wrapper" data-status="{{ rec.statut }}" data-text="{{ rec.objet|lower }} {{ rec.description|lower }}">
+                    <div class="rec-card mb-4" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 50 }}" data-status="{{ rec.statut }}" data-text="{{ rec.objet|lower }} {{ rec.description|lower }}">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                            <h4 style="margin: 0; color: #0f172a; font-weight: 800; font-family: 'Fira Sans', sans-serif; transform: translateZ(10px);">{{ rec.objet }}</h4>
+                            <span class="badge-status" style="{% if rec.statut == 'OUVERT' %}background: linear-gradient(45deg, #f39c12, #f1c40f);{% elseif rec.statut == 'TRAITE' %}background: linear-gradient(45deg, #10b981, #34d399);{% else %}background: linear-gradient(45deg, #ef4444, #f87171);{% endif %} transform: translateZ(20px);">
+                                {{ rec.statut }}
+                            </span>
+                        </div>
+                        <p style="margin: 0 0 20px 0; font-size: 15px; color: #64748b; line-height: 1.6; transform: translateZ(10px);">
+                            {{ rec.description|length > 120 ? rec.description|slice(0, 120) ~ '...' : rec.description }}
+                        </p>
                         
-                        <div class="rec-card h-100 d-flex flex-column" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 50 }}">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; gap: 10px;">
-                                <h4 style="margin: 0; color: #0f172a; font-weight: 800; font-family: 'Fira Sans', sans-serif; transform: translateZ(10px); font-size: 1.2rem; line-height: 1.3;">{{ rec.objet }}</h4>
-                                <span class="badge-status" style="{% if rec.statut == 'OUVERT' %}background: linear-gradient(45deg, #f39c12, #f1c40f);{% elseif rec.statut == 'TRAITE' %}background: linear-gradient(45deg, #10b981, #34d399);{% else %}background: linear-gradient(45deg, #ef4444, #f87171);{% endif %} transform: translateZ(20px);">
-                                    {{ rec.statut }}
-                                </span>
-                            </div>
-                            
-                            <p style="margin: 0 0 20px 0; font-size: 14px; color: #64748b; line-height: 1.6; transform: translateZ(10px); flex-grow: 1;">
-                                {{ rec.description|length > 100 ? rec.description|slice(0, 100) ~ '...' : rec.description }}
-                            </p>
-                            
-                            <div style="display: flex; justify-content: flex-end; gap: 8px; transform: translateZ(20px); margin-top: auto;">
-                                <a href="{{ path('app_reclamation_show', {'id': rec.id}) }}" class="btn-outline-custom" style="padding: 6px 15px; font-size: 12px;"><i class="lni lni-eye"></i> Détails</a>
-                                {% if rec.statut == 'OUVERT' %}
-                                    <form method="post" action="{{ path('app_reclamation_delete', {'id': rec.id}) }}" onsubmit="return confirm('Supprimer ce ticket ?');" style="margin: 0;">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ rec.id) }}">
-                                        <button type="submit" class="btn-danger-custom" style="padding: 6px 12px;"><i class="lni lni-trash"></i></button>
-                                    </form>
-                                {% endif %}
-                            </div>
+                        <div style="display: flex; justify-content: flex-end; gap: 12px; transform: translateZ(20px);">
+                            <a href="{{ path('app_reclamation_show', {'id': rec.id}) }}" class="btn-outline-custom"><i class="lni lni-eye"></i> Détails</a>
+                            {% if rec.statut == 'OUVERT' %}
+                                <form method="post" action="{{ path('app_reclamation_delete', {'id': rec.id}) }}" onsubmit="return confirm('Supprimer ce ticket ?');" style="margin: 0;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ rec.id) }}">
+                                    <button type="submit" class="btn-danger-custom"><i class="lni lni-trash"></i></button>
+                                </form>
+                            {% endif %}
                         </div>
                     </div>
                 {% else %}
-                    <div class="col-12 text-center" data-aos="zoom-in">
-                        <div style="padding: 50px; background: #ffffff; border-radius: 20px; border: 1px dashed #cbd5e1;">
-                            <i class="lni lni-empty-file" style="font-size: 40px; color: #cbd5e1; margin-bottom: 15px; display: block;"></i>
-                            <p style="font-size: 1.2rem; color: #64748b; font-weight: 600; margin: 0;">Vous n'avez aucune réclamation pour le moment.</p>
-                        </div>
+                    <div style="text-align: center; padding: 50px; background: #ffffff; border-radius: 20px; border: 1px dashed #cbd5e1;" data-aos="zoom-in">
+                        <i class="lni lni-empty-file" style="font-size: 40px; color: #cbd5e1; margin-bottom: 15px; display: block;"></i>
+                        <p style="font-size: 1.2rem; color: #64748b; font-weight: 600; margin: 0;">Vous n'avez aucune réclamation pour le moment.</p>
                     </div>
                 {% endfor %}
             </div>
@@ -190,23 +182,18 @@
             lastScrollTop = scrollTop;
         });
 
-        // Filtrage dynamique adapté à la Grille
+        // Filtrage dynamique
         const searchInput = document.getElementById('searchInput');
         const statusFilter = document.getElementById('statusFilter');
-        
         function filterList() {
             const searchText = searchInput.value.toLowerCase();
             const status = statusFilter.value;
-            
-            // Cacher/afficher le wrapper de la colonne
-            document.querySelectorAll('.rec-wrapper').forEach(wrapper => {
-                const matchesText = wrapper.dataset.text.includes(searchText);
-                const matchesStatus = status === 'Tous' || wrapper.dataset.status === status;
-                
-                wrapper.style.display = matchesText && matchesStatus ? 'block' : 'none';
+            document.querySelectorAll('.rec-card').forEach(card => {
+                const matchesText = card.dataset.text.includes(searchText);
+                const matchesStatus = status === 'Tous' || card.dataset.status === status;
+                card.style.display = matchesText && matchesStatus ? 'block' : 'none';
             });
         }
-        
         searchInput.addEventListener('input', filterList);
         statusFilter.addEventListener('change', filterList);
         

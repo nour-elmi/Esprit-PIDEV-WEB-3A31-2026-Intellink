@@ -19,9 +19,6 @@ use Symfony\Bundle\SecurityBundle\Security;
 class AuthController extends AbstractController
 {
     // =========================================================================
-    //  1. CONNEXION (LOGIN)
-    // =========================================================================
-   // =========================================================================
     //  1. CONNEXION (LOGIN) AVEC INTERCEPTION 2FA ET STATUT
     // =========================================================================
     #[Route(path: '/login', name: 'app_login', methods: ['GET', 'POST'])]
@@ -31,7 +28,7 @@ class AuthController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         MailerInterface $mailer,
         Security $security,
-        AuthenticationUtils $authenticationUtils // <-- LA CORRECTION EST ICI
+        AuthenticationUtils $authenticationUtils
     ): Response {
         // Si déjà connecté, on le renvoie à l'accueil
         if ($this->getUser()) {
@@ -92,7 +89,6 @@ class AuthController extends AbstractController
             }
         }
 
-        // <-- LA DEUXIÈME CORRECTION EST ICI -->
         // On renvoie obligatoirement les variables attendues par Twig
         return $this->render('frontUser/login.html.twig', [
             'last_username' => $authenticationUtils->getLastUsername(),
@@ -103,7 +99,7 @@ class AuthController extends AbstractController
     // =========================================================================
     //  2. INSCRIPTION (SIGNUP) AVEC FICHIERS ET EMAIL
     // =========================================================================
-   #[Route('/register', name: 'app_register', methods: ['POST'])]
+    #[Route('/register', name: 'app_register', methods: ['POST'])]
     public function register(
         Request $request, 
         UserPasswordHasherInterface $passwordHasher, 
@@ -121,21 +117,35 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        // --- GESTION DES FICHIERS (On les stocke physiquement tout de suite) ---
-        $imageFilename = 'default_avatar.png';
+        // --- GESTION DES FICHIERS ET AVATARS (On les stocke physiquement tout de suite) ---
+        $avatarUrl = $request->request->get('avatar_url');
         $imageFile = $request->files->get('image_profil');
-        if ($imageFile) {
+        $imageToSave = null;
+
+        if (!empty($avatarUrl)) {
+            // L'utilisateur a choisi un avatar depuis la liste modale
+            $imageToSave = $avatarUrl;
+        } elseif ($imageFile) {
+            // L'utilisateur a uploadé une vraie photo
             $newFilename = $slugger->slug(pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME)).'-'.uniqid().'.'.$imageFile->guessExtension();
-            $imageFile->move($this->getParameter('profiles_directory'), $newFilename);
-            $imageFilename = $newFilename;
+            try {
+                $imageFile->move($this->getParameter('profiles_directory'), $newFilename);
+                $imageToSave = $newFilename;
+            } catch (FileException $e) {
+                // Gestion d'erreur silencieuse ou log
+            }
         }
 
         $cvFilename = null;
         $pdfFile = $request->files->get('cv_pdf');
         if ($pdfFile) {
             $newFilename = $slugger->slug(pathinfo($pdfFile->getClientOriginalName(), PATHINFO_FILENAME)).'-'.uniqid().'.'.$pdfFile->guessExtension();
-            $pdfFile->move($this->getParameter('cv_directory'), $newFilename);
-            $cvFilename = $newFilename;
+            try {
+                $pdfFile->move($this->getParameter('cv_directory'), $newFilename);
+                $cvFilename = $newFilename;
+            } catch (FileException $e) {
+                // Gestion d'erreur silencieuse ou log
+            }
         }
 
         // --- CALCUL DU RÔLE ---
@@ -151,7 +161,7 @@ class AuthController extends AbstractController
             'password' => $passwordHasher->hashPassword(new Utilisateur(), $request->request->get('password')),
             'role' => $finalRole,
             'statut' => $statut,
-            'image' => $imageFilename,
+            'image' => $imageToSave, // L'image (uploadée, url, ou null) est bien sauvegardée ici
             'cv' => $cvFilename
         ];
 
@@ -182,6 +192,7 @@ class AuthController extends AbstractController
         // Cette méthode peut rester vide, Symfony intercepte la route pour détruire la session.
         throw new \LogicException('Cette méthode peut être vide.');
     }
+
     // =========================================================================
     //  VÉRIFICATION DE L'EMAIL (Code à 6 chiffres)
     // =========================================================================
@@ -207,32 +218,9 @@ class AuthController extends AbstractController
                 $user->setMdp($userData['password']);
                 $user->setRole($userData['role']);
                 $user->setStatutCompte($userData['statut']);
-                $user->setImage($userData['image']);
+                $user->setImage($userData['image']); // Récupère l'image qui a été validée dans l'étape d'avant
                 $user->setSkills($userData['cv']);
-                $user->setAuthMethod('EMAIL');
-                // --- GESTION DE L'IMAGE À L'INSCRIPTION ---
-$avatarUrl = $request->request->get('avatar_url');
-$uploadedFile = $request->files->get('image_profil');
-
-if (!empty($avatarUrl)) {
-    // Si l'utilisateur a choisi un avatar via la modale
-    $user->setImage($avatarUrl);
-} elseif ($uploadedFile) {
-    // Si l'utilisateur a uploadé une photo depuis son PC
-    $newFilename = uniqid().'.'.$uploadedFile->guessExtension();
-    try {
-        $uploadedFile->move(
-            $this->getParameter('profiles_directory'), 
-            $newFilename
-        );
-        $user->setImage($newFilename);
-    } catch (\Exception $e) {
-        // En cas d'erreur d'upload
-    }
-} else {
-    // S'il n'a rien choisi du tout
-    $user->setImage(null);
-}
+                $user->setAuthMethod('EMAIL'); // Sécurité 2FA activée par défaut
 
                 $entityManager->persist($user);
                 $entityManager->flush();
@@ -253,7 +241,8 @@ if (!empty($avatarUrl)) {
             'email' => $session->get('verification_email')
         ]);
     }
-   // =========================================================================
+
+    // =========================================================================
     //  AIGUILLAGE DES RÔLES PRO (Équivalent de finalizeLogin en Java)
     // =========================================================================
     #[Route(path: '/redirect-user', name: 'app_redirect_user')]
@@ -270,7 +259,6 @@ if (!empty($avatarUrl)) {
         // 2. On récupère le tableau des rôles de la session
         $roles = $user->getRoles();
         
-
         // 3. On redirige vers la bonne interface (Vos fichiers FXML traduits en Web)
         if (in_array('ROLE_ADMIN', $roles)) {
             // Équivalent de /adminUserList.fxml
@@ -292,7 +280,8 @@ if (!empty($avatarUrl)) {
         // 4. Par défaut : Utilisateur simple (Équivalent de /index.fxml)
         return $this->redirectToRoute('app_home');
     }
-// =========================================================================
+
+    // =========================================================================
     //  VÉRIFICATION DE LA 2FA (LOGIN)
     // =========================================================================
     #[Route(path: '/verify-2fa', name: 'app_verify_2fa')]
