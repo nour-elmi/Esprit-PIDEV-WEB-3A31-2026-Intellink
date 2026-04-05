@@ -19,11 +19,19 @@ use App\Repository\OffreEmploiRepository;
 final class ListeParticipationController extends AbstractController
 {
     #[Route('/showParticipation/{id}', name: 'showParticipation')]
-    public function showParticipations(OffreEmploi $offre): Response
+    public function showParticipations(OffreEmploi $offre, Request $request, ListeParticipationRepository $participationRepo): Response
     {
+        $searchTerm = $request->query->get('query');
+        
+        if ($searchTerm) {
+            $participations = $participationRepo->searchParticipations($offre->getIdOffre(), $searchTerm);
+        } else {
+            $participations = $offre->getParticipations();
+        }
+
         return $this->render('liste_participation/frontend/showParticipation.html.twig', [
             'offre' => $offre,
-            'participations' => $offre->getParticipations(),
+            'participations' => $participations,
         ]);
     }
 

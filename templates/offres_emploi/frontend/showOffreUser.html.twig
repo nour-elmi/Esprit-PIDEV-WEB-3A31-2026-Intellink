@@ -23,7 +23,7 @@
 </div>
 
 <div class="search-container">
-    <form action="{{ path('showOffre') }}" method="get" class="search-wrapper">
+    <form action="{{ path('showOffreUser') }}" method="get" class="search-wrapper">
         <i class="fas fa-search search-icon"></i>
         <input type="text" name="query" class="search-input" placeholder="Rechercher par entreprise..." value="{{ app.request.query.get('query') }}">
         <button type="submit" class="search-btn">Rechercher</button>

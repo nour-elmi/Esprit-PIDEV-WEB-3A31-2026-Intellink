@@ -15,7 +15,26 @@ class ListeParticipationRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, ListeParticipation::class);
     }
+     
 
+    // Dans ListeParticipationRepository.php
+
+    public function searchParticipations($offre, ?string $term)
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->andWhere('p.id_offre = :offre') // Utilise le nom exact de la propriété dans l'entité
+            ->setParameter('offre', $offre);
+
+        if ($term) {
+            // On cherche dans le statut, les skills, le nom ou le prénom
+            $qb->andWhere('p.statutt LIKE :term OR p.skills LIKE :term OR p.nom_p LIKE :term OR p.prenom_p LIKE :term')
+            ->setParameter('term', '%' . $term . '%');
+        }
+
+        $qb->orderBy('p.id_participation', 'DESC');
+
+        return $qb->getQuery()->getResult();
+    }
 
 
 
