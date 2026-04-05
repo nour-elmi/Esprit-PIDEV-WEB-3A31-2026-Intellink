@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Bundle\SecurityBundle\Security;
-
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 class ProfileController extends AbstractController
 {
     // =========================================================================
@@ -155,6 +155,54 @@ class ProfileController extends AbstractController
 
             return $this->redirectToRoute('app_login');
         }
+        return $this->redirectToRoute('app_profile');
+    }
+    #[Route('/profile/password', name: 'app_profile_password', methods: ['POST'])]
+    public function updatePassword(
+        Request $request, 
+        EntityManagerInterface $em, 
+        UserPasswordHasherInterface $passwordHasher
+    ): Response {
+        // 1. Récupérer l'utilisateur connecté
+        /** @var \App\Entity\Utilisateur $user */
+        $user = $this->getUser();
+
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        // 2. Vérifier la sécurité (CSRF Token)
+        if (!$this->isCsrfTokenValid('change_password', $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Erreur de sécurité : Token invalide.');
+            return $this->redirectToRoute('app_profile');
+        }
+
+        // 3. Récupérer les données envoyées par le modal
+        $oldPassword = $request->request->get('old_password');
+        $newPassword = $request->request->get('new_password');
+        $confirmPassword = $request->request->get('confirm_password');
+
+        // 4. Double sécurité : Vérifier si les nouveaux mots de passe correspondent
+        if ($newPassword !== $confirmPassword) {
+            $this->addFlash('danger', 'Les nouveaux mots de passe ne correspondent pas.');
+            return $this->redirectToRoute('app_profile');
+        }
+
+        // 5. Vérifier que l'ancien mot de passe saisi est bien le bon
+        if (!$passwordHasher->isPasswordValid($user, $oldPassword)) {
+            $this->addFlash('danger', 'Identification échouée : L\'ancien mot de passe est incorrect.');
+            return $this->redirectToRoute('app_profile');
+        }
+
+        // 6. Si tout est bon, on hache le nouveau mot de passe et on sauvegarde
+        $hashedPassword = $passwordHasher->hashPassword($user, $newPassword);
+        $user->setPassword($hashedPassword);
+
+        $em->flush(); // Exécute la modification dans la base de données
+
+        // 7. On affiche un beau message de succès
+        $this->addFlash('success', '🔐 Le coffre-fort a été refermé. Votre mot de passe a été mis à jour avec succès !');
+        
         return $this->redirectToRoute('app_profile');
     }
 }

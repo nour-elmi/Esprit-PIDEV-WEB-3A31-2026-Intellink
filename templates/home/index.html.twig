@@ -1,0 +1,446 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil - Intel_link{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/bootstrap-5.0.0-beta1.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/lindy-uikit.css') }}">
+    <link href="https://cdn.lineicons.com/2.0/LineIcons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/glightbox.min.css') }}">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <style>
+        /* =========================================================================
+           1. ESTHÉTIQUE "PREMIUM MINIMALISTE CRYSTAL" (Sync Profil)
+           ========================================================================= */
+        html { scroll-behavior: smooth; overflow-x: hidden; }
+        
+        body { 
+            /* FOND BLUEPRINT (Grille de points technique ultra-propre) */
+            background-color: #f8fafc;
+            background-image: 
+                radial-gradient(rgba(47, 128, 237, 0.1) 1px, transparent 1px),
+                radial-gradient(rgba(47, 128, 237, 0.1) 1px, transparent 1px);
+            background-position: 0 0, 20px 20px;
+            background-size: 40px 40px;
+            font-family: "Heebo", sans-serif; 
+            margin: 0; color: #0f172a; position: relative;
+        }
+
+        /* LUMIÈRE AMBIANTE SUBTILE */
+        body::before { content: ''; position: fixed; top: -20%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(86,204,242,0.12) 0%, transparent 60%); z-index: -1; }
+        body::after { content: ''; position: fixed; bottom: -20%; right: -10%; width: 60vw; height: 60vw; background: radial-gradient(circle, rgba(47,128,237,0.08) 0%, transparent 60%); z-index: -1; }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #2F80ED; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #56CCF2; }
+
+        /* GRAIN CINÉMATOGRAPHIQUE SUBTIL */
+        .noise-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 99998; opacity: 0.03;
+            background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
+        }
+
+        /* LIGNE DE VIE (PROGRESS BAR) */
+        .scroll-progress-bar {
+            position: fixed; top: 0; left: 0; height: 4px; background: linear-gradient(90deg, #2F80ED, #56CCF2);
+            z-index: 100000; width: 0%; box-shadow: 0 0 15px rgba(86, 204, 242, 0.8); border-radius: 0 5px 5px 0;
+        }
+
+        /* NAVBAR CRISTALLINE */
+        .glass-navbar { background: rgba(248, 250, 252, 0.8) !important; backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.05); transition: transform 0.4s; }
+        .navbar-hidden { transform: translateY(-100%); }
+
+        /* PRÉCHARGEUR */
+        #preloader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; z-index: 999999; display: flex; justify-content: center; align-items: center; transition: opacity 0.8s ease-out, visibility 0.8s; }
+        .loader-logo { font-size: 3rem; font-weight: 900; color: #2F80ED; animation: pulse-glow 1.5s infinite alternate; }
+        @keyframes pulse-glow { 0% { transform: scale(0.95); text-shadow: 0 0 10px rgba(47, 128, 237, 0.2); } 100% { transform: scale(1.05); text-shadow: 0 0 30px rgba(86, 204, 242, 0.8); } }
+
+        /* AURA MAGNÉTIQUE */
+        .cursor-glow { position: fixed; top: 0; left: 0; width: 600px; height: 600px; background: radial-gradient(circle, rgba(86, 204, 242, 0.08) 0%, rgba(47, 128, 237, 0) 60%); border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 9999; transition: width 0.3s, height 0.3s; mix-blend-mode: multiply; }
+
+        /* CYBER GLITCH LOGO */
+        .glitch-logo { position: relative; display: inline-block; color: #0f172a; font-weight: 900; letter-spacing: -1px; margin: 0; }
+        .glitch-logo::before, .glitch-logo::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; }
+        .glitch-logo:hover::before { left: 2px; text-shadow: -2px 0 #56CCF2; animation: glitch-anim-1 0.2s infinite linear alternate-reverse; opacity: 1; color: #2F80ED;}
+        .glitch-logo:hover::after { left: -2px; text-shadow: 2px 0 #2F80ED; animation: glitch-anim-2 0.3s infinite linear alternate-reverse; opacity: 1; color: #56CCF2;}
+        @keyframes glitch-anim-1 { 0% { clip-path: inset(20% 0 80% 0); } 100% { clip-path: inset(50% 0 30% 0); } }
+        @keyframes glitch-anim-2 { 0% { clip-path: inset(10% 0 60% 0); } 100% { clip-path: inset(80% 0 10% 0); } }
+
+        /* BOUTON LIQUID WAVE MASTERPIECE */
+        .btn-liquid { 
+            position: relative; overflow: hidden; z-index: 1; transition: 0.3s; 
+            background: linear-gradient(135deg, #2F80ED, #56CCF2); color: #ffffff !important; 
+            border: none; padding: 15px 35px; border-radius: 14px; 
+            font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+            box-shadow: 0 8px 20px rgba(47, 128, 237, 0.25);
+        }
+        .btn-liquid::before { 
+            content: ''; position: absolute; top: 100%; left: 0; width: 100%; height: 200%; 
+            background: linear-gradient(135deg, #0f172a, #1e293b); z-index: -1; 
+            transition: top 0.4s cubic-bezier(0.25, 1, 0.5, 1); border-radius: 50% 50% 0 0; 
+        }
+        .btn-liquid:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(47, 128, 237, 0.4); }
+        .btn-liquid:hover::before { top: -20%; border-radius: 0; }
+
+        /* GRILLE 3D & MASQUE */
+        .hero-section-wrapper-5 { position: relative; z-index: 1; min-height: 95vh; display: flex; align-items: center; overflow: hidden; }
+        #tsparticles { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        .perspective-grid { position: absolute; bottom: -50%; left: -50%; width: 200%; height: 100%; background-image: linear-gradient(rgba(47, 128, 237, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(47, 128, 237, 0.1) 1px, transparent 1px); background-size: 50px 50px; transform: perspective(600px) rotateX(75deg); animation: grid-move 10s linear infinite; z-index: 0; pointer-events: none; }
+        @keyframes grid-move { 0% { transform: perspective(600px) rotateX(75deg) translateY(0); } 100% { transform: perspective(600px) rotateX(75deg) translateY(50px); } }
+        .video-text-mask { font-size: 14vw; font-weight: 900; background: url('https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80'); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-size: cover; background-position: center; opacity: 0.04; position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); white-space: nowrap; z-index: 0; pointer-events: none; letter-spacing: -5px; }
+        .gradient-text { background: linear-gradient(90deg, #2F80ED, #56CCF2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        /* BADGES FLOTTANTS */
+        .hero-image-container { position: relative; z-index: 5; }
+        .parallax-badge { position: absolute; background: rgba(255,255,255,0.85); backdrop-filter: blur(10px); padding: 12px 20px; border-radius: 15px; box-shadow: 0 15px 35px rgba(47, 128, 237, 0.15); border: 1px solid rgba(255,255,255,0.9); font-weight: 700; color: #0f172a; z-index: 10; display: flex; align-items: center; gap: 12px; pointer-events: none; }
+        .parallax-badge i { font-size: 22px; color: #2F80ED; background: rgba(47, 128, 237, 0.1); padding: 8px; border-radius: 50%; }
+        .badge-1 { top: -20px; left: -30px; }
+        .badge-2 { bottom: 30px; right: -40px; }
+
+        /* BANDEAU DES PARTENAIRES (Frosted Glass) */
+        .trusted-by-section { background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px); padding: 50px 0; border-top: 1px solid rgba(47, 128, 237, 0.1); border-bottom: 1px solid rgba(47, 128, 237, 0.1); position: relative; z-index: 2; overflow: hidden; }
+        .trusted-title { text-align: center; font-size: 0.85rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 2.5px; margin-bottom: 35px; }
+        .marquee-wrapper { width: 100%; overflow: hidden; white-space: nowrap; display: flex; align-items: center; -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); }
+        .marquee-content { display: inline-flex; align-items: center; animation: marquee 35s linear infinite; }
+        .marquee-content img { height: 35px; margin: 0 50px; filter: grayscale(100%) opacity(0.5); transition: all 0.4s ease; }
+        .marquee-content img:hover { filter: grayscale(0%) opacity(1); transform: scale(1.1); cursor: pointer; }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        /* CARTES 3D "CRYSTAL BENTO" */
+        .feature-style-5 { background-color: transparent; position: relative; z-index: 2; }
+        .feature-link { text-decoration: none !important; color: inherit; display: block; height: 100%; }
+        
+        .single-feature { 
+            background: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(25px) saturate(150%); 
+            border: 1px solid rgba(255,255,255,0.9); 
+            position: relative; overflow: hidden; transform-style: preserve-3d; 
+            border-radius: 24px; 
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05); 
+            transition: 0.3s ease;
+        }
+        .single-feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(15, 23, 42, 0.08);
+            border-color: #ffffff;
+        }
+
+        .single-feature::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(86, 204, 242, 0.1), transparent 40%); z-index: 0; transition: opacity 0.3s; opacity: 0; }
+        .single-feature:hover::after { opacity: 1; }
+        .single-feature::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #2F80ED, #56CCF2); transform: scaleX(0); transform-origin: left; transition: transform 0.4s ease; z-index: 2; }
+        .single-feature:hover::before { transform: scaleX(1); }
+        
+        .icon-wrapper { background: rgba(47, 128, 237, 0.05); width: 85px; height: 85px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px auto; color: #2F80ED; font-size: 38px; transform: translateZ(40px); transition: 0.4s; z-index: 2; position: relative; border: 1px solid rgba(47,128,237,0.1); }
+        .content { transform: translateZ(30px); position: relative; z-index: 2; }
+        .single-feature:hover .icon-wrapper { background: linear-gradient(135deg, #2F80ED, #56CCF2); color: #ffffff; box-shadow: 0 15px 30px rgba(47, 128, 237, 0.3); border-color: transparent;}
+        
+        .integrated-logo-badge { position: absolute; top: 25px; right: 25px; width: 35px; height: 35px; background: #ffffff; border-radius: 8px; padding: 5px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); border: 1px solid #e8edf5; z-index: 3; transform: translateZ(50px); transition: 0.4s; }
+        .single-feature:hover .integrated-logo-badge { transform: translateZ(60px) scale(1.15) rotate(-5deg); box-shadow: 0 15px 25px rgba(0,0,0,0.15); }
+        
+        .feature-cta { display: inline-flex; align-items: center; font-weight: bold; color: #2F80ED; margin-top: 20px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;}
+        .feature-cta i { opacity: 0; transform: translateX(-10px); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); margin-left: 5px; }
+        .single-feature:hover .feature-cta i { opacity: 1; transform: translateX(0); }
+
+        /* CARTE VIDÉO */
+        .video-play-card { border: 8px solid rgba(255,255,255,0.7); border-radius: 24px; overflow: hidden; box-shadow: 0 30px 60px rgba(15, 23, 42, 0.1); position: relative; cursor: pointer; transition: 0.5s; transform-style: preserve-3d; }
+        .video-play-card:hover { box-shadow: 0 40px 80px rgba(47, 128, 237, 0.2); border-color: #ffffff; }
+        .play-button-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.2); display: flex; align-items: center; justify-content: center; transform: translateZ(50px); }
+        .play-icon-circle { width: 90px; height: 90px; background: linear-gradient(135deg, #2F80ED, #56CCF2); border-radius: 50%; display: flex; align-items: center; justify-content: center; padding-left: 5px; color: white; font-size: 35px; animation: pulse-button 2s infinite; box-shadow: 0 10px 25px rgba(47, 128, 237, 0.4);}
+        @keyframes pulse-button { 0% { box-shadow: 0 0 0 0 rgba(47, 128, 237, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(47, 128, 237, 0); } 100% { box-shadow: 0 0 0 0 rgba(47, 128, 237, 0); } }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="scroll-progress-bar" id="scrollBar"></div>
+    <div class="noise-overlay"></div>
+
+    <div id="preloader"><h1 class="loader-logo">Intel_link<span style="color: #56CCF2;">.</span></h1></div>
+    <div class="cursor-glow" id="cursorGlow"></div>
+
+    <header class="header header-6 sticky-top glass-navbar" id="smartNavbar" data-aos="fade-down" data-aos-duration="1000">
+        <div class="navbar-area">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-12">
+                        <nav class="navbar navbar-expand-lg">
+                            <a class="navbar-brand" href="{{ path('app_home') }}">
+                                <h3 class="glitch-logo" data-text="Intel_link">Intel_link<span style="color: #2F80ED;">.</span></h3> 
+                            </a>
+                            <div class="collapse navbar-collapse"></div>
+                            <div class="header-action d-flex align-items-center">
+                                {% if app.user %}
+                                    <div class="dropdown">
+                                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" id="profileMenu" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer; background: #ffffff; padding: 5px 15px 5px 5px; border-radius: 50px; border: 1px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                                            {% if app.user.image %}
+    {% set avatar_src = app.user.image starts with 'http' ? app.user.image : asset('uploads/profiles/' ~ app.user.image) %}
+<img src="{{ avatar_src }}" alt="Profil" class="radius-full" style="width: 35px; height: 35px; object-fit: cover; margin-right: 10px; border-radius: 50%;">
+                                            <span style="color: #0f172a; font-weight: 700; font-size: 14px;">{{ app.user.nom }}</span>
+                                        </a>
+                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileMenu" style="border-radius: 16px; border: 1px solid #e2e8f0; background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(15,23,42,0.1); padding: 10px; border: none;">
+                                            <li><a class="dropdown-item fw-bold" href="{{ path('app_profile') }}" style="border-radius: 8px;"><i class="lni lni-user mr-10 text-primary"></i> Mon Profil</a></li>
+                                            <li><a class="dropdown-item fw-bold" href="{{ path('app_reclamation_index') }}" style="border-radius: 8px;"><i class="lni lni-bullhorn mr-10 text-primary"></i> Mes Réclamations</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger fw-bold" href="{{ path('app_logout') }}" style="border-radius: 8px;"><i class="lni lni-exit mr-10"></i> Se déconnecter</a></li>
+                                        </ul>
+                                    </div>
+                                {% else %}
+                                    <a href="{{ path('app_login') }}" class="btn-liquid">🔐 Console d'Accès</a>
+                                {% endif %}
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero-section-wrapper-5">
+        <div class="video-text-mask">MANAGEMENT</div>
+        <div class="perspective-grid"></div>
+        <div id="tsparticles"></div>
+
+        <div class="hero-style-5" style="position: relative; z-index: 2; width: 100%;">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-6">
+                        <div class="hero-content-wrapper" data-aos="fade-right" data-aos-duration="1200" data-aos-delay="500">
+                            <span style="color: #2F80ED; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; display: block; font-size: 0.85rem; background: rgba(47,128,237,0.1); padding: 5px 15px; border-radius: 20px; width: fit-content; border: 1px solid rgba(47,128,237,0.2);">Excellence & Vision</span>
+                            
+                            <h1 class="mb-30" style="font-size: 4.2rem; line-height: 1.1; color: #0f172a; font-weight: 900; letter-spacing: -1.5px;">
+                                Révélez vos talents à l'échelle <br>
+                                <span class="gradient-text" id="typed-text"></span>
+                            </h1>
+                            
+                            <p class="mb-40 mt-30" style="font-size: 1.25rem; color: #64748b; line-height: 1.7; font-weight: 500;">L'infrastructure stratégique pour les esprits brillants. Pilotez vos projets, optimisez votre réseau et façonnez l'avenir de l'entreprise.</p>
+                            
+                            <div class="d-flex gap-4 align-items-center flex-wrap">
+                                <a href="#features" class="btn-liquid">Explorer l'écosystème</a>
+                                <a href="https://www.youtube.com/watch?v=LXb3EKWsInQ" class="glightbox d-flex align-items-center gap-2" style="padding: 12px 25px; font-weight: bold; border-radius: 14px; background: rgba(255,255,255,0.8); backdrop-filter: blur(5px); color: #0f172a; text-decoration: none; box-shadow: 0 10px 20px rgba(0,0,0,0.05); transition: 0.3s; border: 1px solid #e2e8f0;">
+                                    <i class="lni lni-play" style="font-size: 22px; color: #2F80ED;"></i> Voir la démo
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-6">
+                        <div class="hero-image-container mt-5 mt-lg-0" data-aos="fade-left" data-aos-duration="1500" data-aos-delay="800">
+                            <div class="parallax-badge badge-1" data-speed="-3"><i class="lni lni-network"></i> +10k Talents</div>
+                            <div class="parallax-badge badge-2" data-speed="4"><i class="lni lni-bar-chart"></i> 99% Croissance</div>
+
+                            <div class="video-play-card glightbox" href="https://www.youtube.com/watch?v=LXb3EKWsInQ" data-tilt data-tilt-glare data-tilt-max-glare="0.3" data-tilt-scale="1.02">
+                                <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Networking" style="width: 100%; display: block;">
+                                <div class="play-button-overlay"><div class="play-icon-circle"><i class="lni lni-play"></i></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="trusted-by-section">
+        <div class="container"><div class="trusted-title" data-aos="fade-up" data-aos-duration="1000">Les entreprises qui recrutent nos talents</div></div>
+        <div class="marquee-wrapper">
+            <div class="marquee-content">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" alt="Google">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/9/96/Microsoft_logo_%282012%29.svg" alt="Microsoft">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" alt="Stripe">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Cisco_logo_blue_2016.svg" alt="Cisco">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" alt="IBM">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" alt="Amazon">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Tata_Consultancy_Services_Logo.svg" alt="TCS">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" alt="Google">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/9/96/Microsoft_logo_%282012%29.svg" alt="Microsoft">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" alt="Stripe">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Cisco_logo_blue_2016.svg" alt="Cisco">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" alt="IBM">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" alt="Amazon">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Tata_Consultancy_Services_Logo.svg" alt="TCS">
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="feature-style-5 pt-100 pb-100">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="section-title text-center mb-60" data-aos="fade-up" data-aos-duration="1000">
+                        <h2 class="mb-15" style="font-weight: 900; color: #0f172a; font-size: 2.8rem; letter-spacing: -1px;">L'Architecture du <span style="color: #2F80ED;">Succès</span></h2>
+                        <p style="font-size: 1.15rem; color: #64748b; font-weight: 500;">Quatre modules puissants, conçus pour accélérer votre évolution.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-6 col-md-6 mb-40" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="100">
+                    <a href="{% if app.user %}#{% else %}{{ path('app_login') }}{% endif %}" class="feature-link">
+                        <div class="single-feature p-5 text-center h-100 spotlight-card" data-tilt data-tilt-glare data-tilt-max-glare="0.1" data-tilt-max="10">
+                            <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="LinkedIn" class="integrated-logo-badge">
+                            <div class="icon-wrapper"><i class="lni lni-world"></i></div>
+                            <div class="content">
+                                <h4 class="mb-3 fw-bold" style="color: #0f172a;">Réseau Professionnel</h4>
+                                <p class="text-muted" style="font-weight: 500;">Échangez des stratégies, analysez les marchés et connectez-vous avec des étudiants et professionnels du monde entier.</p>
+                                <span class="feature-cta">Rejoindre la discussion <i class="lni lni-arrow-right"></i></span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-lg-6 col-md-6 mb-40" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="200">
+                    <a href="{% if is_granted('ROLE_RECRUTEUR') %}#{% else %}#{% endif %}" class="feature-link">
+                        <div class="single-feature p-5 text-center h-100 spotlight-card" data-tilt data-tilt-glare data-tilt-max-glare="0.1" data-tilt-max="10">
+                            <img src="https://cdn-icons-png.flaticon.com/512/281/281764.png" alt="Google" class="integrated-logo-badge">
+                            <div class="icon-wrapper"><i class="lni lni-briefcase"></i></div>
+                            <div class="content">
+                                <h4 class="mb-3 fw-bold" style="color: #0f172a;">Opportunités & Carrières</h4>
+                                <p class="text-muted" style="font-weight: 500;">Accédez à des offres de stages et d'emplois exclusives ciblées sur vos compétences en management et technologies.</p>
+                                <span class="feature-cta">Parcourir les offres <i class="lni lni-arrow-right"></i></span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-lg-6 col-md-6 mb-40" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="300">
+                    <a href="{% if is_granted('ROLE_CHEF_PROJET') %}#{% else %}#{% endif %}" class="feature-link">
+                        <div class="single-feature p-5 text-center h-100 spotlight-card" data-tilt data-tilt-glare data-tilt-max-glare="0.1" data-tilt-max="10">
+                            <img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" alt="GitHub" class="integrated-logo-badge">
+                            <div class="icon-wrapper"><i class="lni lni-rocket"></i></div>
+                            <div class="content">
+                                <h4 class="mb-3 fw-bold" style="color: #0f172a;">Développement de Projets</h4>
+                                <p class="text-muted" style="font-weight: 500;">Mettez la théorie en pratique. Intégrez des équipes pluridisciplinaires pour piloter des stratégies innovantes.</p>
+                                <span class="feature-cta">Explorer les projets <i class="lni lni-arrow-right"></i></span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-lg-6 col-md-6 mb-40" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="400">
+                    <a href="{% if is_granted('ROLE_FORMATEUR') %}#{% else %}#{% endif %}" class="feature-link">
+                        <div class="single-feature p-5 text-center h-100 spotlight-card" data-tilt data-tilt-glare data-tilt-max-glare="0.1" data-tilt-max="10">
+                            <img src="https://cdn-icons-png.flaticon.com/512/5968/5968913.png" alt="Coursera" class="integrated-logo-badge">
+                            <div class="icon-wrapper"><i class="lni lni-graduation"></i></div>
+                            <div class="content">
+                                <h4 class="mb-3 fw-bold" style="color: #0f172a;">Académie Certifiante</h4>
+                                <p class="text-muted" style="font-weight: 500;">Développez votre avantage compétitif grâce à nos formations certifiantes dispensées par des experts de l'industrie.</p>
+                                <span class="feature-cta">Découvrir le catalogue <i class="lni lni-arrow-right"></i></span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer-style-4 footer-dark" style="background-color: #0b1121; color: #fff; padding-top: 80px; position: relative; z-index: 10;">
+        <div class="container">
+            <div class="widget-wrapper" data-aos="fade-up" data-aos-duration="1000">
+                <div class="row">
+                    <div class="col-lg-4 col-md-6 col-12">
+                        <div class="footer-widget mb-40">
+                            <h3 style="color: #ffffff; font-weight: 800; margin-bottom: 20px;">Intel_link<span style="color: #56CCF2;">.</span></h3>
+                            <p class="desc" style="color: #8b92a5; line-height: 1.6;">L'infrastructure stratégique pour connecter les talents, propulser les carrières et encourager l'innovation collaborative.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 col-12 offset-lg-1">
+                        <div class="footer-widget mb-40">
+                            <h6 style="color: #fff; font-weight: 700; margin-bottom: 25px;">Raccourcis</h6>
+                            <ul class="links" style="list-style: none; padding: 0;">
+                                <li><a href="#" style="color: #8b92a5; text-decoration: none; line-height: 2.2; transition: 0.3s;" onmouseover="this.style.color='#56CCF2'" onmouseout="this.style.color='#8b92a5'">Accueil</a></li>
+                                <li><a href="#features" style="color: #8b92a5; text-decoration: none; line-height: 2.2; transition: 0.3s;" onmouseover="this.style.color='#56CCF2'" onmouseout="this.style.color='#8b92a5'">Fonctionnalités</a></li>
+                                <li><a href="{{ path('app_reclamation_index') }}" style="color: #8b92a5; text-decoration: none; line-height: 2.2; transition: 0.3s;" onmouseover="this.style.color='#56CCF2'" onmouseout="this.style.color='#8b92a5'">Support / Réclamations</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 col-12">
+                        <div class="footer-widget mb-40">
+                            <h6 style="color: #fff; font-weight: 700; margin-bottom: 25px;">Légal</h6>
+                            <ul class="links" style="list-style: none; padding: 0;">
+                                <li><a href="#" style="color: #8b92a5; text-decoration: none; line-height: 2.2; transition: 0.3s;" onmouseover="this.style.color='#56CCF2'" onmouseout="this.style.color='#8b92a5'">Conditions d'Utilisation</a></li>
+                                <li><a href="#" style="color: #8b92a5; text-decoration: none; line-height: 2.2; transition: 0.3s;" onmouseover="this.style.color='#56CCF2'" onmouseout="this.style.color='#8b92a5'">Confidentialité</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="copyright-wrapper mt-20 pb-30" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 30px; text-align: center;">
+                <p style="color: #8b92a5; font-size: 0.95rem; margin: 0;">&copy; {{ 'now'|date('Y') }} Intel_link. Conçu pour l'excellence.</p>
+            </div>
+        </div>
+    </footer>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mcstudios/glightbox/dist/js/glightbox.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-slim@2.0.6/tsparticles.slim.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.2/vanilla-tilt.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+    <script>
+        // 1. Preloader
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('preloader').style.opacity = '0';
+                setTimeout(function() { document.getElementById('preloader').style.display = 'none'; }, 800);
+            }, 500); 
+        });
+
+        // 2. Initialisation AOS
+        AOS.init({ once: true, offset: 50 });
+
+        const lightbox = GLightbox({ selector: '.glightbox', touchNavigation: true, loop: true, autoplayVideos: true });
+
+        // 3. Scroll Progress Bar & Smart Navbar
+        let lastScrollTop = 0;
+        const navbar = document.getElementById('smartNavbar');
+        const progressBar = document.getElementById('scrollBar');
+        
+        window.addEventListener('scroll', function() {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            // Progress Bar Logic
+            let docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            let scrolled = (scrollTop / docHeight) * 100;
+            progressBar.style.width = scrolled + "%";
+
+            // Smart Navbar Logic
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                navbar.classList.add('navbar-hidden'); // Scroll Down
+            } else {
+                navbar.classList.remove('navbar-hidden'); // Scroll Up
+            }
+            lastScrollTop = scrollTop;
+        });
+
+        // 4. Cursor Aura & Parallax & Spotlight
+        const cursorGlow = document.getElementById('cursorGlow');
+        document.addEventListener('mousemove', (e) => {
+            cursorGlow.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`;
+            
+            document.querySelectorAll('.spotlight-card').forEach(card => {
+                const rect = card.getBoundingClientRect();
+                card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+                card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+            });
+
+            document.querySelectorAll('.parallax-badge').forEach(badge => {
+                const speed = badge.getAttribute('data-speed');
+                const x = (window.innerWidth - e.pageX * speed) / 100;
+                const y = (window.innerHeight - e.pageY * speed) / 100;
+                badge.style.transform = `translateX(${x}px) translateY(${y}px)`;
+            });
+        });
+
+        var typed = new Typed('#typed-text', { strings: ['mondiale.', 'technologique.', 'du futur.', 'de l\'innovation.'], typeSpeed: 60, backSpeed: 40, backDelay: 2000, loop: true, showCursor: true, cursorChar: '|' });
+
+        tsParticles.load("tsparticles", {
+            fpsLimit: 60,
+            interactivity: { events: { onHover: { enable: true, mode: "grab" }, resize: true }, modes: { grab: { distance: 200, links: { opacity: 0.5 } } } },
+            particles: { color: { value: "#2F80ED" }, links: { color: "#56CCF2", distance: 150, enable: true, opacity: 0.3, width: 1 }, move: { enable: true, speed: 1.5, direction: "none", random: false, straight: false, outModes: { default: "bounce" } }, number: { density: { enable: true, area: 800 }, value: 60 }, opacity: { value: 0.4 }, shape: { type: "circle" }, size: { value: { min: 1, max: 3 } } },
+            detectRetina: true
+        });
+    </script>
+{% endblock %}

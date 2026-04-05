@@ -211,6 +211,12 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         // Chez vous, la colonne s'appelle "mdp" et non "password"
         return $this->mdp; 
     }
+    public function setPassword(string $password): self
+    {
+        $this->password = $password;
+
+        return $this;
+    }
 
     /**
      * Nettoie les données sensibles temporaires (obligatoire mais on le laisse vide)
