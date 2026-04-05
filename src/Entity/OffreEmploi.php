@@ -5,6 +5,10 @@ namespace App\Entity;
 use App\Repository\OffreEmploiRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use App\Entity\ListeParticipation;
+
 
 #[ORM\Entity(repositoryClass: OffreEmploiRepository::class)]
 class OffreEmploi
@@ -37,6 +41,23 @@ class OffreEmploi
 
     #[ORM\Column]
     private ?int $id_user = null;
+
+    #[ORM\OneToMany(mappedBy: 'id_offre', targetEntity: ListeParticipation::class)]
+    private Collection $participations;
+
+    public function __construct()
+    {
+        $this->participations = new ArrayCollection();
+    }
+
+
+    /**
+     * @return Collection<int, ListeParticipation>
+     */
+    public function getParticipations(): Collection
+    {
+        return $this->participations;
+    }
 
     /*public function getId(): ?int
     {

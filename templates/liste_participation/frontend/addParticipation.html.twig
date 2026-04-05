@@ -2,9 +2,9 @@
 
 {% block body %}
 <div class="form-container-centered">
-    <a href="{{ path('showParticipation') }}" class="back-link">
-        <i class="fas fa-arrow-left"></i> Retour à la liste
-    </a>
+    <a href="{{ path('showParticipation', {'id': offre.idOffre}) }}" class="back-link">
+    <i class="fas fa-arrow-left"></i> Retour à l'offre
+</a>
 
     <h1 class="edit-title">
         <i class="fas fa-user-plus text-primary"></i> Nouvelle Participation
@@ -64,7 +64,7 @@
                 <button type="submit" class="btn-success-custom">
                     <i class="fas fa-check-circle"></i> Enregistrer la participation
                 </button>
-                <a href="{{ path('showParticipation') }}" class="btn-secondary-custom">Annuler</a>
+                <a href="{{ path('showParticipation', {'id': offre.idOffre}) }}" class="back-link">Annuler</a>
             </div>
         {{ form_end(formParticipation) }}
     </div>

@@ -507,3 +507,21 @@ body {
     font-size: 0.9rem;
     color: #4b5563;
 }
+
+.btn-view {
+    background-color: #f0fdf4; /* Fond vert très clair */
+    color: #16a34a; /* Icône verte */
+    border: 1px solid #bbf7d0;
+}
+
+.btn-view:hover {
+    background-color: #16a34a;
+    color: white;
+}
+
+/* Assure-toi que les actions sont bien alignées */
+.actions-group {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
