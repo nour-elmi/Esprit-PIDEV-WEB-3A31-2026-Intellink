@@ -1,0 +1,108 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ projet.titre }}{% endblock %}
+
+{% block body %}
+<section class="project-show-page">
+
+    <div class="project-show-back">
+        <a href="{{ path('app_projet_index') }}" class="project-show-back-link">
+            ← Retour aux projets
+        </a>
+    </div>
+
+    <section class="project-show-hero">
+        <div class="project-show-hero-left">
+            <div class="project-show-icon">
+                {{ projet.titre|slice(0, 1)|upper }}
+            </div>
+
+            <div class="project-show-heading">
+                <span class="project-show-kicker">Projet disponible</span>
+                <h1>{{ projet.titre }}</h1>
+                <p>Découvrez les détails du projet et rejoignez la collaboration si ce projet vous intéresse.</p>
+            </div>
+        </div>
+
+        <div class="project-show-status">
+            {% set statut = projet.statut|lower %}
+            <span class="show-status-badge
+                {% if statut == 'en cours' %}status-green
+                {% elseif statut == 'en attente' %}status-yellow
+                {% else %}status-gray{% endif %}
+            ">
+                {{ projet.statut }}
+            </span>
+        </div>
+    </section>
+
+    <section class="project-show-content">
+        <div class="project-show-main-card">
+            <div class="project-show-grid">
+                <div class="show-info-box">
+                    <span>Créateur</span>
+                    <strong>{{ projet.createur }}</strong>
+                </div>
+
+                <div class="show-info-box">
+                    <span>Statut</span>
+                    <strong>{{ projet.statut }}</strong>
+                </div>
+
+                <div class="show-info-box">
+                    <span>Budget</span>
+                    <strong>{{ projet.prix|number_format(0, '.', ' ') }} TND</strong>
+                </div>
+            </div>
+
+            <div class="project-show-description-card">
+                <h2>Description</h2>
+                <p>{{ projet.description ?: 'Aucune description disponible pour ce projet.' }}</p>
+            </div>
+
+            <div class="project-show-actions">
+                {% if alreadyParticipated %}
+                    <span class="show-btn show-btn-disabled">Demande déjà envoyée</span>
+                {% else %}
+                    <a href="{{ path('app_participation_add', {id: projet.id}) }}" class="show-btn show-btn-primary">
+                        Participer
+                    </a>
+                {% endif %}
+
+                <a href="{{ path('app_projet_index') }}" class="show-btn show-btn-secondary">
+                    Retour
+                </a>
+            </div>
+        </div>
+
+        <aside class="project-show-side-card">
+            <h3>Résumé rapide</h3>
+
+            <div class="side-item">
+                <span>Titre</span>
+                <strong>{{ projet.titre }}</strong>
+            </div>
+
+            <div class="side-item">
+                <span>Créateur</span>
+                <strong>{{ projet.createur }}</strong>
+            </div>
+
+            <div class="side-item">
+                <span>Budget</span>
+                <strong>{{ projet.prix|number_format(0, '.', ' ') }} TND</strong>
+            </div>
+
+            <div class="side-item">
+                <span>État</span>
+                <strong>{{ projet.statut }}</strong>
+            </div>
+
+            <div class="side-note">
+                Ce projet est visible par les apprenants. Consultez les détails puis envoyez votre demande de participation.
+            </div>
+        </aside>
+    </section>
+
+</section>
+{% endblock %}

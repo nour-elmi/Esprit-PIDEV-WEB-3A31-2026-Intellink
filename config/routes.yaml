@@ -1,7 +1,91 @@
-controllers:
-    resource: ../src/Controller/
-    type: annotation
+app_home:
+    path: /
+    controller: App\Controller\HomeController::index
 
-kernel:
-    resource: ../src/Kernel.php
-    type: annotation
+app_projet_index:
+    path: /projets
+    controller: App\Controller\ProjetController::index
+
+app_projet_show:
+    path: /projets/{id}
+    controller: App\Controller\ProjetController::show
+    requirements:
+        id: '\d+'
+
+app_participation_add:
+    path: /participer/{id}
+    controller: App\Controller\ParticipationController::add
+    requirements:
+        id: '\d+'
+
+app_mes_demandes:
+    path: /mes-demandes
+    controller: App\Controller\ParticipationController::mesDemandes
+
+app_participation_edit:
+    path: /mes-demandes/{id}/modifier
+    controller: App\Controller\ParticipationController::edit
+    requirements:
+        id: '\d+'
+
+app_participation_delete:
+    path: /mes-demandes/{id}/supprimer
+    controller: App\Controller\ParticipationController::delete
+    requirements:
+        id: '\d+'
+
+app_back_projets:
+    path: /back/projets
+    controller: App\Controller\BackProjetController::index
+
+app_back_projet_add:
+    path: /back/projets/ajouter
+    controller: App\Controller\BackProjetController::add
+
+app_back_projet_edit:
+    path: /back/projets/{id}/modifier
+    controller: App\Controller\BackProjetController::edit
+    requirements:
+        id: '\d+'
+
+app_back_projet_delete:
+    path: /back/projets/{id}/supprimer
+    controller: App\Controller\BackProjetController::delete
+    requirements:
+        id: '\d+'
+
+app_back_projet_demandes:
+    path: /back/projets/{id}/demandes
+    controller: App\Controller\BackProjetController::demandes
+    requirements:
+        id: '\d+'
+
+app_back_demande_accept:
+    path: /back/demandes/{id}/accepter
+    controller: App\Controller\BackProjetController::accepter
+    requirements:
+        id: '\d+'
+
+app_back_demande_refuse:
+    path: /back/demandes/{id}/refuser
+    controller: App\Controller\BackProjetController::refuser
+    requirements:
+        id: '\d+'
+
+
+admin_projets:
+    path: /admin/projets
+    controller: App\Controller\AdminProjetController::index
+
+admin_projet_participations:
+    path: /admin/projets/{id}/participations
+    controller: App\Controller\AdminProjetController::participations
+    requirements:
+        id: '\d+'
+
+admin_projet_delete:
+    path: /admin/projets/{id}/supprimer
+    controller: App\Controller\AdminProjetController::delete
+    requirements:
+        id: '\d+'
+        

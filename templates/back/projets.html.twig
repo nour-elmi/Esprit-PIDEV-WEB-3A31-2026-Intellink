@@ -1,0 +1,270 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes projets{% endblock %}
+
+{% block body %}
+<section class="projects-v2-page">
+    <div class="container">
+
+        <div class="projects-v2-hero">
+            <div class="projects-v2-hero-left">
+                <span class="projects-v2-badge">Workspace</span>
+                <h1>Mes projets</h1>
+                <p>Une interface plus moderne pour piloter, filtrer et gérer tes projets en un coup d’œil.</p>
+
+                <div class="projects-v2-stats">
+                    <div class="projects-v2-stat">
+                        <span>Total projets</span>
+                        <strong id="statTotal">{{ projets|length }}</strong>
+                    </div>
+                    <div class="projects-v2-stat">
+                        <span>Résultats affichés</span>
+                        <strong id="statVisible">{{ projets|length }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="projects-v2-hero-right">
+                <a href="{{ path('app_back_projet_add') }}" class="projects-v2-add-btn">
+                    <span>＋</span> Nouveau projet
+                </a>
+            </div>
+        </div>
+
+        {% for message in app.flashes('success') %}
+            <div class="projects-v2-alert success">{{ message }}</div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="projects-v2-alert danger">{{ message }}</div>
+        {% endfor %}
+
+        <div class="projects-v2-toolbar">
+            <div class="projects-v2-toolbar-header">
+                <div>
+                    <h2>Recherche intelligente</h2>
+                    <p>Le filtrage se fait automatiquement pendant la saisie.</p>
+                </div>
+                <button type="button" id="resetFilters" class="projects-v2-reset-btn">Réinitialiser</button>
+            </div>
+
+            <div class="projects-v2-filters">
+                <div class="projects-v2-field projects-v2-field-search">
+                    <label for="liveSearch">Recherche</label>
+                    <div class="projects-v2-input-wrap">
+                        <span class="projects-v2-input-icon">⌕</span>
+                        <input
+                            type="text"
+                            id="liveSearch"
+                            class="projects-v2-input"
+                            placeholder="Titre, description ou créateur..."
+                        >
+                    </div>
+                </div>
+
+                <div class="projects-v2-field">
+                    <label for="liveStatus">Statut</label>
+                    <select id="liveStatus" class="projects-v2-input">
+                        <option value="all">Tous</option>
+                        <option value="en attente">En attente</option>
+                        <option value="en cours">En cours</option>
+                        <option value="termine">Terminé</option>
+                    </select>
+                </div>
+
+                <div class="projects-v2-field">
+                    <label for="liveSort">Tri</label>
+                    <select id="liveSort" class="projects-v2-input">
+                        <option value="recent">Plus récents</option>
+                        <option value="ancien">Plus anciens</option>
+                        <option value="prix_asc">Budget croissant</option>
+                        <option value="prix_desc">Budget décroissant</option>
+                        <option value="titre_asc">Titre A → Z</option>
+                        <option value="titre_desc">Titre Z → A</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="emptyState" class="projects-v2-empty" style="display:none;">
+            <div class="projects-v2-empty-icon">📁</div>
+            <h3>Aucun projet trouvé</h3>
+            <p>Essaie une autre recherche ou change les filtres.</p>
+        </div>
+
+        <div id="projectsGrid" class="projects-v2-grid">
+            {% for projet in projets %}
+                {% set statut = projet.statut|lower %}
+                <article
+                    class="project-v2-card"
+                    data-id="{{ projet.id }}"
+                    data-titre="{{ projet.titre|lower }}"
+                    data-description="{{ (projet.description ?? '')|lower }}"
+                    data-createur="{{ projet.createur|lower }}"
+                    data-statut="{{ projet.statut|lower }}"
+                    data-prix="{{ projet.prix }}"
+                >
+                    <div class="project-v2-top">
+                        <div class="project-v2-avatar">
+                            {{ projet.titre|slice(0, 1)|upper }}
+                        </div>
+
+                        <span class="project-v2-status
+                            {% if statut == 'en cours' %}status-progress
+                            {% elseif statut == 'en attente' %}status-pending
+                            {% else %}status-done{% endif %}
+                        ">
+                            {{ projet.statut }}
+                        </span>
+                    </div>
+
+                    <div class="project-v2-content">
+                        <h3>{{ projet.titre }}</h3>
+                        <p class="project-v2-owner">{{ projet.createur }}</p>
+
+                        <p class="project-v2-description">
+                            {{ projet.description ?: 'Aucune description disponible pour ce projet.' }}
+                        </p>
+
+                        <div class="project-v2-meta">
+                            <div class="project-v2-meta-box">
+                                <span>Budget</span>
+                                <strong>{{ projet.prix|number_format(2, '.', ' ') }} TND</strong>
+                            </div>
+
+                            <div class="project-v2-meta-box">
+                                <span>Référence</span>
+                                <strong>#{{ projet.id }}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-v2-actions">
+                        <a href="{{ path('app_back_projet_edit', {id: projet.id}) }}" class="project-v2-btn btn-edit">
+                            Modifier
+                        </a>
+
+                        <form
+                            method="post"
+                            action="{{ path('app_back_projet_delete', {id: projet.id}) }}"
+                            onsubmit="return confirm('Supprimer ce projet ?');"
+                        >
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_projet_' ~ projet.id) }}">
+                            <button type="submit" class="project-v2-btn btn-delete">
+                                Supprimer
+                            </button>
+                        </form>
+
+                        <a href="{{ path('app_back_projet_demandes', {id: projet.id}) }}" class="project-v2-btn btn-demandes">
+                            Demandes
+                        </a>
+                    </div>
+                </article>
+            {% else %}
+                <div class="projects-v2-empty">
+                    <div class="projects-v2-empty-icon">📁</div>
+                    <h3>Aucun projet disponible</h3>
+                    <p>Commence par ajouter un projet.</p>
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('liveSearch');
+    const statusSelect = document.getElementById('liveStatus');
+    const sortSelect = document.getElementById('liveSort');
+    const resetBtn = document.getElementById('resetFilters');
+    const projectsGrid = document.getElementById('projectsGrid');
+    const emptyState = document.getElementById('emptyState');
+    const statVisible = document.getElementById('statVisible');
+    const cards = Array.from(document.querySelectorAll('.project-v2-card'));
+
+    function normalize(value) {
+        return (value || '').toString().toLowerCase().trim();
+    }
+
+    function applyFilters() {
+        const search = normalize(searchInput.value);
+        const status = normalize(statusSelect.value);
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const titre = normalize(card.dataset.titre);
+            const description = normalize(card.dataset.description);
+            const createur = normalize(card.dataset.createur);
+            const statut = normalize(card.dataset.statut);
+
+            const matchSearch =
+                !search ||
+                titre.includes(search) ||
+                description.includes(search) ||
+                createur.includes(search);
+
+            const matchStatus =
+                status === 'all' || statut === status;
+
+            const visible = matchSearch && matchStatus;
+
+            card.style.display = visible ? 'flex' : 'none';
+
+            if (visible) {
+                visibleCount++;
+            }
+        });
+
+        sortCards();
+        statVisible.textContent = visibleCount;
+        emptyState.style.display = visibleCount === 0 ? 'flex' : 'none';
+    }
+
+    function sortCards() {
+        const sort = sortSelect.value;
+        const visibleCards = cards.filter(card => card.style.display !== 'none');
+
+        visibleCards.sort((a, b) => {
+            const idA = parseInt(a.dataset.id, 10);
+            const idB = parseInt(b.dataset.id, 10);
+            const prixA = parseFloat(a.dataset.prix);
+            const prixB = parseFloat(b.dataset.prix);
+            const titreA = normalize(a.dataset.titre);
+            const titreB = normalize(b.dataset.titre);
+
+            switch (sort) {
+                case 'ancien':
+                    return idA - idB;
+                case 'prix_asc':
+                    return prixA - prixB;
+                case 'prix_desc':
+                    return prixB - prixA;
+                case 'titre_asc':
+                    return titreA.localeCompare(titreB);
+                case 'titre_desc':
+                    return titreB.localeCompare(titreA);
+                case 'recent':
+                default:
+                    return idB - idA;
+            }
+        });
+
+        visibleCards.forEach(card => projectsGrid.appendChild(card));
+    }
+
+    searchInput.addEventListener('input', applyFilters);
+    statusSelect.addEventListener('change', applyFilters);
+    sortSelect.addEventListener('change', applyFilters);
+
+    resetBtn.addEventListener('click', function () {
+        searchInput.value = '';
+        statusSelect.value = 'all';
+        sortSelect.value = 'recent';
+        applyFilters();
+    });
+
+    applyFilters();
+});
+</script>
+{% endblock %}
