@@ -29,6 +29,23 @@ class OffreEmploiRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+    public function sortOffres(string $sortBy, string $direction)
+    {
+        $allowedFields = ['salaire', 'date_expiration'];
+        $allowedDirections = ['ASC', 'DESC'];
+
+        // Sécurité : on vérifie que les paramètres sont autorisés
+        if (!in_array($sortBy, $allowedFields) || !in_array($direction, $allowedDirections)) {
+            $sortBy = 'id_offre';
+            $direction = 'DESC';
+        }
+        
+
+        return $this->createQueryBuilder('o')
+            ->orderBy('o.' . $sortBy, $direction)
+            ->getQuery()
+            ->getResult();
+}
 
 //    /**
 //     * @return OffreEmploi[] Returns an array of OffreEmploi objects

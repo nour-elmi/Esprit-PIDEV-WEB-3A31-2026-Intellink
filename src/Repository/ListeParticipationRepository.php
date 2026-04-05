@@ -36,6 +36,8 @@ class ListeParticipationRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    
+
 
 
 

@@ -17,14 +17,23 @@ final class OffresEmploiController extends AbstractController
     #[Route('/showOffre', name:'showOffre')]
     public function listOffresfromDB(Request $request, OffreEmploiRepository $repo): Response 
     {
+        $sortBy = $request->query->get('sortBy');
+        $direction = $request->query->get('direction', 'ASC'); // ASC par défaut
         $searchTerm = $request->query->get('query');
 
-        $offres = $repo->searchOffres($searchTerm);
+        // Si un tri est demandé via la liste déroulante
+        if ($sortBy) {
+            $offres = $repo->sortOffres($sortBy, $direction);
+        } 
+        // Sinon, on garde ta logique de recherche actuelle
+        else {
+            $offres = $repo->searchOffres($searchTerm); 
+        }
 
         return $this->render('offres_emploi/frontend/showOffre.html.twig', [
             "list" => $offres
         ]);
-    }
+        }
 
     #[Route('/showOffreUser', name:'showOffreUser')]
     public function listOffresUfromDB(Request $request, OffreEmploiRepository $repo): Response 

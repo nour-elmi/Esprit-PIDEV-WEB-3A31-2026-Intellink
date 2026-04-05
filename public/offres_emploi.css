@@ -582,3 +582,50 @@ body {
     background: linear-gradient(135deg, #324191 0%, #242f6b 100%);
     box-shadow: 0 4px 12px rgba(50, 65, 145, 0.3);
 }
+
+.sort-container {
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+}
+
+.sort-form {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: #ffffff;
+    padding: 10px 20px;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.custom-select {
+    border: 1px solid #e0e0e0;
+    padding: 8px 15px;
+    border-radius: 20px;
+    outline: none;
+    font-size: 14px;
+    color: #444;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.custom-select:hover {
+    border-color: #4a69bd;
+}
+
+.btn-sort {
+    background-color: #4a69bd; /* Le bleu de ton bouton Rechercher */
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-sort:hover {
+    background-color: #38ada9;
+    transform: translateY(-2px);
+}

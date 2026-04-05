@@ -44,6 +44,26 @@
         <button type="submit" class="search-btn">Rechercher</button>
     </form>
 </div>
+    <div class="sort-container">
+        <form action="{{ path('showOffre') }}" method="get" class="sort-form">
+            <div class="select-wrapper">
+                <select name="sortBy" class="custom-select">
+                    <option value="salaire" {{ app.request.query.get('sortBy') == 'salaire' ? 'selected' : '' }}>Salaire</option>
+                    <option value="date_expiration" {{ app.request.query.get('sortBy') == 'date_expiration' ? 'selected' : '' }}>Date d'expiration</option>
+                </select>
+                
+                <select name="direction" class="custom-select">
+                    <option value="ASC" {{ app.request.query.get('direction') == 'ASC' ? 'selected' : '' }}>Croissant (↑)</option>
+                    <option value="DESC" {{ app.request.query.get('direction') == 'DESC' ? 'selected' : '' }}>Décroissant (↓)</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-sort">
+                <i class="fas fa-sort-amount-down"></i> Trier les offres
+            </button>
+        </form>
+    </div>
+
 
 {# ── Table ── #}
 <div class="offers-wrapper">
