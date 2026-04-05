@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Intellink{% endblock %}</title>
+    <link rel="stylesheet" href="{{ asset('assets/css/main.css') }}">
+</head>
+<body>
+
+<nav class="site-navbar">
+    <div class="container site-navbar-inner">
+        <a href="{{ path('app_projet_index') }}" class="brand">Intell<span>ink</span></a>
+
+        <div class="nav-links">
+            <a href="{{ path('app_projet_index') }}" class="nav-link-custom">Accueil</a>
+            <a href="{{ path('app_back_projets') }}" class="nav-link-custom">Espace chef</a>
+            <a href="{{ path('app_mes_demandes') }}" class="nav-link-custom">Mes participations</a>
+            <span class="role-badge role-badge-user">Apprenant</span>
+        </div>
+    </div>
+</nav>
+
+<div class="container" style="padding-top: 20px;">
+    {% for message in app.flashes('success') %}
+        <div class="alert-custom alert-success-custom">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert-custom alert-danger-custom">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('warning') %}
+        <div class="alert-custom alert-warning-custom">{{ message }}</div>
+    {% endfor %}
+{% block body %}{% endblock %}
+</div>
+
+</body>
+</html>
