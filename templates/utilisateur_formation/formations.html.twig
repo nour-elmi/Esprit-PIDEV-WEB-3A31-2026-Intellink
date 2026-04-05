@@ -1,0 +1,244 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Formations disponibles{% endblock %}
+{% block role_badge_class %}badge-utilisateur{% endblock %}
+{% block role_label %}Apprenant{% endblock %}
+
+{% block body %}
+
+<section class="page-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="hero-content">
+                    <h1>Formations disponibles</h1>
+                    <p>Explorez notre catalogue et inscrivez-vous aux formations qui vous intéressent.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 text-end">
+                <a href="{{ path('app_utilisateur_mes_participations') }}" class="btn-outline-custom" style="color:#fff; border-color: rgba(255,255,255,0.4);">
+                    <i class="lni lni-list"></i> Mes inscriptions
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="main-content">
+    <div class="container">
+
+        {% for message in app.flashes('success') %}
+            <div class="alert-custom alert-success-custom">
+                <i class="lni lni-checkmark-circle"></i> {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('warning') %}
+            <div class="alert-custom alert-warning-custom">
+                <i class="lni lni-warning"></i> {{ message }}
+            </div>
+        {% endfor %}
+
+        <div class="section-title">
+            <h2>Catalogue des Formations</h2>
+            <p>{{ formations|length }} formation(s) disponible(s)</p>
+            <div class="title-line"></div>
+        </div>
+
+        {% if formations is empty %}
+            <div class="formation-table-wrapper">
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="lni lni-book"></i>
+                    </div>
+                    <h5>Aucune formation disponible</h5>
+                    <p>Revenez plus tard, de nouvelles formations seront bientôt disponibles.</p>
+                </div>
+            </div>
+        {% else %}
+
+            <!-- SEARCH & FILTER -->
+            <div class="search-filter-bar">
+                <div class="search-box">
+                    <i class="lni lni-search-alt"></i>
+                    <input type="text" id="searchInput" placeholder="Rechercher une formation..." class="form-control-custom">
+                </div>
+                <div class="filter-group">
+                    <div class="custom-select-wrapper">
+                        <div class="custom-select-trigger" onclick="toggleDropdown('domaine')">
+                            <span id="domaine-label">Tous les domaines</span>
+                            <i class="lni lni-chevron-down"></i>
+                        </div>
+                        <div class="custom-select-dropdown" id="dropdown-domaine">
+                            <div class="custom-option selected" onclick="selectOption('domaine', '', 'Tous les domaines')">
+                                Tous les domaines
+                            </div>
+                            {% set domaines = [] %}
+                            {% for formation in formations %}
+                                {% if formation.domaine and formation.domaine not in domaines %}
+                                    {% set domaines = domaines|merge([formation.domaine]) %}
+                                    <div class="custom-option" onclick="selectOption('domaine', '{{ formation.domaine|lower }}', '{{ formation.domaine }}')">
+                                        {{ formation.domaine }}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="custom-select-wrapper">
+                        <div class="custom-select-trigger" onclick="toggleDropdown('niveau')">
+                            <span id="niveau-label">Tous les niveaux</span>
+                            <i class="lni lni-chevron-down"></i>
+                        </div>
+                        <div class="custom-select-dropdown" id="dropdown-niveau">
+                            <div class="custom-option selected" onclick="selectOption('niveau', '', 'Tous les niveaux')">Tous les niveaux</div>
+                            <div class="custom-option" onclick="selectOption('niveau', 'débutant', 'Débutant')">Débutant</div>
+                            <div class="custom-option" onclick="selectOption('niveau', 'intermédiaire', 'Intermédiaire')">Intermédiaire</div>
+                            <div class="custom-option" onclick="selectOption('niveau', 'avancé', 'Avancé')">Avancé</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARDS -->
+            <div class="row g-4" id="formationsGrid">
+                {% for formation in formations %}
+                <div class="col-lg-4 col-md-6 formation-col">
+                    <div class="formation-card formation-item"
+                         data-titre="{{ formation.titre|lower }}"
+                         data-domaine="{{ formation.domaine|lower }}"
+                         data-niveau="{{ formation.niveau|lower }}">
+                        <div class="card-icon-wrapper">
+                            <i class="lni lni-graduation"></i>
+                        </div>
+                        <div class="card-body-custom">
+                            <h5 class="card-title-custom">{{ formation.titre }}</h5>
+                            <p class="card-desc">{{ formation.description ?? 'Aucune description disponible.' }}</p>
+                            <div class="d-flex gap-2 flex-wrap">
+                                {% if formation.domaine %}
+                                    <span class="tag tag-primary">
+                                        <i class="lni lni-tag"></i> {{ formation.domaine }}
+                                    </span>
+                                {% endif %}
+                                {% if formation.niveau %}
+                                    {% if formation.niveau == 'Débutant' %}
+                                        <span class="tag tag-success">{{ formation.niveau }}</span>
+                                    {% elseif formation.niveau == 'Intermédiaire' %}
+                                        <span class="tag tag-warning">{{ formation.niveau }}</span>
+                                    {% else %}
+                                        <span class="tag tag-dark">{{ formation.niveau }}</span>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-footer-custom">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="tag tag-dark">
+                                    <i class="lni lni-users"></i> {{ formation.participations|length }} inscrits
+                                </span>
+                                {% if formation.idFormation in inscritIds %}
+                                    <span class="tag tag-success">
+                                        <i class="lni lni-checkmark-circle"></i> Inscrit
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <a href="{{ path('app_utilisateur_formation_show', {id: formation.idFormation}) }}"
+                               class="btn-outline-custom" style="padding: 8px 18px; font-size: 13px;">
+                                Voir détails <i class="lni lni-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Empty state après filtre -->
+            <div id="noResults" style="display:none;">
+                <div class="formation-table-wrapper">
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="lni lni-search-alt"></i>
+                        </div>
+                        <h5>Aucun résultat</h5>
+                        <p>Aucune formation ne correspond à votre recherche.</p>
+                    </div>
+                </div>
+            </div>
+
+        {% endif %}
+
+    </div>
+</div>
+
+<script>
+let activeFilters = { domaine: '', niveau: '' };
+
+function toggleDropdown(type) {
+    const dropdown = document.getElementById('dropdown-' + type);
+    const trigger = dropdown.previousElementSibling;
+    const isOpen = dropdown.classList.contains('open');
+
+    document.querySelectorAll('.custom-select-dropdown').forEach(d => d.classList.remove('open'));
+    document.querySelectorAll('.custom-select-trigger').forEach(t => t.classList.remove('open'));
+
+    if (!isOpen) {
+        dropdown.classList.add('open');
+        trigger.classList.add('open');
+    }
+}
+
+function selectOption(type, value, label) {
+    activeFilters[type] = value;
+    document.getElementById(type + '-label').textContent = label;
+
+    document.querySelectorAll('#dropdown-' + type + ' .custom-option').forEach(opt => {
+        opt.classList.remove('selected');
+    });
+    event.target.classList.add('selected');
+
+    document.getElementById('dropdown-' + type).classList.remove('open');
+    document.getElementById('dropdown-' + type).previousElementSibling.classList.remove('open');
+
+    filterCards();
+}
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.custom-select-wrapper')) {
+        document.querySelectorAll('.custom-select-dropdown').forEach(d => d.classList.remove('open'));
+        document.querySelectorAll('.custom-select-trigger').forEach(t => t.classList.remove('open'));
+    }
+});
+
+const searchInput = document.getElementById('searchInput');
+const noResults = document.getElementById('noResults');
+
+function filterCards() {
+    const search = searchInput.value.toLowerCase();
+    const domaine = activeFilters.domaine;
+    const niveau = activeFilters.niveau;
+    let visible = 0;
+
+    document.querySelectorAll('.formation-col').forEach(col => {
+        const card = col.querySelector('.formation-item');
+        const titre = card.dataset.titre;
+        const cardDomaine = card.dataset.domaine;
+        const cardNiveau = card.dataset.niveau;
+
+        const matchSearch = titre.includes(search);
+        const matchDomaine = domaine === '' || cardDomaine === domaine;
+        const matchNiveau = niveau === '' || cardNiveau === niveau;
+
+        if (matchSearch && matchDomaine && matchNiveau) {
+            col.style.display = '';
+            visible++;
+        } else {
+            col.style.display = 'none';
+        }
+    });
+
+    noResults.style.display = visible === 0 ? 'block' : 'none';
+}
+
+searchInput.addEventListener('input', filterCards);
+</script>
+
+{% endblock %}

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Formation App{% endblock %} — Intellink</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.lineicons.com/4.0/lineicons.css">
+    <link rel="stylesheet" href="{{ asset('assets/css/formation.css') }}">
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+
+<!-- ========================= NAVBAR ========================= -->
+<nav class="formation-navbar navbar navbar-expand-lg">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="#">
+            <span>Form<span>ation</span></span>
+        </a>
+
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+            <span class="lni lni-menu"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navMenu">
+            <ul class="navbar-nav ms-auto align-items-center gap-1">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('app_formation_index') }}">
+                        <i class="lni lni-graduation"></i> Formateur
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('app_utilisateur_formations') }}">
+                        <i class="lni lni-user"></i> Espace Apprenant
+                    </a>
+                </li>
+            </ul>
+            <div class="ms-3 d-flex align-items-center gap-2">
+                <span class="navbar-role-badge {% block role_badge_class %}badge-formateur{% endblock %}">
+                    {% block role_label %}Formateur{% endblock %}
+                </span>
+            </div>
+        </div>
+    </div>
+</nav>
+<!-- ========================= END NAVBAR ========================= -->
+
+{% block body %}{% endblock %}
+
+<!-- Flash messages centralisés -->
+<div style="position:fixed; top:80px; right:20px; z-index:9999; min-width:300px;">
+    {% for message in app.flashes('success') %}
+        <div class="alert-custom alert-success-custom" style="box-shadow: 0 4px 20px rgba(0,0,0,0.12);">
+            <i class="lni lni-checkmark-circle"></i> {{ message }}
+        </div>
+    {% endfor %}
+    {% for message in app.flashes('warning') %}
+        <div class="alert-custom alert-warning-custom" style="box-shadow: 0 4px 20px rgba(0,0,0,0.12);">
+            <i class="lni lni-warning"></i> {{ message }}
+        </div>
+    {% endfor %}
+    {% for message in app.flashes('danger') %}
+        <div class="alert-custom alert-danger-custom" style="box-shadow: 0 4px 20px rgba(0,0,0,0.12);">
+            <i class="lni lni-close"></i> {{ message }}
+        </div>
+    {% endfor %}
+</div>
+
+<!-- ========================= FOOTER ========================= -->
+<footer class="formation-footer">
+    <div class="container">
+        <p>© 2025 <span>Intellink</span> — Plateforme de Formation Professionnelle</p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block javascripts %}{% endblock %}
+</body>
+</html>
