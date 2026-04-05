@@ -48,211 +48,187 @@ ul { margin: 0; padding: 0; list-style: none; }
 p { font-size: 16px; line-height: 26px; margin-bottom: 0; }
 
 /* ============================= 
-    NAVBAR
+    NAVBAR (Updated for base.html.twig)
 ================================ */
-.formation-navbar {
+.intellink-nav {
   background: var(--white);
   box-shadow: 0 2px 20px rgba(50, 52, 80, 0.08);
-  padding: 0;
+  padding: 10px 40px; /* Ajuste le padding selon tes besoins */
   position: sticky;
   top: 0;
   z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 80px;
 }
 
-.formation-navbar .navbar-brand img {
-  height: 40px;
+/* Logo Setup */
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.formation-navbar .navbar-brand span {
+.nav-logo-icon svg {
+  width: 32px;
+  height: 32px;
+  stroke: var(--primary);
+  fill: none;
+  stroke-width: 2;
+}
+
+.nav-logo-text {
   font-family: "Fira Sans", sans-serif;
   font-weight: 800;
   font-size: 22px;
   color: var(--dark);
-  margin-left: 10px;
 }
 
-.formation-navbar .navbar-brand span span {
+.nav-logo-text span {
   color: var(--primary);
 }
 
-.formation-navbar .nav-link {
+/* Links Setup */
+.nav-links {
+  display: flex;
+  gap: 30px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-links a {
   font-family: "Heebo", sans-serif;
   font-weight: 500;
-  color: var(--body-color) !important;
-  padding: 28px 16px !important;
+  color: var(--body-color);
   font-size: 15px;
   position: relative;
+  padding: 10px 0;
 }
 
-.formation-navbar .nav-link:hover,
-.formation-navbar .nav-link.active {
-  color: var(--primary) !important;
+.nav-links a:hover,
+.nav-links a.active {
+  color: var(--primary);
 }
 
-.formation-navbar .nav-link.active::after {
+/* Barre bleue sous le lien actif */
+.nav-links a.active::after {
   content: '';
   position: absolute;
-  bottom: 0;
-  left: 16px;
-  right: 16px;
+  bottom: -5px;
+  left: 0;
+  right: 0;
   height: 3px;
   background: var(--primary);
   border-radius: 3px 3px 0 0;
 }
 
-.navbar-role-badge {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 4px 12px;
-  border-radius: var(--radius-pill);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+/* Icons Setup (Notification & Profile) */
+.nav-icons {
+  display: flex;
+  gap: 15px;
 }
 
-.badge-formateur {
-  background: rgba(47, 128, 237, 0.1);
-  color: var(--primary);
-}
-
-.badge-utilisateur {
-  background: rgba(39, 174, 96, 0.1);
-  color: var(--success);
-}
-
-/* ============================= 
-    BUTTONS
-================================ */
-.btn-primary-custom {
-  background: var(--primary);
-  color: var(--white);
+.nav-icon-btn {
+  background: none;
   border: none;
-  padding: 12px 28px;
-  border-radius: var(--radius-pill);
-  font-family: "Heebo", sans-serif;
-  font-weight: 600;
-  font-size: 15px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.btn-primary-custom:hover {
-  background: var(--primary-dark);
-  color: var(--white);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(47, 128, 237, 0.35);
-}
-
-.btn-outline-custom {
-  background: transparent;
-  color: var(--primary);
-  border: 2px solid var(--primary);
-  padding: 10px 26px;
-  border-radius: var(--radius-pill);
-  font-family: "Heebo", sans-serif;
-  font-weight: 600;
-  font-size: 15px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.btn-outline-custom:hover {
-  background: var(--primary);
-  color: var(--white);
-  transform: translateY(-2px);
-}
-
-.btn-danger-custom {
-  background: var(--danger);
-  color: var(--white);
-  border: none;
-  padding: 8px 18px;
-  border-radius: var(--radius-pill);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.btn-danger-custom:hover {
-  background: #c0392b;
-  color: var(--white);
-  transform: translateY(-1px);
-}
-
-.btn-warning-custom {
-  background: var(--warning);
-  color: var(--white);
-  border: none;
-  padding: 8px 18px;
-  border-radius: var(--radius-pill);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.btn-warning-custom:hover {
-  background: #e67e22;
-  color: var(--white);
-  transform: translateY(-1px);
-}
-
-.btn-success-custom {
-  background: var(--success);
-  color: var(--white);
-  border: none;
-  padding: 12px 28px;
-  border-radius: var(--radius-pill);
-  font-family: "Heebo", sans-serif;
-  font-weight: 600;
-  font-size: 15px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.btn-success-custom:hover {
-  background: #219a52;
-  color: var(--white);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(39, 174, 96, 0.35);
-}
-
-.btn-secondary-custom {
-  background: var(--border);
+  padding: 8px;
   color: var(--body-color);
-  border: none;
-  padding: 12px 28px;
-  border-radius: var(--radius-pill);
-  font-family: "Heebo", sans-serif;
-  font-weight: 600;
-  font-size: 15px;
-  cursor: pointer;
   transition: all 0.3s ease;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
 }
 
-.btn-secondary-custom:hover {
-  background: #d0d8e8;
-  color: var(--dark);
+.nav-icon-btn svg {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
 }
 
+.nav-icon-btn:hover {
+  color: var(--primary);
+  transform: translateY(-2px);
+}
+/* ============================= 
+    ENHANCED FORM & BUTTONS 
+================================ */
+
+/* Conteneur principal pour centrer le formulaire */
+.form-container-centered {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* Titre de la page d'édition */
+.edit-title {
+    font-size: 24px;
+    color: var(--dark);
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Style des champs amélioré */
+.form-control-custom {
+    border: 1px solid #dce4f0; /* Bordure plus fine */
+    background-color: #fcfdfe;
+    font-size: 14px;
+    transition: all 0.2s ease-in-out;
+}
+
+.form-control-custom:focus {
+    background-color: #fff;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(47, 128, 237, 0.08);
+}
+
+/* Boutons plus modernes */
+.btn-save-custom {
+    background: var(--success);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px; /* Coins plus arrondis mais pas pill */
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.2);
+}
+
+.btn-save-custom:hover {
+    background: #219150;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(39, 174, 96, 0.3);
+}
+
+.btn-cancel-custom {
+    background: #f1f3f7;
+    color: #6c757d;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-cancel-custom:hover {
+    background: #e2e6ea;
+    color: var(--dark);
+}
+
+/* Correction spécifique pour les dates (widget single_text) */
+input[type="date"].form-control-custom {
+    min-height: 48px;
+}
 /* ============================= 
     PAGE HEADER / HERO
 ================================ */

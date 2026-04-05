@@ -16,23 +16,37 @@ class OffreFormType extends AbstractType
     {
         $builder
             //->add('id_offre')
-            ->add('description')
-            ->add('salaire')
-            ->add('date_debut')
-            ->add('date_expiration')
+            ->add('description', null, [
+                'attr' => ['class' => 'form-control-custom', 'placeholder' => 'Décrivez le poste...']
+            ])
+            ->add('salaire', null, [
+                'attr' => ['class' => 'form-control-custom', 'placeholder' => 'Ex: 2500']
+            ])
+            ->add('date_debut', null, [
+                'widget' => 'single_text', // Utilise le sélecteur de date natif du navigateur
+                'attr' => ['class' => 'form-control-custom']
+            ])
+            ->add('date_expiration', null, [
+                'widget' => 'single_text',
+                'attr' => ['class' => 'form-control-custom']
+            ])
             ->add('type_contrat', EnumType::class, [
                 'class' => TypeContrat::class,
-                'multiple' => true,  
-                'expanded' => false,  
-                'choice_label' => fn ($choice) => $choice->value,
-            ])
-            ->add('statut', EnumType::class, [
-                'class' => Statut::class,
                 'multiple' => false,  
                 'expanded' => false,  
                 'choice_label' => fn ($choice) => $choice->value,
+                'attr' => ['class' => 'form-control-custom']
             ])
-            ->add('nom_entreprise')
+            ->add('statut', EnumType::class, [
+                'class' => Statut::class,
+                'multiple' => false, 
+                'expanded' => false, 
+                'choice_label' => fn ($choice) => $choice->value,
+                'attr' => ['class' => 'form-control-custom']
+            ])
+            ->add('nom_entreprise', null, [
+                'attr' => ['class' => 'form-control-custom']
+            ]);
             //->add('id_user')
         ;
     }

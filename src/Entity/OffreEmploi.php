@@ -25,8 +25,8 @@ class OffreEmploi
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $date_expiration = null;
 
-    #[ORM\Column(type: Types::SIMPLE_ARRAY, enumType: TypeContrat::class)]
-    private array $type_contrat = [];
+    #[ORM\Column(nullable: false, enumType: TypeContrat::class)]
+    private ?TypeContrat $type_contrat = null;
 
     #[ORM\Column(nullable: true, enumType: Statut::class)]
     private ?Statut $statut = null;
@@ -105,7 +105,7 @@ class OffreEmploi
     /**
      * @return TypeContrat[]
      */
-    public function getTypeContrat(): array
+    public function getTypeContrat(): ?TypeContrat
     {
         return $this->type_contrat;
     }
