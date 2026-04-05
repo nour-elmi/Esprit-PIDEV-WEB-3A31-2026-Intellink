@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="form-container-centered">
+    <a href="{{ path('showParticipation') }}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Retour à la liste
+    </a>
+
+    <h1 class="edit-title">
+        <i class="fas fa-user-plus text-primary"></i> Nouvelle Participation
+    </h1>
+
+    <div class="formation-form-wrapper">
+        {{ form_start(formParticipation) }}
+            <div class="row">
+                {# Informations Personnelles #}
+                <div class="col-md-6 form-group-custom">
+                    {{ form_label(formParticipation.nom_p, 'Nom du candidat') }}
+                    {{ form_widget(formParticipation.nom_p, {'attr': {'class': 'form-control-custom', 'placeholder': 'Ex: Jean'}}) }}
+                </div>
+
+                <div class="col-md-6 form-group-custom">
+                    {{ form_label(formParticipation.prenom_p, 'Prénom du candidat') }}
+                    {{ form_widget(formParticipation.prenom_p, {'attr': {'class': 'form-control-custom', 'placeholder': 'Ex: Dupont'}}) }}
+                </div>
+
+                {# Dossier de candidature #}
+                <div class="col-md-12 form-group-custom">
+                    {{ form_label(formParticipation.cv, 'Lien vers le CV (PDF)') }}
+                    {{ form_widget(formParticipation.cv, {'attr': {'class': 'form-control-custom', 'placeholder': 'URL de votre CV...'}}) }}
+                </div>
+
+                <div class="col-md-12 form-group-custom">
+                    {{ form_label(formParticipation.skills, 'Compétences (Skills)') }}
+                    {{ form_widget(formParticipation.skills, {'attr': {'class': 'form-control-custom', 'placeholder': 'Ex: PHP, Symfony, Docker...'}}) }}
+                </div>
+
+                {# Détails administratifs #}
+                <div class="col-md-6 form-group-custom">
+                    {{ form_label(formParticipation.statutt, 'Statut de la demande') }}
+                    {{ form_widget(formParticipation.statutt, {'attr': {'class': 'form-control-custom'}}) }}
+                </div>
+
+                <div class="col-md-6 form-group-custom">
+                    {{ form_label(formParticipation.score, 'Score de correspondance') }}
+                    {{ form_widget(formParticipation.score, {'attr': {'class': 'form-control-custom'}}) }}
+                </div>
+
+                {# Dates importantes #}
+                <div class="col-md-6 form-group-custom">
+                    {{ form_label(formParticipation.date_participation, 'Date de candidature') }}
+                    {{ form_widget(formParticipation.date_participation, {'attr': {'class': 'form-control-custom'}}) }}
+                </div>
+
+                <div class="col-md-6 form-group-custom">
+                    {{ form_label(formParticipation.date_reponse, 'Date de réponse prévue') }}
+                    {{ form_widget(formParticipation.date_reponse, {'attr': {'class': 'form-control-custom'}}) }}
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-success-custom">
+                    <i class="fas fa-check-circle"></i> Enregistrer la participation
+                </button>
+                <a href="{{ path('showParticipation') }}" class="btn-secondary-custom">Annuler</a>
+            </div>
+        {{ form_end(formParticipation) }}
+    </div>
+</div>
+{% endblock %}

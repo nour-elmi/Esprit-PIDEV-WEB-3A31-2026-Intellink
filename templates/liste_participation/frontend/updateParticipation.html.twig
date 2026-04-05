@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="form-container-centered">
+    <a href="{{ path('showParticipation') }}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Retour à la liste
+    </a>
+
+    <h1 class="edit-title">
+        <i class="fas fa-user-edit text-primary"></i> Édition de la participation de {{ participation.prenomP }} {{ participation.nomP }}
+    </h1>
+
+    <div class="formation-form-wrapper">
+        {{ form_start(formParticipation) }}
+            <div class="row">
+                {# Identité du candidat #}
+                <div class="col-md-6 form-group-custom">
+                    {{ form_label(formParticipation.nom_p, 'Nom du candidat') }}
+                    {{ form_widget(formParticipation.nom_p) }}
+                </div>
+
+                <div class="col-md-6 form-group-custom">
+                    {{ form_label(formParticipation.prenom_p, 'Prénom du candidat') }}
+                    {{ form_widget(formParticipation.prenom_p) }}
+                </div>
+
+                {# Dossier #}
+                <div class="col-md-12 form-group-custom">
+                    {{ form_label(formParticipation.cv, 'Lien du CV (URL)') }}
+                    {{ form_widget(formParticipation.cv) }}
+                </div>
+
+                <div class="col-md-12 form-group-custom">
+                    {{ form_label(formParticipation.skills, 'Compétences') }}
+                    {{ form_widget(formParticipation.skills) }}
+                </div>
+
+                {# Évaluation et Suivi #}
+                <div class="col-md-6 form-group-custom">
+                    {{ form_label(formParticipation.statutt, 'Statut de la candidature') }}
+                    {{ form_widget(formParticipation.statutt) }}
+                </div>
+
+                <div class="col-md-6 form-group-custom">
+                    {{ form_label(formParticipation.score, 'Score de matching (%)') }}
+                    {{ form_widget(formParticipation.score) }}
+                </div>
+
+                {# Calendrier #}
+                <div class="col-md-6 form-group-custom">
+                    {{ form_label(formParticipation.date_participation, 'Date de dépôt') }}
+                    {{ form_widget(formParticipation.date_participation) }}
+                </div>
+
+                <div class="col-md-6 form-group-custom">
+                    {{ form_label(formParticipation.date_reponse, 'Date de réponse') }}
+                    {{ form_widget(formParticipation.date_reponse) }}
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-save-custom">
+                    <i class="fas fa-save"></i> Enregistrer les modifications
+                </button>
+                <a href="{{ path('showParticipation') }}" class="btn-cancel-custom">Annuler</a>
+            </div>
+        {{ form_end(formParticipation) }}
+    </div>
+</div>
+{% endblock %}
