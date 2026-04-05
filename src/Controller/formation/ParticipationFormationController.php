@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\formation;
 
-use App\Entity\Participation;
+use App\Entity\formation\Participation;
 use App\Repository\FormationRepository;
 use App\Repository\ParticipationRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -10,8 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-
-#[Route('/utilisateur_formation')]
+#[Route('/formation')]
 final class ParticipationFormationController extends AbstractController
 {
     // Utilisateur statique
@@ -30,7 +29,7 @@ public function formations(FormationRepository $repo, ParticipationRepository $p
         $participations
     );
 
-    return $this->render('utilisateur_formation/formations.html.twig', [
+    return $this->render('formation/utilisateur_formation/formations.html.twig', [
         'formations' => $formations,
         'inscritIds' => $inscritIds,
     ]);
@@ -52,7 +51,7 @@ public function formations(FormationRepository $repo, ParticipationRepository $p
             'idUtilisateur' => $this->idUtilisateur,
         ]);
 
-        return $this->render('utilisateur_formation/formation_show.html.twig', [
+        return $this->render('formation/utilisateur_formation/formation_show.html.twig', [
             'formation' => $formation,
             'dejaInscrit' => $dejaInscrit,
         ]);
@@ -130,7 +129,7 @@ public function participer(
         }
 
         // 🔁 retourner avec erreurs
-        return $this->render('utilisateur_formation/participer.html.twig', [
+        return $this->render('formation/utilisateur_formation/participer.html.twig', [
             'formation' => $formation,
             'errors' => $errors,
             'old' => $old
@@ -138,7 +137,7 @@ public function participer(
     }
 
     // GET
-    return $this->render('utilisateur_formation/participer.html.twig', [
+    return $this->render('formation/utilisateur_formation/participer.html.twig', [
         'formation' => $formation
     ]);
 }
@@ -148,7 +147,7 @@ public function participer(
     {
         $participations = $repo->findBy(['idUtilisateur' => $this->idUtilisateur]);
 
-        return $this->render('utilisateur_formation/mes_participations.html.twig', [
+        return $this->render('formation/utilisateur_formation/mes_participations.html.twig', [
             'participations' => $participations,
         ]);
     }
@@ -224,14 +223,14 @@ public function modifierParticipation(
         }
 
         // 🔁 retourner avec erreurs
-        return $this->render('utilisateur_formation/modifier_participation.html.twig', [
+        return $this->render('formation/utilisateur_formation/modifier_participation.html.twig', [
             'participation' => $participation,
             'errors' => $errors,
             'old' => $old
         ]);
     }
 
-    return $this->render('utilisateur_formation/modifier_participation.html.twig', [
+    return $this->render('formation/utilisateur_formation/modifier_participation.html.twig', [
         'participation' => $participation
     ]);
 }

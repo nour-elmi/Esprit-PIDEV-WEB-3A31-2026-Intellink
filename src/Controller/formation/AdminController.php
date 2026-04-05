@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\formation;
 
 use App\Repository\FormationRepository;
 use App\Repository\ParticipationRepository;
@@ -9,13 +9,13 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/admin')]
+#[Route('/formation/admin')]
 final class AdminController extends AbstractController
 {
     #[Route('/formations', name: 'app_admin_formations')]
     public function formations(FormationRepository $repo): Response
     {
-        return $this->render('admin/formations.html.twig', [
+        return $this->render('formation/admin/formations.html.twig', [
             'formations' => $repo->findAll(),
         ]);
     }
@@ -29,7 +29,7 @@ final class AdminController extends AbstractController
             throw $this->createNotFoundException('Formation introuvable');
         }
 
-        return $this->render('admin/participations.html.twig', [
+        return $this->render('formation/admin/participations.html.twig', [
             'formation' => $formation,
             'participations' => $participationRepo->findBy(['formation' => $formation]),
         ]);

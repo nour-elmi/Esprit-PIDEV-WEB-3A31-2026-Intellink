@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\formation;
 
 use App\Repository\FormationRepository;
 use Doctrine\Common\Collections\ArrayCollection;

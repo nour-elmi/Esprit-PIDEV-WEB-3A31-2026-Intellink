@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-use App\Entity\Question;
+use App\Entity\formation\Question;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 

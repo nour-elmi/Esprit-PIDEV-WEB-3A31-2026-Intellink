@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\formation;
 
 use App\Repository\QuizRepository;
 use Doctrine\Common\Collections\ArrayCollection;

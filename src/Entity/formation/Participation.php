@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\formation;
 
 use App\Repository\ParticipationRepository;
 use Doctrine\ORM\Mapping as ORM;
