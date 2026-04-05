@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\formation;
 
-use App\Entity\Formation;
+use App\Entity\formation\Formation;
 use App\Repository\FormationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -10,14 +10,14 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/formateur')]
+#[Route('/formation')]
 final class FormationController extends AbstractController
 {
     #[Route('/', name: 'app_formation_index')]
     public function index(FormationRepository $repo): Response
     {
         $formations = $repo->findAll();
-        return $this->render('/formateur/index.html.twig', [
+        return $this->render('formation/formateur/index.html.twig', [
             'formations' => $formations,
         ]);
     }
@@ -80,7 +80,7 @@ public function add(Request $request, EntityManagerInterface $em): Response
         }
     }
 
-    return $this->render('formateur/add.html.twig', [
+    return $this->render('formation/formateur/add.html.twig', [
         'errors' => $errors,
         'old' => $old
     ]);
@@ -148,7 +148,7 @@ public function edit(int $id, Request $request, FormationRepository $repo, Entit
         }
     }
 
-    return $this->render('formateur/edit.html.twig', [
+    return $this->render('formation/formateur/edit.html.twig', [
         'formation' => $formation,
         'errors' => $errors,
         'old' => $old
@@ -180,7 +180,7 @@ public function show(int $id, FormationRepository $repo): Response
         throw $this->createNotFoundException('Formation introuvable');
     }
 
-    return $this->render('formateur/show.html.twig', [
+    return $this->render('formation/formateur/show.html.twig', [
         'formation' => $formation,
     ]);
 }
