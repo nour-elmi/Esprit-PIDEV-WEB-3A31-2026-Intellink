@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 class OffreEmploi
 {
     #[ORM\Id]
+    #[ORM\GeneratedValue]
     #[ORM\Column(length: 150)]
     private ?string $id_offre = null;
 
@@ -110,7 +111,7 @@ class OffreEmploi
         return $this->type_contrat;
     }
 
-    public function setTypeContrat(array $type_contrat): static
+    public function setTypeContrat(?TypeContrat $type_contrat): static
     {
         $this->type_contrat = $type_contrat;
 

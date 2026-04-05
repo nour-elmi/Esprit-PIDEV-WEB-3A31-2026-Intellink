@@ -50,4 +50,23 @@ final class OffresEmploiController extends AbstractController
             'offre' => $offre
         ]);
     }
+
+    #[Route('/addOffre', name:'addOffre')]
+    public function addOffre(ManagerRegistry $Manager, Request $request)
+    {
+        $em = $Manager->getManager();
+        $newOffre= new OffreEmploi();
+        $form= $this->createForm(OffreFormType::class, $newOffre);
+        $form->handleRequest($request);
+        if($form->isSubmitted())
+        {
+            $newOffre->setIdUser(1);
+            $em->persist($newOffre);
+            $em->flush();
+            return $this->redirectToRoute('showOffre');
+        }
+        $em->flush();
+        return $this->render('offres_emploi/frontend/addOffre.html.twig', ['formOffre' => $form]);
+
+    }
 }
