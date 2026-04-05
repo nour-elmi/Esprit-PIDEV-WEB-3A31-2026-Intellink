@@ -43,10 +43,16 @@
         .formation-form-wrapper:hover { box-shadow: 0 15px 35px rgba(15, 23, 42, 0.12) !important; border-color: #2F80ED !important; }
         .formation-form-wrapper::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #2F80ED, #56CCF2); }
 
-        .form-group-custom { margin-bottom: 24px; }
+        .form-group-custom { margin-bottom: 24px; position: relative; }
         .form-group-custom label { display: block; font-family: "Fira Sans", sans-serif; font-weight: 700; color: #64748b; font-size: 12px; margin-bottom: 8px; letter-spacing: 0.5px;}
         .form-control-custom { width: 100%; padding: 13px 18px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 15px; color: #0f172a; background: #ffffff; transition: all 0.3s ease; outline: none; }
+        
+        /* Styles de validation visuelle */
         .form-control-custom:focus { border-color: #2F80ED; box-shadow: 0 0 0 4px rgba(47, 128, 237, 0.1); }
+        .form-control-custom.is-invalid { border-color: #ef4444; background-color: #fef2f2; }
+        .form-control-custom.is-valid { border-color: #10b981; }
+        
+        .error-message { color: #ef4444; font-size: 11px; font-weight: 600; margin-top: 5px; display: none; position: absolute; bottom: -18px; left: 5px; }
     </style>
 {% endblock %}
 
@@ -68,7 +74,11 @@
                                 {% if app.user %}
                                     <div class="dropdown">
                                         <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer; background: #ffffff; padding: 5px 15px 5px 5px; border-radius: 50px; border: 1px solid #e2e8f0;">
-                                            {% set avatar_src = app.user.image starts with 'http' ? app.user.image : asset('uploads/profiles/' ~ app.user.image) %}
+                                            {% if app.user.image %}
+                                                {% set avatar_src = app.user.image starts with 'http' ? app.user.image : asset('uploads/profiles/' ~ app.user.image) %}
+                                            {% else %}
+                                                {% set avatar_src = 'https://ui-avatars.com/api/?name=' ~ app.user.nom|url_encode ~ '&background=2F80ED&color=fff&rounded=true&bold=true' %}
+                                            {% endif %}
                                             <img src="{{ avatar_src }}" alt="Profil" class="radius-full" style="width: 35px; height: 35px; object-fit: cover; margin-right: 10px; border-radius: 50%;">
                                             <span style="color: #0f172a; font-weight: 700;">{{ app.user.nom }}</span>
                                         </a>
@@ -96,25 +106,29 @@
                 <h2 style="font-family: 'Fira Sans', sans-serif; font-weight: 900; color: #0f172a; font-size: 2.2rem; letter-spacing: -1px; margin-bottom: 10px;">Créer un <span style="color: #2F80ED;">Ticket</span></h2>
                 <p style="color: #64748b; font-weight: 500; margin-bottom: 30px; font-size: 1.1rem;">Remplissez le formulaire ci-dessous pour que notre équipe d'experts analyse votre demande.</p>
 
-                <form action="{{ path('app_reclamation_new') }}" method="POST" enctype="multipart/form-data">
+                <form id="reclamationForm" action="{{ path('app_reclamation_new') }}" method="POST" enctype="multipart/form-data" novalidate>
+                    
                     <div class="form-group-custom">
                         <label>OBJET DE LA DEMANDE</label>
-                        <input type="text" name="objet" class="form-control-custom" placeholder="Ex: Problème technique sur le forum..." required>
+                        <input type="text" id="objet" name="objet" class="form-control-custom" placeholder="Ex: Problème technique sur le forum..." required minlength="5" maxlength="100">
+                        <span class="error-message" id="error-objet">L'objet doit contenir entre 5 et 100 caractères.</span>
                     </div>
 
                     <div style="display: flex; gap: 20px; flex-wrap: wrap;">
                         <div class="form-group-custom" style="flex: 1; min-width: 200px;">
                             <label>TYPE</label>
-                            <select name="type" class="form-control-custom" required>
+                            <select id="type" name="type" class="form-control-custom" required>
+                                <option value="" disabled selected>Sélectionnez un type</option>
                                 <option value="Technique">Technique</option>
                                 <option value="Facturation">Facturation</option>
                                 <option value="Service Client">Service Client</option>
                                 <option value="Autre">Autre</option>
                             </select>
+                            <span class="error-message" id="error-type">Veuillez sélectionner un type de demande.</span>
                         </div>
                         <div class="form-group-custom" style="flex: 1; min-width: 200px;">
                             <label>PRIORITÉ</label>
-                            <select name="priorite" class="form-control-custom" required>
+                            <select id="priorite" name="priorite" class="form-control-custom" required>
                                 <option value="FAIBLE">🟢 Faible</option>
                                 <option value="MOYENNE" selected>🟡 Moyenne</option>
                                 <option value="ELEVEE">🔴 Élevée</option>
@@ -124,16 +138,18 @@
 
                     <div class="form-group-custom">
                         <label>DESCRIPTION DÉTAILLÉE</label>
-                        <textarea name="description" class="form-control-custom" rows="6" placeholder="Soyez le plus précis possible pour nous aider à vous répondre rapidement..." required></textarea>
+                        <textarea id="description" name="description" class="form-control-custom" rows="6" placeholder="Soyez le plus précis possible pour nous aider à vous répondre rapidement... (minimum 20 caractères)" required minlength="20" maxlength="1000"></textarea>
+                        <span class="error-message" id="error-description">La description doit contenir au moins 20 caractères.</span>
                     </div>
 
                     <div class="form-group-custom">
-                        <label>PIÈCE JOINTE <span style="color: #8b92a5; font-weight: 400;">(Image ou PDF, optionnel)</span></label>
-                        <input type="file" name="pieceJointe" class="form-control-custom" style="padding: 10px;">
+                        <label>PIÈCE JOINTE <span style="color: #8b92a5; font-weight: 400;">(Image ou PDF, max 5Mo)</span></label>
+                        <input type="file" id="pieceJointe" name="pieceJointe" class="form-control-custom" style="padding: 10px;" accept=".png, .jpg, .jpeg, .pdf">
+                        <span class="error-message" id="error-pieceJointe">Le fichier doit être une image ou un PDF, et peser moins de 5Mo.</span>
                     </div>
 
                     <div style="text-align: right; margin-top: 30px;">
-                        <button type="submit" class="btn-liquid"><i class="lni lni-telegram-original"></i> Envoyer la demande</button>
+                        <button type="submit" id="submitBtn" class="btn-liquid"><i class="lni lni-telegram-original"></i> Envoyer la demande</button>
                     </div>
                 </form>
             </div>
@@ -155,6 +171,84 @@
             progressBar.style.width = ((scrollTop / (document.documentElement.scrollHeight - document.documentElement.clientHeight)) * 100) + "%";
             scrollTop > lastScrollTop && scrollTop > 100 ? navbar.classList.add('navbar-hidden') : navbar.classList.remove('navbar-hidden');
             lastScrollTop = scrollTop;
+        });
+
+        // =========================================================================
+        // VALIDATION DU FORMULAIRE DE RÉCLAMATION EN TEMPS RÉEL
+        // =========================================================================
+        const form = document.getElementById('reclamationForm');
+        const inputObjet = document.getElementById('objet');
+        const inputType = document.getElementById('type');
+        const inputDesc = document.getElementById('description');
+        const inputFile = document.getElementById('pieceJointe');
+        
+        // Fonction générique pour afficher/masquer les erreurs
+        function setValidationState(inputElement, isValid, errorElementId) {
+            const errorElement = document.getElementById(errorElementId);
+            if (isValid) {
+                inputElement.classList.remove('is-invalid');
+                inputElement.classList.add('is-valid');
+                errorElement.style.display = 'none';
+            } else {
+                inputElement.classList.remove('is-valid');
+                inputElement.classList.add('is-invalid');
+                errorElement.style.display = 'block';
+            }
+            return isValid;
+        }
+
+        // Validateurs spécifiques
+        function validateObjet() {
+            const value = inputObjet.value.trim();
+            return setValidationState(inputObjet, value.length >= 5 && value.length <= 100, 'error-objet');
+        }
+
+        function validateType() {
+            return setValidationState(inputType, inputType.value !== "", 'error-type');
+        }
+
+        function validateDescription() {
+            const value = inputDesc.value.trim();
+            return setValidationState(inputDesc, value.length >= 20, 'error-description');
+        }
+
+        function validateFile() {
+            // Le fichier est optionnel
+            if (inputFile.files.length === 0) {
+                inputFile.classList.remove('is-invalid', 'is-valid');
+                document.getElementById('error-pieceJointe').style.display = 'none';
+                return true; 
+            }
+
+            const file = inputFile.files[0];
+            const fileSize = file.size / 1024 / 1024; // in MB
+            const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+            
+            const isValid = allowedTypes.includes(file.type) && fileSize <= 5;
+            return setValidationState(inputFile, isValid, 'error-pieceJointe');
+        }
+
+        // Validation en temps réel lors de la saisie
+        inputObjet.addEventListener('input', validateObjet);
+        inputType.addEventListener('change', validateType);
+        inputDesc.addEventListener('input', validateDescription);
+        inputFile.addEventListener('change', validateFile);
+
+        // Validation finale à la soumission
+        form.addEventListener('submit', function(event) {
+            const isObjetValid = validateObjet();
+            const isTypeValid = validateType();
+            const isDescValid = validateDescription();
+            const isFileValid = validateFile();
+
+            if (!isObjetValid || !isTypeValid || !isDescValid || !isFileValid) {
+                event.preventDefault(); // Empêche l'envoi du formulaire si une erreur est détectée
+                
+                // Petit effet visuel pour montrer que ça a bloqué
+                const submitBtn = document.getElementById('submitBtn');
+                submitBtn.style.transform = 'translateY(2px)';
+                setTimeout(() => { submitBtn.style.transform = 'translateY(0)'; }, 150);
+            }
         });
     </script>
 {% endblock %}
