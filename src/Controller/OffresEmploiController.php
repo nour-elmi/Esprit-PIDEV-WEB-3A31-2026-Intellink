@@ -41,11 +41,17 @@ final class OffresEmploiController extends AbstractController
         }
 
     #[Route('/showOffreUser', name:'showOffreUser')]
-    public function listOffresUfromDB(Request $request, OffreEmploiRepository $repo): Response 
+    public function listOffresUfromDB(Request $request, OffreEmploiRepository $repo, PaginatorInterface $paginator): Response 
     {
         $searchTerm = $request->query->get('query');
 
         $offres = $repo->searchOffres($searchTerm);
+
+        $offres = $paginator->paginate(
+            $offres, 
+            $request->query->getInt('page', 1), 
+            4 
+        );
 
         return $this->render('offres_emploi/frontend/showOffreUser.html.twig', [
             "list" => $offres
