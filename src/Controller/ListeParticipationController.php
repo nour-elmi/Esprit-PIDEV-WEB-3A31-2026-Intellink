@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Entity\ListeParticipation;
 use App\Entity\OffreEmploi;
 use App\Entity\Utilisateur;
-use App\Form\ListeFormType; // Assurez-vous que ce formulaire existe
+use App\Form\ListeFormType; 
 use App\Repository\ListeParticipationRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -13,13 +13,14 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Repository\OffreEmploiRepository;
-//use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Knp\Component\Pager\PaginatorInterface;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 
 final class ListeParticipationController extends AbstractController
 {
     #[Route('/showParticipation/{id}', name: 'showParticipation')]
-    public function showParticipations(OffreEmploi $offre, Request $request, ListeParticipationRepository $participationRepo): Response
+    public function showParticipations(OffreEmploi $offre, Request $request, ListeParticipationRepository $participationRepo, PaginatorInterface $paginator): Response
     {
         $searchTerm = $request->query->get('query');
         
@@ -29,9 +30,15 @@ final class ListeParticipationController extends AbstractController
             $participations = $offre->getParticipations();
         }
 
+        $pagination = $paginator->paginate(
+            $participations, 
+            $request->query->getInt('page', 1), 
+            5 
+        );
+
         return $this->render('liste_participation/frontend/showParticipation.html.twig', [
             'offre' => $offre,
-            'participations' => $participations,
+            'participations' => $pagination,
         ]);
     }
 
@@ -104,6 +111,24 @@ public function listParticipationsUfromDB(OffreEmploi $offre, Request $request, 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            //pdf
+            $cvFile = $form->get('cv')->getData();
+
+        if ($cvFile) {
+            $newFilename = uniqid().'.'.$cvFile->guessExtension();
+
+            try {
+                $cvFile->move(
+                    $this->getParameter('cv_directory'), // Dossier défini dans services.yaml
+                    $newFilename
+                );
+            } catch (FileException $e) {
+            }
+
+            $newParticipation->setCv($newFilename);
+        }
+
+
             $em->persist($newParticipation);
             $em->flush();
             

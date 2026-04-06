@@ -10,6 +10,8 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use App\Entity\OffreEmploi;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Validator\Constraints\File;
 
 class ListeFormType extends AbstractType
 {
@@ -19,7 +21,22 @@ class ListeFormType extends AbstractType
             ->add('date_participation')
             ->add('nom_p')
             ->add('prenom_p')
-            ->add('cv')
+            ->add('cv', FileType::class, [
+                'label' => 'Votre CV (Fichier PDF)',
+                'mapped' => false, 
+                'required' => false,
+                'constraints' => [
+                    new File([
+                        'maxSize' => '2M',
+                        'mimeTypes' => [
+                            'application/pdf',
+                            'application/x-pdf',
+                        ],
+                        'mimeTypesMessage' => 'Veuillez télécharger un document PDF valide',
+                    ])
+                ],
+                'attr' => ['class' => 'form-control-custom']
+            ])
             ->add('skills')
             ->add('score')
         ;
