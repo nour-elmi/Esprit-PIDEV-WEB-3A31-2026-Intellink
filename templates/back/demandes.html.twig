@@ -1,49 +1,419 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_projet.html.twig' %}
 
 {% block title %}Demandes{% endblock %}
 
 {% block body %}
-<section class="demandes-v2-page">
+<style>
+    .demandes-page {
+        padding: 20px 0 40px;
+        background: linear-gradient(180deg, #eef3fb 0%, #f8fbff 100%);
+        border-radius: 24px;
+    }
+
+    .demandes-header {
+        background: linear-gradient(135deg, #1d2f7a 0%, #2d3f95 100%);
+        border-radius: 28px;
+        padding: 28px 30px;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        box-shadow: 0 16px 40px rgba(34, 54, 116, 0.16);
+        margin-bottom: 22px;
+    }
+
+    .demandes-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 7px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.14);
+        font-size: 13px;
+        font-weight: 800;
+        margin-bottom: 10px;
+    }
+
+    .demandes-header h1 {
+        margin: 0 0 5px;
+        font-size: 36px;
+        line-height: 1.1;
+        font-weight: 900;
+        color: #fff;
+    }
+
+    .demandes-header p {
+        margin: 0;
+        font-size: 16px;
+        color: rgba(255, 255, 255, 0.88);
+    }
+
+    .demandes-return {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        background: #f4f7ff;
+        color: #19306e;
+        font-weight: 800;
+        border-radius: 18px;
+        padding: 14px 22px;
+        min-width: 210px;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+        transition: 0.2s ease;
+    }
+
+    .demandes-return:hover {
+        transform: translateY(-2px);
+        text-decoration: none;
+        color: #19306e;
+    }
+
+    .demandes-alert {
+        margin-bottom: 14px;
+        border-radius: 14px;
+        padding: 12px 16px;
+        font-weight: 700;
+    }
+
+    .demandes-alert.success {
+        background: #e9fff1;
+        color: #14804a;
+        border: 1px solid #bdeccf;
+    }
+
+    .demandes-alert.danger {
+        background: #fff1f1;
+        color: #b42318;
+        border: 1px solid #f3c4c4;
+    }
+
+    .demandes-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .demande-compact {
+        display: grid;
+        grid-template-columns: 240px minmax(260px, 1fr) auto;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 18px;
+        background: #fff;
+        border-radius: 20px;
+        border: 1px solid #e4ecf7;
+        box-shadow: 0 8px 24px rgba(16, 36, 82, 0.06);
+    }
+
+    .compact-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    .compact-avatar {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #3c82f6 0%, #2cc58a 100%);
+        color: #fff;
+        font-size: 16px;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 20px rgba(38, 120, 255, 0.18);
+    }
+
+    .compact-info {
+        min-width: 0;
+    }
+
+    .compact-info strong {
+        display: block;
+        font-size: 16px;
+        color: #0b225d;
+        line-height: 1.2;
+        font-weight: 900;
+        margin-bottom: 2px;
+        word-break: break-word;
+    }
+
+    .compact-info span {
+        display: block;
+        font-size: 12px;
+        color: #7284a0;
+        word-break: break-word;
+    }
+
+    .compact-middle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .mini-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #eef3ff;
+        color: #17326f;
+        padding: 7px 11px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .mini-badge.role {
+        background: #eef3ff;
+        color: #17326f;
+    }
+
+    .mini-badge.dispo {
+        background: #ecfff5;
+        color: #157347;
+    }
+
+    .mini-badge.ref {
+        background: #f5f7fb;
+        color: #5d6f89;
+    }
+
+    .mini-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        background: #17326f;
+        color: #fff;
+        padding: 7px 11px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
+        transition: 0.2s ease;
+    }
+
+    .mini-link:hover {
+        text-decoration: none;
+        color: #fff;
+        background: #112754;
+        transform: translateY(-1px);
+    }
+
+    .compact-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 95px;
+        padding: 7px 11px;
+        border-radius: 999px;
+        font-weight: 900;
+        font-size: 12px;
+        line-height: 1;
+    }
+
+    .status-pill.ok {
+        background: #e6faed;
+        color: #15803d;
+    }
+
+    .status-pill.no {
+        background: #fdecec;
+        color: #c62828;
+    }
+
+    .status-pill.wait {
+        background: #fff4d6;
+        color: #9a6700;
+    }
+
+    .btn-mini {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        border-radius: 10px;
+        padding: 7px 11px;
+        font-size: 12px;
+        font-weight: 900;
+        transition: 0.2s ease;
+        line-height: 1;
+    }
+
+    .btn-mini:hover {
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+
+    .btn-mini.ok {
+        background: #e6faed;
+        color: #15803d;
+        border: 1px solid #b4e5c7;
+    }
+
+    .btn-mini.no {
+        background: #fdecec;
+        color: #c62828;
+        border: 1px solid #f3c3c3;
+    }
+
+    .motivation-box {
+        grid-column: 1 / -1;
+        margin-top: -2px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: #f8fbff;
+        border: 1px solid #e2ebf9;
+        color: #4b617f;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .motivation-box strong {
+        display: inline-block;
+        margin-bottom: 6px;
+        color: #17326f;
+        font-size: 13px;
+    }
+
+    .empty-value {
+        color: #8a9bb3;
+        font-style: italic;
+    }
+
+    .demandes-empty {
+        background: #fff;
+        border-radius: 24px;
+        padding: 40px 24px;
+        text-align: center;
+        border: 1px solid #e7edf9;
+        box-shadow: 0 16px 40px rgba(15, 34, 83, 0.07);
+    }
+
+    .demandes-empty .empty-icon {
+        font-size: 40px;
+        margin-bottom: 10px;
+    }
+
+    .inline-back {
+        margin-top: 14px;
+        display: inline-flex;
+    }
+
+    @media (max-width: 1100px) {
+        .demande-compact {
+            grid-template-columns: 1fr;
+            align-items: flex-start;
+        }
+
+        .compact-right {
+            justify-content: flex-start;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .demandes-header {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 22px 18px;
+        }
+
+        .demandes-header h1 {
+            font-size: 28px;
+        }
+
+        .demandes-return {
+            width: 100%;
+            min-width: unset;
+        }
+
+        .demande-compact {
+            padding: 14px;
+        }
+
+        .compact-left {
+            align-items: flex-start;
+        }
+    }
+</style>
+
+<section class="demandes-page">
     <div class="container">
 
-        <div class="demandes-v2-header">
+        <div class="demandes-header">
             <div>
-                <span class="demandes-v2-badge">Back Office</span>
+                <span class="demandes-badge">Back Office</span>
                 <h1>Demandes pour : {{ projet.titre }}</h1>
                 <p>Gestion des candidatures de participation</p>
             </div>
 
-            <a href="{{ path('app_back_projets') }}" class="demandes-v2-return">
+            <a href="{{ path('app_back_projets') }}" class="demandes-return">
                 ← Retour aux projets
             </a>
         </div>
 
         {% for message in app.flashes('success') %}
-            <div class="demandes-v2-alert success">{{ message }}</div>
+            <div class="demandes-alert success">{{ message }}</div>
         {% endfor %}
 
         {% for message in app.flashes('error') %}
-            <div class="demandes-v2-alert danger">{{ message }}</div>
+            <div class="demandes-alert danger">{{ message }}</div>
         {% endfor %}
 
-        <div class="demandes-v2-grid">
+        <div class="demandes-list">
             {% for d in demandes %}
                 {% set etat = d.etat|upper %}
+                {% set user = utilisateursParId[d.userId] ?? null %}
 
-                <article class="demande-v2-card">
-                    <div class="demande-v2-top">
-                        <div class="demande-v2-icon">📩</div>
+                <article class="demande-compact">
 
-                        <div class="demande-v2-head-content">
-                            <h3>Demande #{{ d.id }}</h3>
-                            <p>Projet concerné : <strong>{{ projet.titre }}</strong></p>
+                    <div class="compact-left">
+                        <div class="compact-avatar">
+                            {{ user and user.nom ? user.nom|slice(0,2)|upper : '??' }}
                         </div>
 
-                        <div class="demande-v2-status
-                            {% if etat == 'ACCEPTEE' %}status-success
-                            {% elseif etat == 'REFUSEE' %}status-danger
-                            {% else %}status-warning{% endif %}
-                        ">
+                        <div class="compact-info">
+                            <strong>{{ user ? user.nom : 'Utilisateur introuvable' }}</strong>
+                            <span>{{ user and user.email ? user.email : 'Email non disponible' }}</span>
+                        </div>
+                    </div>
+
+                    <div class="compact-middle">
+                        <span class="mini-badge ref">#{{ d.id }}</span>
+
+                        <span class="mini-badge role">
+                            👤 {{ d.roleSouhaite ?: 'Rôle non renseigné' }}
+                        </span>
+
+                        <span class="mini-badge dispo">
+                            🕒 {{ d.disponibilite ?: 'Disponibilité non renseignée' }}
+                        </span>
+
+                        {% if d.portfolio %}
+                            <a href="{{ d.portfolio }}" target="_blank" class="mini-link">
+                                🌐 Portfolio
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    <div class="compact-right">
+                        <span class="status-pill
+                            {% if etat == 'ACCEPTEE' %}ok
+                            {% elseif etat == 'REFUSEE' %}no
+                            {% else %}wait{% endif %}">
                             {% if etat == 'ACCEPTEE' %}
                                 Acceptée
                             {% elseif etat == 'REFUSEE' %}
@@ -51,55 +421,35 @@
                             {% else %}
                                 En attente
                             {% endif %}
-                        </div>
-                    </div>
+                        </span>
 
-                    <div class="demande-v2-body">
-                        <div class="demande-v2-info-box">
-                            <span>Référence</span>
-                            <strong>#{{ d.id }}</strong>
-                        </div>
-
-                        <div class="demande-v2-info-box">
-                            <span>Projet</span>
-                            <strong>{{ projet.titre }}</strong>
-                        </div>
-                    </div>
-
-                    {% if etat == 'EN_ATTENTE' %}
-                        <div class="demande-v2-actions">
-                            <a href="{{ path('app_back_demande_accept', {id: d.id}) }}" class="btn-v2 btn-v2-accept">
+                        {% if etat == 'EN_ATTENTE' %}
+                            <a href="{{ path('app_back_demande_accept', {id: d.id}) }}" class="btn-mini ok">
                                 ✔ Accepter
                             </a>
 
-                            <a href="{{ path('app_back_demande_refuse', {id: d.id}) }}" class="btn-v2 btn-v2-refuse">
+                            <a href="{{ path('app_back_demande_refuse', {id: d.id}) }}" class="btn-mini no">
                                 ✖ Refuser
                             </a>
-                        </div>
-                    {% elseif etat == 'ACCEPTEE' %}
-                        <div class="demande-v2-result accepted-box">
-                            <div class="result-icon">✔</div>
-                            <div>
-                                <strong>Demande acceptée</strong>
-                                <p>Cette candidature a déjà été validée.</p>
-                            </div>
-                        </div>
-                    {% elseif etat == 'REFUSEE' %}
-                        <div class="demande-v2-result refused-box">
-                            <div class="result-icon">✖</div>
-                            <div>
-                                <strong>Demande refusée</strong>
-                                <p>Cette candidature a déjà été refusée.</p>
-                            </div>
-                        </div>
-                    {% endif %}
+                        {% endif %}
+                    </div>
+
+                    <div class="motivation-box">
+                        <strong>Motivation :</strong><br>
+                        {% if d.motivation %}
+                            {{ d.motivation|nl2br }}
+                        {% else %}
+                            <span class="empty-value">Aucune motivation renseignée</span>
+                        {% endif %}
+                    </div>
+
                 </article>
             {% else %}
-                <div class="demandes-v2-empty">
+                <div class="demandes-empty">
                     <div class="empty-icon">📭</div>
                     <h3>Aucune demande</h3>
                     <p>Il n’y a encore aucune candidature pour ce projet.</p>
-                    <a href="{{ path('app_back_projets') }}" class="demandes-v2-return inline-back">
+                    <a href="{{ path('app_back_projets') }}" class="demandes-return inline-back">
                         ← Retour aux projets
                     </a>
                 </div>

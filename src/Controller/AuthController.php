@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Utilisateur;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Controller\BackProjetController;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,9 +20,6 @@ use Symfony\Bundle\SecurityBundle\Security;
 class AuthController extends AbstractController
 {
     // =========================================================================
-    //  1. CONNEXION (LOGIN)
-    // =========================================================================
-   // =========================================================================
     //  1. CONNEXION (LOGIN) AVEC INTERCEPTION 2FA ET STATUT
     // =========================================================================
     #[Route(path: '/login', name: 'app_login', methods: ['GET', 'POST'])]
@@ -31,11 +29,11 @@ class AuthController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         MailerInterface $mailer,
         Security $security,
-        AuthenticationUtils $authenticationUtils // <-- LA CORRECTION EST ICI
+        AuthenticationUtils $authenticationUtils
     ): Response {
         // Si déjà connecté, on le renvoie à l'accueil
         if ($this->getUser()) {
-            return $this->redirectToRoute('app_home');
+            return $this->redirectToRoute('app_redirect_user');
         }
 
         if ($request->isMethod('POST')) {
@@ -85,14 +83,13 @@ class AuthController extends AbstractController
 
                 // CONNEXION DIRECTE
                 $security->login($user, 'security.authenticator.form_login.main');
-                return $this->redirectToRoute('app_home'); 
+                return $this->redirectToRoute('app_redirect_user'); 
             } else {
                 // Si le mot de passe est faux
                 $this->addFlash('error_login', 'Identifiants incorrects.');
             }
         }
 
-        // <-- LA DEUXIÈME CORRECTION EST ICI -->
         // On renvoie obligatoirement les variables attendues par Twig
         return $this->render('frontUser/login.html.twig', [
             'last_username' => $authenticationUtils->getLastUsername(),
@@ -103,7 +100,7 @@ class AuthController extends AbstractController
     // =========================================================================
     //  2. INSCRIPTION (SIGNUP) AVEC FICHIERS ET EMAIL
     // =========================================================================
-   #[Route('/register', name: 'app_register', methods: ['POST'])]
+    #[Route('/register', name: 'app_register', methods: ['POST'])]
     public function register(
         Request $request, 
         UserPasswordHasherInterface $passwordHasher, 
@@ -121,21 +118,35 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        // --- GESTION DES FICHIERS (On les stocke physiquement tout de suite) ---
-        $imageFilename = 'default_avatar.png';
+        // --- GESTION DES FICHIERS ET AVATARS (On les stocke physiquement tout de suite) ---
+        $avatarUrl = $request->request->get('avatar_url');
         $imageFile = $request->files->get('image_profil');
-        if ($imageFile) {
+        $imageToSave = null;
+
+        if (!empty($avatarUrl)) {
+            // L'utilisateur a choisi un avatar depuis la liste modale
+            $imageToSave = $avatarUrl;
+        } elseif ($imageFile) {
+            // L'utilisateur a uploadé une vraie photo
             $newFilename = $slugger->slug(pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME)).'-'.uniqid().'.'.$imageFile->guessExtension();
-            $imageFile->move($this->getParameter('profiles_directory'), $newFilename);
-            $imageFilename = $newFilename;
+            try {
+                $imageFile->move($this->getParameter('profiles_directory'), $newFilename);
+                $imageToSave = $newFilename;
+            } catch (FileException $e) {
+                // Gestion d'erreur silencieuse ou log
+            }
         }
 
         $cvFilename = null;
         $pdfFile = $request->files->get('cv_pdf');
         if ($pdfFile) {
             $newFilename = $slugger->slug(pathinfo($pdfFile->getClientOriginalName(), PATHINFO_FILENAME)).'-'.uniqid().'.'.$pdfFile->guessExtension();
-            $pdfFile->move($this->getParameter('cv_directory'), $newFilename);
-            $cvFilename = $newFilename;
+            try {
+                $pdfFile->move($this->getParameter('cv_directory'), $newFilename);
+                $cvFilename = $newFilename;
+            } catch (FileException $e) {
+                // Gestion d'erreur silencieuse ou log
+            }
         }
 
         // --- CALCUL DU RÔLE ---
@@ -151,7 +162,7 @@ class AuthController extends AbstractController
             'password' => $passwordHasher->hashPassword(new Utilisateur(), $request->request->get('password')),
             'role' => $finalRole,
             'statut' => $statut,
-            'image' => $imageFilename,
+            'image' => $imageToSave, // L'image (uploadée, url, ou null) est bien sauvegardée ici
             'cv' => $cvFilename
         ];
 
@@ -182,6 +193,7 @@ class AuthController extends AbstractController
         // Cette méthode peut rester vide, Symfony intercepte la route pour détruire la session.
         throw new \LogicException('Cette méthode peut être vide.');
     }
+
     // =========================================================================
     //  VÉRIFICATION DE L'EMAIL (Code à 6 chiffres)
     // =========================================================================
@@ -198,7 +210,7 @@ class AuthController extends AbstractController
 
         if ($request->isMethod('POST')) {
             $enteredCode = $request->request->get('code1').$request->request->get('code2').$request->request->get('code3').$request->request->get('code4').$request->request->get('code5').$request->request->get('code6');
-
+            
             if ($enteredCode === $correctCode) {
                 // ✅ LE CODE EST BON : ON ENREGISTRE EN BASE DE DONNÉES
                 $user = new Utilisateur();
@@ -207,9 +219,9 @@ class AuthController extends AbstractController
                 $user->setMdp($userData['password']);
                 $user->setRole($userData['role']);
                 $user->setStatutCompte($userData['statut']);
-                $user->setImage($userData['image']);
+                $user->setImage($userData['image']); // Récupère l'image qui a été validée dans l'étape d'avant
                 $user->setSkills($userData['cv']);
-                $user->setAuthMethod('EMAIL');
+                $user->setAuthMethod('EMAIL'); // Sécurité 2FA activée par défaut
 
                 $entityManager->persist($user);
                 $entityManager->flush();
@@ -230,7 +242,8 @@ class AuthController extends AbstractController
             'email' => $session->get('verification_email')
         ]);
     }
-   // =========================================================================
+
+    // =========================================================================
     //  AIGUILLAGE DES RÔLES PRO (Équivalent de finalizeLogin en Java)
     // =========================================================================
     #[Route(path: '/redirect-user', name: 'app_redirect_user')]
@@ -246,15 +259,15 @@ class AuthController extends AbstractController
 
         // 2. On récupère le tableau des rôles de la session
         $roles = $user->getRoles();
-
+        
         // 3. On redirige vers la bonne interface (Vos fichiers FXML traduits en Web)
         if (in_array('ROLE_ADMIN', $roles)) {
             // Équivalent de /adminUserList.fxml
-            return $this->redirectToRoute('app_admin_dashboard'); 
+            return $this->redirectToRoute('app_admin_users'); 
             
         } elseif (in_array('ROLE_FORMATEUR', $roles)) {
             // Équivalent de /FrontFormateur.fxml (Le fichier de Sarra)
-            return $this->redirectToRoute('app_formateur_dashboard'); 
+            return $this->redirectToRoute('app_formation_index'); 
             
         } elseif (in_array('ROLE_RECRUTEUR', $roles)) {
             // Équivalent de /FrontRecruteur.fxml (Le fichier de Nour)
@@ -262,13 +275,20 @@ class AuthController extends AbstractController
             
         } elseif (in_array('ROLE_CHEF_PROJET', $roles)) {
             // Équivalent de /FrontChefProjet.fxml (Votre fichier)
-            return $this->redirectToRoute('app_chef_dashboard'); 
+            return $this->redirectToRoute('app_back_projets'); 
         }
+
+        elseif (in_array('ROLE_USER', $roles)) {
+            // Équivalent de /FrontChefProjet.fxml (Votre fichier)
+            return $this->redirectToRoute('app_home'); 
+        }
+
 
         // 4. Par défaut : Utilisateur simple (Équivalent de /index.fxml)
         return $this->redirectToRoute('app_home');
     }
-// =========================================================================
+
+    // =========================================================================
     //  VÉRIFICATION DE LA 2FA (LOGIN)
     // =========================================================================
     #[Route(path: '/verify-2fa', name: 'app_verify_2fa')]
@@ -304,7 +324,7 @@ class AuthController extends AbstractController
                 $security->login($user, 'security.authenticator.form_login.main');
                 
                 // Redirection vers le tableau de bord (Aiguillage)
-                return $this->redirectToRoute('app_home'); 
+                return $this->redirectToRoute('app_redirect_user'); 
             } else {
                 $this->addFlash('error', 'Code incorrect, veuillez réessayer.');
             }

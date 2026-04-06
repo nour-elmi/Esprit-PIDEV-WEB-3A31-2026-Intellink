@@ -9,46 +9,44 @@
 
     <style>
         html { scroll-behavior: smooth; overflow-x: hidden; }
-        body { background-color: #f4f8fd; font-family: "Heebo", sans-serif; margin: 0; color: #585978; }
+        body { 
+            background-color: #e2e8f0 !important; 
+            background-image: radial-gradient(rgba(47, 128, 237, 0.05) 1px, transparent 1px), radial-gradient(rgba(47, 128, 237, 0.05) 1px, transparent 1px);
+            background-position: 0 0, 20px 20px; background-size: 40px 40px;
+            font-family: "Heebo", sans-serif; margin: 0; color: #0f172a; 
+        }
         *, *::before, *::after { box-sizing: border-box; }
-        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #f4f8fd; } ::-webkit-scrollbar-thumb { background: #2F80ED; border-radius: 10px; } ::-webkit-scrollbar-thumb:hover { background: #56CCF2; }
+        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #2F80ED; border-radius: 10px; } ::-webkit-scrollbar-thumb:hover { background: #56CCF2; }
 
         .scroll-progress-bar { position: fixed; top: 0; left: 0; height: 4px; background: linear-gradient(90deg, #2F80ED, #56CCF2); z-index: 100000; width: 0%; box-shadow: 0 0 15px rgba(86, 204, 242, 0.8); border-radius: 0 5px 5px 0; }
         
-        .glass-navbar { background: rgba(255, 255, 255, 0.85) !important; backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255,255,255,0.5); transition: transform 0.4s ease, background 0.3s; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05); }
+        .glass-navbar { background: rgba(255, 255, 255, 0.8) !important; backdrop-filter: blur(25px); border-bottom: 1px solid rgba(0,0,0,0.05); transition: transform 0.4s; }
         .navbar-hidden { transform: translateY(-100%); }
-        .glitch-logo { position: relative; display: inline-block; color: #2F80ED; font-weight: 900; letter-spacing: -1px; margin: 0;}
-        .glitch-logo::before, .glitch-logo::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; }
-        .glitch-logo:hover::before { left: 2px; text-shadow: -2px 0 #56CCF2; animation: glitch-anim-1 0.2s infinite linear alternate-reverse; opacity: 1; }
-        .glitch-logo:hover::after { left: -2px; text-shadow: 2px 0 #2F80ED; animation: glitch-anim-2 0.3s infinite linear alternate-reverse; opacity: 1; }
-        @keyframes glitch-anim-1 { 0% { clip-path: inset(20% 0 80% 0); } 100% { clip-path: inset(50% 0 30% 0); } }
-        @keyframes glitch-anim-2 { 0% { clip-path: inset(10% 0 60% 0); } 100% { clip-path: inset(80% 0 10% 0); } }
+        .glitch-logo { position: relative; display: inline-block; color: #0f172a; font-weight: 900; letter-spacing: -1px; margin: 0;}
 
         #preloader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; z-index: 999999; display: flex; justify-content: center; align-items: center; transition: opacity 0.8s ease-out, visibility 0.8s; }
         .loader-logo { font-size: 3rem; font-weight: 900; color: #2F80ED; animation: pulse-glow 1.5s infinite alternate; }
-        @keyframes pulse-glow { 0% { transform: scale(0.95); text-shadow: 0 0 10px rgba(47, 128, 237, 0.2); } 100% { transform: scale(1.05); text-shadow: 0 0 30px rgba(86, 204, 242, 0.8); } }
 
-        /* FORMULAIRES & BADGES */
-        .btn-liquid { position: relative; overflow: hidden; z-index: 1; transition: color 0.4s ease; background: white; color: #2F80ED !important; border: 2px solid #2F80ED; padding: 12px 28px; border-radius: 50px; font-weight: 600; text-decoration: none; display: inline-block;}
-        .btn-liquid::before { content: ''; position: absolute; top: 100%; left: 0; width: 100%; height: 200%; background: linear-gradient(0deg, #2F80ED, #56CCF2); z-index: -1; transition: top 0.6s cubic-bezier(0.25, 1, 0.5, 1); border-radius: 50% 50% 0 0; }
-        .btn-liquid:hover { color: white !important; border-color: transparent; box-shadow: 0 10px 20px rgba(47, 128, 237, 0.3); }
+        /* BOUTONS */
+        .btn-liquid { position: relative; overflow: hidden; z-index: 1; transition: 0.3s; background: #2F80ED; color: #ffffff !important; border: none; padding: 12px 28px; border-radius: 50px; font-weight: 600; text-decoration: none; display: inline-block; box-shadow: 0 4px 12px rgba(47, 128, 237, 0.25);}
+        .btn-liquid::before { content: ''; position: absolute; top: 100%; left: 0; width: 100%; height: 200%; background: linear-gradient(135deg, #1e293b, #334155); z-index: -1; transition: top 0.6s ease; border-radius: 50% 50% 0 0; }
+        .btn-liquid:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(47, 128, 237, 0.4); }
         .btn-liquid:hover::before { top: -20%; border-radius: 0; }
         
-        .btn-outline-custom { background: transparent; color: #2F80ED; border: 2px solid #2F80ED; padding: 8px 24px; border-radius: 50px; font-size: 14px; font-weight: bold; text-decoration: none; transition: all 0.3s; display: inline-block;}
-        .btn-outline-custom:hover { background: #2F80ED; color: #ffffff; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(47, 128, 237, 0.2); }
+        .btn-outline-custom { background: #ffffff; color: #0f172a; border: 1px solid rgba(0,0,0,0.1); padding: 8px 24px; border-radius: 50px; font-size: 14px; font-weight: bold; text-decoration: none; transition: all 0.3s; display: inline-block;}
+        .btn-outline-custom:hover { background: #f8fafc; color: #2F80ED; border-color: #2F80ED; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(47, 128, 237, 0.15); }
 
+        /* FORMULAIRE DESIGN (Cartes blanches avec bordures) */
         .formation-form-wrapper { 
-            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.9);
-            border-radius: 20px; padding: 40px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05); 
-            position: relative; overflow: hidden; transform-style: preserve-3d;
+            background: #ffffff !important; border: 1px solid #cbd5e1 !important; border-radius: 24px; padding: 40px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08) !important; position: relative; overflow: hidden; transition: 0.3s ease; transform-style: preserve-3d;
         }
         .border-gradient-top::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #2F80ED, #56CCF2); }
 
         .form-group-custom { margin-bottom: 24px; transform: translateZ(10px); }
-        .form-group-custom label { display: block; font-family: "Fira Sans", sans-serif; font-weight: 600; color: #323450; font-size: 14px; margin-bottom: 8px; letter-spacing: 0.5px;}
-        .form-control-custom { width: 100%; padding: 13px 18px; border: 2px solid rgba(47, 128, 237, 0.1); border-radius: 12px; font-size: 15px; color: #323450; background: rgba(255, 255, 255, 0.8); transition: all 0.3s ease; outline: none; }
-        .form-control-custom:focus { border-color: #2F80ED; box-shadow: 0 0 0 4px rgba(47, 128, 237, 0.15); background: #ffffff; transform: translateY(-2px); }
-        .form-control-custom:disabled { background-color: rgba(241, 245, 249, 0.5); color: #64748b; border-color: transparent;}
+        .form-group-custom label { display: block; font-family: "Fira Sans", sans-serif; font-weight: 700; color: #64748b; font-size: 12px; margin-bottom: 8px; letter-spacing: 0.5px; text-transform: uppercase;}
+        .form-control-custom { width: 100%; padding: 13px 18px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 15px; color: #0f172a; background: #ffffff; transition: all 0.3s ease; outline: none; }
+        .form-control-custom:focus { border-color: #2F80ED; box-shadow: 0 0 0 4px rgba(47, 128, 237, 0.1); }
+        .form-control-custom:disabled { background-color: rgba(241, 245, 249, 0.6); color: #94a3b8; border-color: transparent;}
     </style>
 {% endblock %}
 
@@ -69,16 +67,16 @@
                             <div class="header-action d-flex align-items-center">
                                 {% if app.user %}
                                     <div class="dropdown">
-                                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer; background: #ffffff; padding: 5px 15px 5px 5px; border-radius: 50px; border: 1px solid #e2e8f0;">
                                             {% set avatar_src = app.user.image starts with 'http' ? app.user.image : asset('uploads/profiles/' ~ app.user.image) %}
-                                            <img src="{{ avatar_src }}" alt="Profil" class="radius-full" style="width: 45px; height: 45px; object-fit: cover; margin-right: 10px; border: 3px solid #ffffff; box-shadow: 0 4px 10px rgba(47,128,237,0.2);">
-                                            <span style="color: #323450; font-weight: 700;">{{ app.user.nom }}</span>
+                                            <img src="{{ avatar_src }}" alt="Profil" class="radius-full" style="width: 35px; height: 35px; object-fit: cover; margin-right: 10px; border-radius: 50%;">
+                                            <span style="color: #0f172a; font-weight: 700;">{{ app.user.nom }}</span>
                                         </a>
-                                        <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 15px; border: 1px solid rgba(255,255,255,0.8); backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.1); padding: 15px 0;">
-                                            <li><a class="dropdown-item" href="{{ path('app_profile') }}"><i class="lni lni-user mr-10"></i> Mon Profil</a></li>
-                                            <li><a class="dropdown-item" href="{{ path('app_reclamation_index') }}"><i class="lni lni-bullhorn mr-10"></i> Mes Réclamations</a></li>
+                                        <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 12px; border: 1px solid #e2e8f0; background: #ffffff; box-shadow: 0 20px 50px rgba(0,0,0,0.1); padding: 15px 0;">
+                                            <li><a class="dropdown-item fw-bold" href="{{ path('app_profile') }}"><i class="lni lni-user mr-10 text-primary"></i> Mon Profil</a></li>
+                                            <li><a class="dropdown-item fw-bold" href="{{ path('app_reclamation_index') }}"><i class="lni lni-bullhorn mr-10 text-primary"></i> Mes Réclamations</a></li>
                                             <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item text-danger" href="{{ path('app_logout') }}"><i class="lni lni-exit mr-10"></i> Se déconnecter</a></li>
+                                            <li><a class="dropdown-item text-danger fw-bold" href="{{ path('app_logout') }}"><i class="lni lni-exit mr-10"></i> Se déconnecter</a></li>
                                         </ul>
                                     </div>
                                 {% endif %}
@@ -97,21 +95,21 @@
             <div style="display: flex; gap: 40px; flex-wrap: wrap;">
                 
                 <div class="formation-form-wrapper border-gradient-top" data-tilt data-tilt-max="2" data-tilt-speed="400" style="flex: 2; min-width: 300px;" data-aos="fade-up" data-aos-duration="1000">
-                    <h2 style="font-family: 'Fira Sans', sans-serif; font-weight: 900; color: #323450; font-size: 2.2rem; letter-spacing: -1px; margin-bottom: 10px; transform: translateZ(20px);">Détails du <span style="color: #2F80ED;">Ticket</span></h2>
-                    <hr style="margin-bottom: 20px; border-top: 1px solid rgba(47,128,237,0.2);">
+                    <h2 style="font-family: 'Fira Sans', sans-serif; font-weight: 900; color: #0f172a; font-size: 2.2rem; letter-spacing: -1px; margin-bottom: 10px; transform: translateZ(20px);">Détails du <span style="color: #2F80ED;">Ticket</span></h2>
+                    <hr style="margin-bottom: 20px; border-top: 1px solid #cbd5e1;">
 
                     {% if reclamation.statut != 'OUVERT' %}
-                        <div style="background: rgba(241, 245, 249, 0.6); color: #64748b; padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid rgba(0,0,0,0.05); transform: translateZ(10px);">
+                        <div style="background: rgba(241, 245, 249, 0.6); color: #64748b; padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #e2e8f0; transform: translateZ(10px); font-weight: 600;">
                             <i class="lni lni-lock"></i> Ticket clôturé ou en cours. Les modifications ne sont plus possibles.
                         </div>
                     {% else %}
-                        <div style="color: #2563eb; background: rgba(224, 242, 254, 0.6); padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid rgba(37, 99, 235, 0.2); transform: translateZ(10px);">
+                        <div style="color: #2563eb; background: rgba(224, 242, 254, 0.6); padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid rgba(37, 99, 235, 0.2); transform: translateZ(10px); font-weight: 600;">
                             <i class="lni lni-pencil-alt"></i> Vous pouvez modifier ce ticket tant qu'il n'est pas pris en charge.
                         </div>
                     {% endif %}
 
                     {% for message in app.flashes('success') %}
-                        <div style="background: rgba(39, 174, 96, 0.1); border: 1px solid rgba(39, 174, 96, 0.3); color: #27ae60; padding: 15px; border-radius: 12px; margin-bottom: 20px;">{{ message }}</div>
+                        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #047857; padding: 15px; border-radius: 12px; margin-bottom: 20px; font-weight:bold;">{{ message }}</div>
                     {% endfor %}
 
                     {% set isReadOnly = reclamation.statut != 'OUVERT' ? 'disabled' : '' %}
@@ -170,24 +168,24 @@
                 <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 20px;">
                     
                     <div class="formation-form-wrapper" data-tilt data-tilt-max="3" data-tilt-speed="400" style="padding: 30px;" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
-                        <h4 style="font-family: 'Fira Sans', sans-serif; font-weight: 800; color: #323450; margin-bottom: 20px; transform: translateZ(20px);"><i class="lni lni-timer"></i> Tracking</h4>
-                        <label style="font-size: 12px; font-weight: bold; letter-spacing: 1px; color: #8b92a5; transform: translateZ(10px);">STATUT ACTUEL</label>
+                        <h4 style="font-family: 'Fira Sans', sans-serif; font-weight: 800; color: #0f172a; margin-bottom: 20px; transform: translateZ(20px);"><i class="lni lni-timer text-primary"></i> Tracking</h4>
+                        <label style="font-size: 12px; font-weight: bold; letter-spacing: 1px; color: #64748b; transform: translateZ(10px);">STATUT ACTUEL</label>
                         <div style="padding: 12px; text-align: center; border-radius: 12px; font-weight: 800; font-size: 1.1rem; margin-top: 5px; color: white; box-shadow: 0 5px 15px rgba(0,0,0,0.1); transform: translateZ(15px);
                             {% if reclamation.statut == 'OUVERT' %}background: linear-gradient(45deg, #f39c12, #f1c40f);
-                            {% elseif reclamation.statut == 'TRAITE' %}background: linear-gradient(45deg, #27ae60, #2ecc71);
-                            {% else %}background: linear-gradient(45deg, #c0392b, #e74c3c);{% endif %}">
+                            {% elseif reclamation.statut == 'TRAITE' %}background: linear-gradient(45deg, #10b981, #34d399);
+                            {% else %}background: linear-gradient(45deg, #ef4444, #f87171);{% endif %}">
                             {{ reclamation.statut }}
                         </div>
-                        <p style="margin-top: 20px; font-size: 13px; color: #585978; transform: translateZ(10px);"><i class="lni lni-calendar"></i> Créé le : <strong>{{ reclamation.dateCreation ? reclamation.dateCreation|date('d/m/Y H:i') : 'Inconnue' }}</strong></p>
+                        <p style="margin-top: 20px; font-size: 13px; color: #64748b; font-weight: 500; transform: translateZ(10px);"><i class="lni lni-calendar"></i> Créé le : <strong>{{ reclamation.dateCreation ? reclamation.dateCreation|date('d/m/Y H:i') : 'Inconnue' }}</strong></p>
                     </div>
 
                     <div class="formation-form-wrapper" data-tilt data-tilt-max="3" data-tilt-speed="400" style="padding: 30px; flex-grow: 1;" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="400">
-                        <h4 style="font-family: 'Fira Sans', sans-serif; font-weight: 800; color: #323450; margin-bottom: 20px; transform: translateZ(20px);"><i class="lni lni-comments"></i> Réponse Admin</h4>
-                        <div style="background: rgba(255,255,255,0.9); padding: 20px; border-radius: 15px; border: 1px solid rgba(47,128,237,0.2); min-height: 120px; color: #323450; font-style: italic; line-height: 1.7; transform: translateZ(15px);">
+                        <h4 style="font-family: 'Fira Sans', sans-serif; font-weight: 800; color: #0f172a; margin-bottom: 20px; transform: translateZ(20px);"><i class="lni lni-comments text-primary"></i> Réponse Admin</h4>
+                        <div style="background: rgba(248, 250, 252, 0.8); padding: 20px; border-radius: 15px; border: 1px solid #e2e8f0; min-height: 120px; color: #0f172a; font-style: italic; line-height: 1.7; transform: translateZ(15px); font-weight: 500;">
                             {% if reclamation.reponseAdmin %}
                                 "{{ reclamation.reponseAdmin }}"
                             {% else %}
-                                <span style="color: #8b92a5;"><i class="lni lni-hourglass"></i> Votre demande est en file d'attente. Un administrateur l'analysera prochainement.</span>
+                                <span style="color: #64748b;"><i class="lni lni-hourglass"></i> Votre demande est en file d'attente. Un administrateur l'analysera prochainement.</span>
                             {% endif %}
                         </div>
                     </div>

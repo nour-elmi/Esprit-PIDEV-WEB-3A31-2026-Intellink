@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Entity\Utilisateur;
 
 class BackProjetController extends AbstractController
 {
@@ -149,27 +150,45 @@ class BackProjetController extends AbstractController
         return $this->redirectToRoute('app_back_projets');
     }
 
-    #[Route('/back/projets/{id}/demandes', name: 'app_back_projet_demandes', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function demandes(
-        int $id,
-        EntityManagerInterface $entityManager
-    ): Response {
-        $projet = $entityManager->getRepository(Projet::class)->find($id);
+   #[Route('/back/projets/{id}/demandes', name: 'app_back_projet_demandes', requirements: ['id' => '\d+'], methods: ['GET'])]
+public function demandes(
+    int $id,
+    EntityManagerInterface $entityManager
+): Response {
+    $projet = $entityManager->getRepository(Projet::class)->find($id);
 
-        if (!$projet || $projet->getCreateur() !== self::CREATEUR_EMAIL) {
-            throw $this->createNotFoundException('Projet introuvable.');
-        }
-
-        $demandes = $entityManager->getRepository(Collaboration::class)->findBy(
-            ['projet' => $projet],
-            ['id' => 'DESC']
-        );
-
-        return $this->render('back/demandes.html.twig', [
-            'projet' => $projet,
-            'demandes' => $demandes,
-        ]);
+    if (!$projet || $projet->getCreateur() !== self::CREATEUR_EMAIL) {
+        throw $this->createNotFoundException('Projet introuvable.');
     }
+
+    $demandes = $entityManager->getRepository(Collaboration::class)->findBy(
+        ['projet' => $projet],
+        ['id' => 'DESC']
+    );
+
+    $userIds = array_values(array_unique(array_filter(array_map(
+        static fn (Collaboration $demande) => $demande->getUserId(),
+        $demandes
+    ))));
+
+    $utilisateursParId = [];
+
+    if (!empty($userIds)) {
+        $utilisateurs = $entityManager->getRepository(Utilisateur::class)->findBy([
+            'id' => $userIds
+        ]);
+
+        foreach ($utilisateurs as $utilisateur) {
+            $utilisateursParId[$utilisateur->getId()] = $utilisateur;
+        }
+    }
+
+    return $this->render('back/demandes.html.twig', [
+        'projet' => $projet,
+        'demandes' => $demandes,
+        'utilisateursParId' => $utilisateursParId,
+    ]);
+}
 
     #[Route('/back/demande/{id}/accept', name: 'app_back_demande_accept', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function accepter(
