@@ -10,32 +10,30 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+
 #[Route('/formation')]
 final class ParticipationFormationController extends AbstractController
 {
-    // Utilisateur statique
-    private int $idUtilisateur = 1;
+    #[Route('/formations', name: 'app_utilisateur_formations')]
+    public function formations(FormationRepository $repo, ParticipationRepository $participationRepo): Response
+    {
+        $utilisateur = $this->getUser();
+        $idUtilisateur = $utilisateur->getId();
 
-    // Voir toutes les formations disponibles
-   #[Route('/formations', name: 'app_utilisateur_formations')]
-public function formations(FormationRepository $repo, ParticipationRepository $participationRepo): Response
-{
-    $formations = $repo->findAll();
-    
-    // Récupérer les IDs des formations où l'utilisateur est inscrit
-    $participations = $participationRepo->findBy(['idUtilisateur' => $this->idUtilisateur]);
-    $inscritIds = array_map(
-        fn($p) => $p->getFormation()->getIdFormation(),
-        $participations
-    );
+        $formations = $repo->findAll();
+        
+        $participations = $participationRepo->findBy(['idUtilisateur' => $idUtilisateur]);
+        $inscritIds = array_map(
+            fn($p) => $p->getFormation()->getIdFormation(),
+            $participations
+        );
 
-    return $this->render('formation/utilisateur_formation/formations.html.twig', [
-        'formations' => $formations,
-        'inscritIds' => $inscritIds,
-    ]);
-}
+        return $this->render('formation/utilisateur_formation/formations.html.twig', [
+            'formations' => $formations,
+            'inscritIds' => $inscritIds,
+        ]);
+    }
 
-    // Voir le détail d'une formation
     #[Route('/formation/{id}', name: 'app_utilisateur_formation_show')]
     public function show(int $id, FormationRepository $repo, ParticipationRepository $participationRepo): Response
     {
@@ -45,10 +43,12 @@ public function formations(FormationRepository $repo, ParticipationRepository $p
             throw $this->createNotFoundException('Formation introuvable');
         }
 
-        // Vérifier si l'utilisateur est déjà inscrit
+        $utilisateur = $this->getUser();
+        $idUtilisateur = $utilisateur->getId();
+
         $dejaInscrit = $participationRepo->findOneBy([
             'formation' => $formation,
-            'idUtilisateur' => $this->idUtilisateur,
+            'idUtilisateur' => $idUtilisateur,
         ]);
 
         return $this->render('formation/utilisateur_formation/formation_show.html.twig', [
@@ -57,108 +57,107 @@ public function formations(FormationRepository $repo, ParticipationRepository $p
         ]);
     }
 
-    // S'inscrire à une formation
-#[Route('/participer/{id}', name: 'app_utilisateur_participer')]
-public function participer(
-    int $id,
-    Request $request,
-    FormationRepository $repo,
-    ParticipationRepository $participationRepo,
-    EntityManagerInterface $em
-): Response {
-    $formation = $repo->find($id);
+    #[Route('/participer/{id}', name: 'app_utilisateur_participer')]
+    public function participer(
+        int $id,
+        Request $request,
+        FormationRepository $repo,
+        ParticipationRepository $participationRepo,
+        EntityManagerInterface $em
+    ): Response {
+        $formation = $repo->find($id);
 
-    if (!$formation) {
-        throw $this->createNotFoundException('Formation introuvable');
-    }
-
-    // Vérifier si déjà inscrit
-    $dejaInscrit = $participationRepo->findOneBy([
-        'formation' => $formation,
-        'idUtilisateur' => $this->idUtilisateur,
-    ]);
-
-    if ($dejaInscrit) {
-        $this->addFlash('warning', 'Vous êtes déjà inscrit à cette formation !');
-        return $this->redirectToRoute('app_utilisateur_formation_show', ['id' => $id]);
-    }
-
-    $errors = [];
-    $old = [];
-
-    if ($request->isMethod('POST')) {
-
-        $posteActuel = trim($request->request->get('posteActuel'));
-        $attentes = trim($request->request->get('attentes'));
-
-        $old = $request->request->all();
-
-        // 🔴 VALIDATION
-
-        // Poste actuel
-        if (empty($posteActuel)) {
-            $errors['posteActuel'] = "Le poste est obligatoire";
-        } elseif (strlen($posteActuel) < 3) {
-            $errors['posteActuel'] = "Minimum 3 caractères";
-        } elseif (!preg_match("/^[a-zA-ZÀ-ÿ\s]+$/", $posteActuel)) {
-            $errors['posteActuel'] = "Seulement des lettres autorisées";
+        if (!$formation) {
+            throw $this->createNotFoundException('Formation introuvable');
         }
 
-        // Attentes
-        if (empty($attentes)) {
-            $errors['attentes'] = "Les attentes sont obligatoires";
-        } elseif (strlen($attentes) < 10) {
-            $errors['attentes'] = "Minimum 10 caractères";
-        }
+        $utilisateur = $this->getUser();
+        $idUtilisateur = $utilisateur->getId();
 
-        // ✅ SI PAS D'ERREURS
-        if (empty($errors)) {
-            $participation = new Participation();
-            $participation->setFormation($formation);
-            $participation->setIdUtilisateur($this->idUtilisateur);
-            $participation->setPosteActuel($posteActuel);
-            $participation->setAttentes($attentes);
-            $participation->setDateInscription(new \DateTime());
-            $participation->setScore(0);
-
-            $em->persist($participation);
-            $em->flush();
-
-            $this->addFlash('success', 'Inscription réussie !');
-            return $this->redirectToRoute('app_utilisateur_mes_participations');
-        }
-
-        // 🔁 retourner avec erreurs
-        return $this->render('formation/utilisateur_formation/participer.html.twig', [
+        $dejaInscrit = $participationRepo->findOneBy([
             'formation' => $formation,
-            'errors' => $errors,
-            'old' => $old
+            'idUtilisateur' => $idUtilisateur,
+        ]);
+
+        if ($dejaInscrit) {
+            $this->addFlash('warning', 'Vous êtes déjà inscrit à cette formation !');
+            return $this->redirectToRoute('app_utilisateur_formation_show', ['id' => $id]);
+        }
+
+        $errors = [];
+        $old = [];
+
+        if ($request->isMethod('POST')) {
+
+            $posteActuel = trim($request->request->get('posteActuel'));
+            $attentes = trim($request->request->get('attentes'));
+
+            $old = $request->request->all();
+
+            if (empty($posteActuel)) {
+                $errors['posteActuel'] = "Le poste est obligatoire";
+            } elseif (strlen($posteActuel) < 3) {
+                $errors['posteActuel'] = "Minimum 3 caractères";
+            } elseif (!preg_match("/^[a-zA-ZÀ-ÿ\s]+$/", $posteActuel)) {
+                $errors['posteActuel'] = "Seulement des lettres autorisées";
+            }
+
+            if (empty($attentes)) {
+                $errors['attentes'] = "Les attentes sont obligatoires";
+            } elseif (strlen($attentes) < 10) {
+                $errors['attentes'] = "Minimum 10 caractères";
+            }
+
+            if (empty($errors)) {
+                $participation = new Participation();
+                $participation->setFormation($formation);
+                $participation->setIdUtilisateur($idUtilisateur);
+                $participation->setPosteActuel($posteActuel);
+                $participation->setAttentes($attentes);
+                $participation->setDateInscription(new \DateTime());
+                $participation->setScore(0);
+
+                $em->persist($participation);
+                $em->flush();
+
+                $this->addFlash('success', 'Inscription réussie !');
+                return $this->redirectToRoute('app_utilisateur_mes_participations');
+            }
+
+            return $this->render('formation/utilisateur_formation/participer.html.twig', [
+                'formation' => $formation,
+                'errors' => $errors,
+                'old' => $old
+            ]);
+        }
+
+        return $this->render('formation/utilisateur_formation/participer.html.twig', [
+            'formation' => $formation
         ]);
     }
 
-    // GET
-    return $this->render('formation/utilisateur_formation/participer.html.twig', [
-        'formation' => $formation
-    ]);
-}
-    // Voir ses participations
     #[Route('/mes-participations', name: 'app_utilisateur_mes_participations')]
     public function mesParticipations(ParticipationRepository $repo): Response
     {
-        $participations = $repo->findBy(['idUtilisateur' => $this->idUtilisateur]);
+        $utilisateur = $this->getUser();
+        $idUtilisateur = $utilisateur->getId();
+
+        $participations = $repo->findBy(['idUtilisateur' => $idUtilisateur]);
 
         return $this->render('formation/utilisateur_formation/mes_participations.html.twig', [
             'participations' => $participations,
         ]);
     }
 
-    // Annuler une participation
     #[Route('/annuler/{id}', name: 'app_utilisateur_annuler')]
     public function annuler(int $id, ParticipationRepository $repo, EntityManagerInterface $em): Response
     {
+        $utilisateur = $this->getUser();
+        $idUtilisateur = $utilisateur->getId();
+
         $participation = $repo->find($id);
 
-        if (!$participation || $participation->getIdUtilisateur() !== $this->idUtilisateur) {
+        if (!$participation || $participation->getIdUtilisateur() !== $idUtilisateur) {
             throw $this->createNotFoundException('Participation introuvable');
         }
 
@@ -169,69 +168,65 @@ public function participer(
         return $this->redirectToRoute('app_utilisateur_mes_participations');
     }
 
-   #[Route('/modifier-participation/{id}', name: 'app_utilisateur_modifier_participation')]
-public function modifierParticipation(
-    int $id,
-    Request $request,
-    ParticipationRepository $repo,
-    EntityManagerInterface $em
-): Response {
-    $participation = $repo->find($id);
+    #[Route('/modifier-participation/{id}', name: 'app_utilisateur_modifier_participation')]
+    public function modifierParticipation(
+        int $id,
+        Request $request,
+        ParticipationRepository $repo,
+        EntityManagerInterface $em
+    ): Response {
+        $utilisateur = $this->getUser();
+        $idUtilisateur = $utilisateur->getId();
 
-    if (!$participation || $participation->getIdUtilisateur() !== $this->idUtilisateur) {
-        throw $this->createNotFoundException('Participation introuvable');
-    }
+        $participation = $repo->find($id);
 
-    $errors = [];
-    $old = [];
-
-    if ($request->isMethod('POST')) {
-
-        $posteActuel = trim($request->request->get('posteActuel'));
-        $attentes = trim($request->request->get('attentes'));
-
-        $old = $request->request->all();
-
-        // 🔴 VALIDATION
-
-        // Poste actuel
-        if (empty($posteActuel)) {
-            $errors['posteActuel'] = "Le poste est obligatoire";
-        } elseif (strlen($posteActuel) < 3) {
-            $errors['posteActuel'] = "Minimum 3 caractères";
-        } elseif (!preg_match("/^[a-zA-ZÀ-ÿ\s]+$/", $posteActuel)) {
-            $errors['posteActuel'] = "Seulement des lettres autorisées";
+        if (!$participation || $participation->getIdUtilisateur() !== $idUtilisateur) {
+            throw $this->createNotFoundException('Participation introuvable');
         }
 
-        // Attentes
-        if (empty($attentes)) {
-            $errors['attentes'] = "Les attentes sont obligatoires";
-        } elseif (strlen($attentes) < 10) {
-            $errors['attentes'] = "Minimum 10 caractères";
+        $errors = [];
+        $old = [];
+
+        if ($request->isMethod('POST')) {
+
+            $posteActuel = trim($request->request->get('posteActuel'));
+            $attentes = trim($request->request->get('attentes'));
+
+            $old = $request->request->all();
+
+            if (empty($posteActuel)) {
+                $errors['posteActuel'] = "Le poste est obligatoire";
+            } elseif (strlen($posteActuel) < 3) {
+                $errors['posteActuel'] = "Minimum 3 caractères";
+            } elseif (!preg_match("/^[a-zA-ZÀ-ÿ\s]+$/", $posteActuel)) {
+                $errors['posteActuel'] = "Seulement des lettres autorisées";
+            }
+
+            if (empty($attentes)) {
+                $errors['attentes'] = "Les attentes sont obligatoires";
+            } elseif (strlen($attentes) < 10) {
+                $errors['attentes'] = "Minimum 10 caractères";
+            }
+
+            if (empty($errors)) {
+                $participation->setPosteActuel($posteActuel);
+                $participation->setAttentes($attentes);
+
+                $em->flush();
+
+                $this->addFlash('success', 'Participation modifiée avec succès !');
+                return $this->redirectToRoute('app_utilisateur_mes_participations');
+            }
+
+            return $this->render('formation/utilisateur_formation/modifier_participation.html.twig', [
+                'participation' => $participation,
+                'errors' => $errors,
+                'old' => $old
+            ]);
         }
 
-        // ✅ SI PAS D'ERREURS
-        if (empty($errors)) {
-            $participation->setPosteActuel($posteActuel);
-            $participation->setAttentes($attentes);
-
-            $em->flush();
-
-            $this->addFlash('success', 'Participation modifiée avec succès !');
-
-            return $this->redirectToRoute('app_utilisateur_mes_participations');
-        }
-
-        // 🔁 retourner avec erreurs
         return $this->render('formation/utilisateur_formation/modifier_participation.html.twig', [
-            'participation' => $participation,
-            'errors' => $errors,
-            'old' => $old
+            'participation' => $participation
         ]);
     }
-
-    return $this->render('formation/utilisateur_formation/modifier_participation.html.twig', [
-        'participation' => $participation
-    ]);
-}
 }

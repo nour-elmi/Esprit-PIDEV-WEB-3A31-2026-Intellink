@@ -1,0 +1,41 @@
+security:
+    # 1. HACHAGE DES MOTS DE PASSE
+    password_hashers:
+        App\Entity\Utilisateur: 'auto'
+
+    # 2. COMMENT TROUVER LES UTILISATEURS (Le Provider)
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\Utilisateur
+                property: email
+
+    # 3. LES PARE-FEUX (Firewalls)
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+            
+        main:
+            lazy: true
+            provider: app_user_provider
+
+            # On active l'authentificateur classique
+            form_login:
+                login_path: app_login
+                check_path: /login_check # ✅ LA CORRECTION MAGIQUE EST ICI
+                enable_csrf: true
+
+            # On active la déconnexion
+            logout:
+                path: app_logout
+                # Où aller après la déconnexion ? Retour à l'accueil
+                target: app_home
+
+    # 4. CONTRÔLE D'ACCÈS
+    access_control:
+        # ✅ J'ai rajouté le # manquant sur la ligne ci-dessous pour éviter une erreur fatale YAML
+        # Décommentez (enlevez le #) pour protéger vos futures pages !
+        # - { path: ^/admin, roles: ROLE_ADMIN }
+        # - { path: ^/profile, roles: ROLE_USER }
+        # - { path: ^/chef-projet, roles: ROLE_CHEF_PROJET }

@@ -13,14 +13,16 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/formation')]
 final class FormationController extends AbstractController
 {
-    #[Route('/', name: 'app_formation_index')]
-    public function index(FormationRepository $repo): Response
-    {
-        $formations = $repo->findAll();
-        return $this->render('formation/formateur/index.html.twig', [
-            'formations' => $formations,
-        ]);
-    }
+   #[Route('/', name: 'app_formation_index')]
+public function index(FormationRepository $repo): Response
+{
+    $utilisateur = $this->getUser();
+    $formations = $repo->findBy(['idFormateur' => $utilisateur->getId()]);
+    
+    return $this->render('formation/formateur/index.html.twig', [
+        'formations' => $formations,
+    ]);
+}
 
     #[Route('/add', name: 'app_formation_add')]
 public function add(Request $request, EntityManagerInterface $em): Response
@@ -70,7 +72,8 @@ public function add(Request $request, EntityManagerInterface $em): Response
             $formation->setDomaine($domaine);
             $formation->setNiveau($niveau);
             $formation->setUrlVideo($urlVideo);
-            $formation->setIdFormateur(1);
+            $utilisateur = $this->getUser();
+$formation->setIdFormateur($utilisateur->getId());
 
             $em->persist($formation);
             $em->flush();
