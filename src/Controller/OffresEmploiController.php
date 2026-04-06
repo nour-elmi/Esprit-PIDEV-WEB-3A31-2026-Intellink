@@ -11,24 +11,29 @@ use App\Entity\OffreEmploi;
 use App\Form\OffreFormType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
+use Knp\Component\Pager\PaginatorInterface;
 
 final class OffresEmploiController extends AbstractController
 {
     #[Route('/showOffre', name:'showOffre')]
-    public function listOffresfromDB(Request $request, OffreEmploiRepository $repo): Response 
+    public function listOffresfromDB(Request $request, OffreEmploiRepository $repo, PaginatorInterface $paginator): Response 
     {
         $sortBy = $request->query->get('sortBy');
         $direction = $request->query->get('direction', 'ASC'); // ASC par défaut
         $searchTerm = $request->query->get('query');
 
-        // Si un tri est demandé via la liste déroulante
         if ($sortBy) {
             $offres = $repo->sortOffres($sortBy, $direction);
         } 
-        // Sinon, on garde ta logique de recherche actuelle
         else {
             $offres = $repo->searchOffres($searchTerm); 
         }
+
+        $offres = $paginator->paginate(
+            $offres, 
+            $request->query->getInt('page', 1), 
+            4 
+        );
 
         return $this->render('offres_emploi/frontend/showOffre.html.twig', [
             "list" => $offres

@@ -629,3 +629,35 @@ body {
     background-color: #38ada9;
     transform: translateY(-2px);
 }
+/*pagination*/
+.pagination-container {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+}
+
+/* Style pour les liens KnpPaginator */
+.pagination {
+    display: flex;
+    list-style: none;
+    gap: 8px;
+}
+
+.pagination li a, .pagination li span {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    color: #3b82f6;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.pagination li.active span {
+    background-color: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+.pagination li a:hover {
+    background-color: #f1f5f9;
+}
