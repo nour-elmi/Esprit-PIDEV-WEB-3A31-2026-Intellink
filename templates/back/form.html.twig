@@ -1,0 +1,90 @@
+{% extends 'base_projet.html.twig' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block body %}
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-content">
+            <div class="hero-icon">{{ is_edit ? '✏️' : '🚀' }}</div>
+            <h1>{{ title }}</h1>
+            <p>{{ subtitle|default('Remplissez les informations du projet.') }}</p>
+        </div>
+    </div>
+</section>
+
+<div class="main-content">
+    <div class="container">
+        <a href="{{ path('app_back_projets') }}" class="back-link">← Retour aux projets</a>
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">{{ message }}</div>
+        {% endfor %}
+
+        <div class="form-wrapper-custom">
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+            <div class="form-grid">
+                <div class="form-group-custom form-col-full">
+                    {{ form_label(form.titre) }}
+                    {{ form_widget(form.titre, {
+                        'attr': {
+                            'class': 'form-control-custom',
+                            'placeholder': 'Ex: Plateforme de collaboration digitale'
+                        }
+                    }) }}
+                    {{ form_errors(form.titre) }}
+                </div>
+
+                <div class="form-group-custom">
+                    {{ form_label(form.prix) }}
+                    {{ form_widget(form.prix, {
+                        'attr': {
+                            'class': 'form-control-custom',
+                            'placeholder': '0.00'
+                        }
+                    }) }}
+                    {{ form_errors(form.prix) }}
+                </div>
+
+                <div class="form-group-custom">
+                    {{ form_label(form.statut) }}
+                    {{ form_widget(form.statut, {
+                        'attr': {
+                            'class': 'form-control-custom'
+                        }
+                    }) }}
+                    {{ form_errors(form.statut) }}
+                </div>
+
+                <div class="form-group-custom form-col-full">
+                    {{ form_label(form.description) }}
+                    {{ form_widget(form.description, {
+                        'attr': {
+                            'class': 'form-control-custom',
+                            'rows': 6,
+                            'placeholder': 'Décrivez les objectifs, les fonctionnalités, les besoins de l’équipe et les résultats attendus...'
+                        }
+                    }) }}
+                    {{ form_errors(form.description) }}
+                </div>
+            </div>
+
+            <div class="form-actions">
+                {{ form_widget(form.save, {
+                    'label': button_label|default('Enregistrer'),
+                    'attr': {'class': 'btn-success-custom'}
+                }) }}
+
+                <a href="{{ path('app_back_projets') }}" class="btn-secondary-custom">Annuler</a>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

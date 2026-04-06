@@ -4,7 +4,11 @@ namespace App\Controller;
 
 use App\Entity\Utilisateur;
 use Doctrine\ORM\EntityManagerInterface;
+
 use App\Controller\formation\FormationController;
+
+use App\Controller\BackProjetController;
+
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -275,12 +279,17 @@ class AuthController extends AbstractController
             
         } elseif (in_array('ROLE_CHEF_PROJET', $roles)) {
             // Équivalent de /FrontChefProjet.fxml (Votre fichier)
-            return $this->redirectToRoute('app_home'); 
+
+            return $this->redirectToRoute('app_back_projets'); 
         }
         elseif (in_array('ROLE_USER', $roles)) {
             // Équivalent de /FrontChefProjet.fxml (Votre fichier)
             return $this->redirectToRoute('app_home'); 
+
+            
+
         }
+
 
         // 4. Par défaut : Utilisateur simple (Équivalent de /index.fxml)
         return $this->redirectToRoute('app_home');
