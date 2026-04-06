@@ -2,9 +2,12 @@
 .env
 .env.local
 .env.*.local
+.env.*
+!.env.example
 /var/
 /vendor/
 /public/bundles/
+/public/uploads/
 
 # Cache et logs
 /var/cache/

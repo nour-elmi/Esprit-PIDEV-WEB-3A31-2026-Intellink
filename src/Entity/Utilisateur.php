@@ -12,7 +12,7 @@ use App\Repository\UtilisateurRepository;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
 #[ORM\Table(name: 'utilisateurs')]
-class Utilisateur
+class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -210,6 +210,12 @@ class Utilisateur
     {
         // Chez vous, la colonne s'appelle "mdp" et non "password"
         return $this->mdp; 
+    }
+    public function setPassword(string $password): self
+    {
+        $this->password = $password;
+
+        return $this;
     }
 
     /**
