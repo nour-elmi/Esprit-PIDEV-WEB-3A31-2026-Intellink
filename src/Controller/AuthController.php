@@ -276,6 +276,10 @@ class AuthController extends AbstractController
             // Équivalent de /FrontChefProjet.fxml (Votre fichier)
             return $this->redirectToRoute('app_home'); 
         }
+         elseif (in_array('ROLE_USER', $roles)) {
+            // Équivalent de /FrontChefProjet.fxml (Votre fichier)
+            return $this->redirectToRoute('app_home'); 
+        }
 
         // 4. Par défaut : Utilisateur simple (Équivalent de /index.fxml)
         return $this->redirectToRoute('app_home');
