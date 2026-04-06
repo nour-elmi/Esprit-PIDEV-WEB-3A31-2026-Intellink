@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Plateforme de Gestion - Dashboard</title>
+    <meta
+      content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
+      name="viewport"
+    />
+    <link
+      rel="icon"
+      href="assets/img/logo - petit.png"
+      type="image/x-icon"
+    />
+
+    <!-- Fonts and icons -->
+    <script src="assets/js/plugin/webfont/webfont.min.js"></script>
+    <script>
+      WebFont.load({
+        google: { families: ["Public Sans:300,400,500,600,700"] },
+        custom: {
+          families: [
+            "Font Awesome 5 Solid",
+            "Font Awesome 5 Regular",
+            "Font Awesome 5 Brands",
+            "simple-line-icons",
+          ],
+          urls: ["assets/css/fonts.min.css"],
+        },
+        active: function () {
+          sessionStorage.fonts = true;
+        },
+      });
+    </script>
+
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="assets/css/plugins.min.css" />
+    <link rel="stylesheet" href="assets/css/kaiadmin.min.css" />
+    <link rel="stylesheet" href="assets/css/demo.css" />
+  </head>
+  <body>
+    <div class="wrapper">
+      <!-- Sidebar -->
+      <div class="sidebar" data-background-color="dark">
+        <div class="sidebar-logo">
+          <!-- Logo Header -->
+          <div class="logo-header" data-background-color="white"> 
+            <a href="index.html" class="logo">
+              <img
+                src="assets/img/logo.png"
+                alt="navbar brand"
+                class="navbar-brand"
+                height="50"
+              />
+            </a>
+            <div class="nav-toggle">
+              <button class="btn btn-toggle toggle-sidebar">
+                <i class="gg-menu-right"></i>
+              </button>
+              <button class="btn btn-toggle sidenav-toggler">
+                <i class="gg-menu-left"></i>
+              </button>
+            </div>
+            <button class="topbar-toggler more">
+              <i class="gg-more-vertical-alt"></i>
+            </button>
+          </div>
+          <!-- End Logo Header -->
+        </div>
+        <div class="sidebar-wrapper scrollbar scrollbar-inner">
+          <div class="sidebar-content">
+            <ul class="nav nav-secondary">
+              <!-- Dashboard -->
+              <li class="nav-item active">
+                <a href="dashboard.html">
+                  <i class="fas fa-home"></i>
+                  <p>Dashboard</p>
+                </a>
+              </li>
+
+              <li class="nav-section">
+                <span class="sidebar-mini-icon">
+                  <i class="fa fa-ellipsis-h"></i>
+                </span>
+                <h4 class="text-section">Modules de Gestion</h4>
+              </li>
+
+              <!-- Gestion du Forum -->
+              <li class="nav-item">
+                <a data-bs-toggle="collapse" href="#gestionForum">
+                  <i class="fas fa-comments"></i>
+                  <p>Gestion du Forum</p>
+                  <span class="caret"></span>
+                </a>
+                <div class="collapse" id="gestionForum">
+                  <ul class="nav nav-collapse">
+                    <li>
+                      <a href="forum/liste.html">
+                        <span class="sub-item">Liste des Forums</span>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </li>
+
+              <!-- Gestion des Formations -->
+              <li class="nav-item">
+                <a data-bs-toggle="collapse" href="#gestionFormations">
+                  <i class="fas fa-graduation-cap"></i>
+                  <p>Gestion des Formations</p>
+                  <span class="caret"></span>
+                </a>
+                <div class="collapse" id="gestionFormations">
+                  <ul class="nav nav-collapse">
+                    <li>
+                      <a href="formations/liste.html">
+                        <span class="sub-item">Liste des Formations</span>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </li>
+
+              <!-- Gestion des Emplois -->
+              <li class="nav-item">
+                <a data-bs-toggle="collapse" href="#gestionEmplois">
+                  <i class="fas fa-briefcase"></i>
+                  <p>Gestion des Emplois</p>
+                  <span class="caret"></span>
+                </a>
+                <div class="collapse" id="gestionEmplois">
+                  <ul class="nav nav-collapse">
+                    <li>
+                      <a href="emplois/offres.html">
+                        <span class="sub-item">Offres d'Emploi</span>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </li>
+
+              <!-- Gestion des Projets -->
+              <li class="nav-item">
+                <a data-bs-toggle="collapse" href="#gestionProjets">
+                  <i class="fas fa-handshake"></i>
+                  <p>Gestion des Projets</p>
+                  <span class="caret"></span>
+                </a>
+                <div class="collapse" id="gestionProjets">
+                  <ul class="nav nav-collapse">
+                    <li>
+                      <a href="projets/liste.html">
+                        <span class="sub-item">Listed es Projets</span>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </li>
+
+              <!-- Gestion des Utilisateurs -->
+              <li class="nav-item">
+                <a data-bs-toggle="collapse" href="#gestionUtilisateurs">
+                  <i class="fas fa-users-cog"></i>
+                  <p>Gestion des Utilisateurs</p>
+                  <span class="caret"></span>
+                </a>
+                <div class="collapse" id="gestionUtilisateurs">
+                  <ul class="nav nav-collapse">
+                    <li>
+                      <a href="utilisateurs/liste.html">
+                        <span class="sub-item">Liste des Utilisateurs</span>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </li>
+
+              <li class="nav-section">
+                <span class="sidebar-mini-icon">
+                  <i class="fa fa-ellipsis-h"></i>
+                </span>
+                <h4 class="text-section">Système</h4>
+              </li>
+
+              <!-- Paramètres -->
+              <li class="nav-item">
+                <a data-bs-toggle="collapse" href="#parametres">
+                  <i class="fas fa-cog"></i>
+                  <p>Paramètres</p>
+                  <span class="caret"></span>
+                </a>
+                <div class="collapse" id="parametres">
+                  <ul class="nav nav-collapse">
+                    <li>
+                      <a href="parametres/general.html">
+                        <span class="sub-item">Général</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="parametres/securite.html">
+                        <span class="sub-item">Sécurité</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="parametres/notifications.html">
+                        <span class="sub-item">Notifications</span>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </li>
+
+              <!-- Rapports -->
+              <li class="nav-item">
+                <a href="rapports.html">
+                  <i class="fas fa-chart-line"></i>
+                  <p>Rapports & Analytics</p>
+                  <span class="badge badge-success">New</span>
+                </a>
+              </li>
+
+              <!-- Documentation -->
+              <li class="nav-item">
+                <a href="documentation.html">
+                  <i class="fas fa-book"></i>
+                  <p>Documentation</p>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <!-- End Sidebar -->
+
+      <div class="main-panel">
+        <div class="main-header">
+          <div class="main-header-logo">
+            <!-- Logo Header -->
+            <div class="logo-header" data-background-color="dark2">
+              <a href="index.html" class="logo">
+                <img
+                  src="assets/img/logo.png"
+                  alt="navbar brand"
+                  class="navbar-brand"
+                  height="20"
+                />
+              </a>
+              <div class="nav-toggle">
+                <button class="btn btn-toggle toggle-sidebar">
+                  <i class="gg-menu-right"></i>
+                </button>
+                <button class="btn btn-toggle sidenav-toggler">
+                  <i class="gg-menu-left"></i>
+                </button>
+              </div>
+              <button class="topbar-toggler more">
+                <i class="gg-more-vertical-alt"></i>
+              </button>
+            </div>
+            <!-- End Logo Header -->
+          </div>
+          <!-- Navbar Header -->
+          <nav
+            class="navbar navbar-header navbar-header-transparent navbar-expand-lg border-bottom"
+          >
+            <div class="container-fluid">
+              <nav
+                class="navbar navbar-header-left navbar-expand-lg navbar-form nav-search p-0 d-none d-lg-flex"
+              >
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <button type="submit" class="btn btn-search pe-1">
+                      <i class="fa fa-search search-icon"></i>
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Rechercher ..."
+                    class="form-control"
+                  />
+                </div>
+              </nav>
+
+              <ul class="navbar-nav topbar-nav ms-md-auto align-items-center">
+                <li
+                  class="nav-item topbar-icon dropdown hidden-caret d-flex d-lg-none"
+                >
+                  <a
+                    class="nav-link dropdown-toggle"
+                    data-bs-toggle="dropdown"
+                    href="#"
+                    role="button"
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                  >
+                    <i class="fa fa-search"></i>
+                  </a>
+                  <ul class="dropdown-menu dropdown-search animated fadeIn">
+                    <form class="navbar-left navbar-form nav-search">
+                      <div class="input-group">
+                        <input
+                          type="text"
+                          placeholder="Rechercher ..."
+                          class="form-control"
+                        />
+                      </div>
+                    </form>
+                  </ul>
+                </li>
+                <li class="nav-item topbar-icon dropdown hidden-caret">
+                  <a
+                    class="nav-link dropdown-toggle"
+                    href="#"
+                    id="messageDropdown"
+                    role="button"
+                    data-bs-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  >
+                    <i class="fa fa-envelope"></i>
+                  </a>
+                  <ul
+                    class="dropdown-menu messages-notif-box animated fadeIn"
+                    aria-labelledby="messageDropdown"
+                  >
+                    <li>
+                      <div
+                        class="dropdown-title d-flex justify-content-between align-items-center"
+                      >
+                        Messages
+                        <a href="#" class="small">Marquer tout comme lu</a>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="message-notif-scroll scrollbar-outer">
+                        <div class="notif-center">
+                          <a href="#">
+                            <div class="notif-img">
+                              <img
+                                src="assets/img/jm_denis.jpg"
+                                alt="Img Profile"
+                              />
+                            </div>
+                            <div class="notif-content">
+                              <span class="subject">Jimmy Denis</span>
+                              <span class="block"> Comment allez-vous ? </span>
+                              <span class="time">Il y a 5 minutes</span>
+                            </div>
+                          </a>
+                          <a href="#">
+                            <div class="notif-img">
+                              <img
+                                src="assets/img/chadengle.jpg"
+                                alt="Img Profile"
+                              />
+                            </div>
+                            <div class="notif-content">
+                              <span class="subject">Chad</span>
+                              <span class="block"> Ok, Merci ! </span>
+                              <span class="time">Il y a 12 minutes</span>
+                            </div>
+                          </a>
+                        </div>
+                      </div>
+                    </li>
+                    <li>
+                      <a class="see-all" href="javascript:void(0);"
+                        >Voir tous les messages<i class="fa fa-angle-right"></i>
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+                <li class="nav-item topbar-icon dropdown hidden-caret">
+                  <a
+                    class="nav-link dropdown-toggle"
+                    href="#"
+                    id="notifDropdown"
+                    role="button"
+                    data-bs-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  >
+                    <i class="fa fa-bell"></i>
+                    <span class="notification">4</span>
+                  </a>
+                  <ul
+                    class="dropdown-menu notif-box animated fadeIn"
+                    aria-labelledby="notifDropdown"
+                  >
+                    <li>
+                      <div class="dropdown-title">
+                        Vous avez 4 nouvelles notifications
+                      </div>
+                    </li>
+                    <li>
+                      <div class="notif-scroll scrollbar-outer">
+                        <div class="notif-center">
+                          <a href="#">
+                            <div class="notif-icon notif-primary">
+                              <i class="fa fa-user-plus"></i>
+                            </div>
+                            <div class="notif-content">
+                              <span class="block"> Nouvel utilisateur inscrit </span>
+                              <span class="time">Il y a 5 minutes</span>
+                            </div>
+                          </a>
+                          <a href="#">
+                            <div class="notif-icon notif-success">
+                              <i class="fa fa-comment"></i>
+                            </div>
+                            <div class="notif-content">
+                              <span class="block">
+                                Nouveau commentaire sur le forum
+                              </span>
+                              <span class="time">Il y a 12 minutes</span>
+                            </div>
+                          </a>
+                          <a href="#">
+                            <div class="notif-icon notif-warning">
+                              <i class="fa fa-briefcase"></i>
+                            </div>
+                            <div class="notif-content">
+                              <span class="block">
+                                Nouvelle offre d'emploi publiée
+                              </span>
+                              <span class="time">Il y a 17 minutes</span>
+                            </div>
+                          </a>
+                          <a href="#">
+                            <div class="notif-icon notif-info">
+                              <i class="fa fa-graduation-cap"></i>
+                            </div>
+                            <div class="notif-content">
+                              <span class="block"> Nouvelle formation ajoutée </span>
+                              <span class="time">Il y a 25 minutes</span>
+                            </div>
+                          </a>
+                        </div>
+                      </div>
+                    </li>
+                    <li>
+                      <a class="see-all" href="javascript:void(0);"
+                        >Voir toutes les notifications<i class="fa fa-angle-right"></i>
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+                <li class="nav-item topbar-icon dropdown hidden-caret">
+                  <a
+                    class="nav-link"
+                    data-bs-toggle="dropdown"
+                    href="#"
+                    aria-expanded="false"
+                  >
+                    <i class="fas fa-layer-group"></i>
+                  </a>
+                  <div class="dropdown-menu quick-actions animated fadeIn">
+                    <div class="quick-actions-header">
+                      <span class="title mb-1">Actions Rapides</span>
+                      <span class="subtitle op-7">Raccourcis</span>
+                    </div>
+                    <div class="quick-actions-scroll scrollbar-outer">
+                      <div class="quick-actions-items">
+                        <div class="row m-0">
+                          <a class="col-6 col-md-4 p-0" href="#">
+                            <div class="quick-actions-item">
+                              <div class="avatar-item bg-danger rounded-circle">
+                                <i class="fas fa-graduation-cap"></i>
+                              </div>
+                              <span class="text">Formations</span>
+                            </div>
+                          </a>
+                          <a class="col-6 col-md-4 p-0" href="#">
+                            <div class="quick-actions-item">
+                              <div
+                                class="avatar-item bg-warning rounded-circle"
+                              >
+                                <i class="fas fa-briefcase"></i>
+                              </div>
+                              <span class="text">Emplois</span>
+                            </div>
+                          </a>
+                          <a class="col-6 col-md-4 p-0" href="#">
+                            <div class="quick-actions-item">
+                              <div class="avatar-item bg-info rounded-circle">
+                                <i class="fas fa-handshake"></i>
+                              </div>
+                              <span class="text">Projets</span>
+                            </div>
+                          </a>
+                          <a class="col-6 col-md-4 p-0" href="#">
+                            <div class="quick-actions-item">
+                              <div
+                                class="avatar-item bg-success rounded-circle"
+                              >
+                                <i class="fas fa-comments"></i>
+                              </div>
+                              <span class="text">Forum</span>
+                            </div>
+                          </a>
+                          <a class="col-6 col-md-4 p-0" href="#">
+                            <div class="quick-actions-item">
+                              <div
+                                class="avatar-item bg-primary rounded-circle"
+                              >
+                                <i class="fas fa-users"></i>
+                              </div>
+                              <span class="text">Utilisateurs</span>
+                            </div>
+                          </a>
+                          <a class="col-6 col-md-4 p-0" href="#">
+                            <div class="quick-actions-item">
+                              <div
+                                class="avatar-item bg-secondary rounded-circle"
+                              >
+                                <i class="fas fa-chart-line"></i>
+                              </div>
+                              <span class="text">Rapports</span>
+                            </div>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+
+                <li class="nav-item topbar-user dropdown hidden-caret">
+                  <a
+                    class="dropdown-toggle profile-pic"
+                    data-bs-toggle="dropdown"
+                    href="#"
+                    aria-expanded="false"
+                  >
+                    <div class="avatar-sm">
+                      <img
+                        src="assets/img/profile.jpg"
+                        alt="..."
+                        class="avatar-img rounded-circle"
+                      />
+                    </div>
+                    <span class="profile-username">
+                      <span class="op-7">Bonjour,</span>
+                      <span class="fw-bold">Admin</span>
+                    </span>
+                  </a>
+                  <ul class="dropdown-menu dropdown-user animated fadeIn">
+                    <div class="dropdown-user-scroll scrollbar-outer">
+                      <li>
+                        <div class="user-box">
+                          <div class="avatar-lg">
+                            <img
+                              src="assets/img/profile.jpg"
+                              alt="image profile"
+                              class="avatar-img rounded"
+                            />
+                          </div>
+                          <div class="u-text">
+                            <h4>Administrateur</h4>
+                            <p class="text-muted">admin@example.com</p>
+                            <a
+                              href="profile.html"
+                              class="btn btn-xs btn-secondary btn-sm"
+                              >Voir le Profil</a
+                            >
+                          </div>
+                        </div>
+                      </li>
+                      <li>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#">Mon Profil</a>
+                        <a class="dropdown-item" href="#">Paramètres</a>
+                        <a class="dropdown-item" href="#">Boîte de Réception</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#">Déconnexion</a>
+                      </li>
+                    </div>
+                  </ul>
+                </li>
+              </ul>
+            </div>
+          </nav>
+          <!-- End Navbar -->
+        </div>
+
+
+        <div class="container">
+          <div class="page-inner">
+            <div class="page-header">
+              <h3 class="fw-bold mb-3">Gestion des Utilisateurs</h3>
+              <ul class="breadcrumbs mb-3">
+                <li class="nav-home">
+                  <a href="#">
+                    <i class="icon-home"></i>
+                  </a>
+                </li>
+                <li class="separator">
+                  <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
+                  <a href="#">Utilisateurs</a>
+                </li>
+                <li class="separator">
+                  <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
+                  <a href="#">Liste des Utilisateurs</a>
+                </li>
+              </ul>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                <div class="card">
+                  <div class="card-header">
+                    <div class="d-flex align-items-center">
+                      <h4 class="card-title">Liste des Utilisateurs</h4>
+                      <button
+                        class="btn btn-primary btn-round ms-auto"
+                        data-bs-toggle="modal"
+                        data-bs-target="#addRowModal"
+                      >
+                        <i class="fa fa-plus"></i>
+                        Ajouter Utilisateur
+                      </button>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <!-- Modal Ajouter -->
+                    <div
+                      class="modal fade"
+                      id="addRowModal"
+                      tabindex="-1"
+                      role="dialog"
+                      aria-hidden="true"
+                    >
+                      <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                          <div class="modal-header border-0">
+                            <h5 class="modal-title">
+                              <span class="fw-mediumbold"> Nouvel</span>
+                              <span class="fw-light"> Utilisateur </span>
+                            </h5>
+                            <button
+                              type="button"
+                              class="close"
+                              data-bs-dismiss="modal"
+                              aria-label="Close"
+                            >
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                          </div>
+                          <div class="modal-body">
+                            <p class="small">
+                              Créer un nouvel utilisateur en remplissant ce formulaire
+                            </p>
+                            <form>
+                              <div class="row">
+                                <div class="col-sm-12">
+                                  <div class="form-group form-group-default">
+                                    <label>Nom Complet</label>
+                                    <input
+                                      id="addName"
+                                      type="text"
+                                      class="form-control"
+                                      placeholder="Entrez le nom complet"
+                                    />
+                                  </div>
+                                </div>
+                                <div class="col-md-6 pe-0">
+                                  <div class="form-group form-group-default">
+                                    <label>Poste</label>
+                                    <input
+                                      id="addPosition"
+                                      type="text"
+                                      class="form-control"
+                                      placeholder="Entrez le poste"
+                                    />
+                                  </div>
+                                </div>
+                                <div class="col-md-6">
+                                  <div class="form-group form-group-default">
+                                    <label>Bureau</label>
+                                    <input
+                                      id="addOffice"
+                                      type="text"
+                                      class="form-control"
+                                      placeholder="Entrez le bureau"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </form>
+                          </div>
+                          <div class="modal-footer border-0">
+                            <button
+                              type="button"
+                              id="addRowButton"
+                              class="btn btn-primary"
+                            >
+                              Ajouter
+                            </button>
+                            <button
+                              type="button"
+                              class="btn btn-danger"
+                              data-bs-dismiss="modal"
+                            >
+                              Annuler
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Modal Modifier -->
+                    <div
+                      class="modal fade"
+                      id="editRowModal"
+                      tabindex="-1"
+                      role="dialog"
+                      aria-hidden="true"
+                    >
+                      <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                          <div class="modal-header border-0">
+                            <h5 class="modal-title">
+                              <span class="fw-mediumbold"> Modifier</span>
+                              <span class="fw-light"> Utilisateur </span>
+                            </h5>
+                            <button
+                              type="button"
+                              class="close"
+                              data-bs-dismiss="modal"
+                              aria-label="Close"
+                            >
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                          </div>
+                          <div class="modal-body">
+                            <p class="small">
+                              Modifier les informations de l'utilisateur
+                            </p>
+                            <form>
+                              <div class="row">
+                                <div class="col-sm-12">
+                                  <div class="form-group form-group-default">
+                                    <label>Nom Complet</label>
+                                    <input
+                                      id="editName"
+                                      type="text"
+                                      class="form-control"
+                                      placeholder="Entrez le nom complet"
+                                    />
+                                  </div>
+                                </div>
+                                <div class="col-md-6 pe-0">
+                                  <div class="form-group form-group-default">
+                                    <label>Poste</label>
+                                    <input
+                                      id="editPosition"
+                                      type="text"
+                                      class="form-control"
+                                      placeholder="Entrez le poste"
+                                    />
+                                  </div>
+                                </div>
+                                <div class="col-md-6">
+                                  <div class="form-group form-group-default">
+                                    <label>Bureau</label>
+                                    <input
+                                      id="editOffice"
+                                      type="text"
+                                      class="form-control"
+                                      placeholder="Entrez le bureau"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </form>
+                          </div>
+                          <div class="modal-footer border-0">
+                            <button
+                              type="button"
+                              id="editRowButton"
+                              class="btn btn-primary"
+                            >
+                              Enregistrer
+                            </button>
+                            <button
+                              type="button"
+                              class="btn btn-danger"
+                              data-bs-dismiss="modal"
+                            >
+                              Annuler
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="table-responsive">
+                      <table
+                        id="add-row"
+                        class="display table table-striped table-hover"
+                      >
+                        <thead>
+                          <tr>
+                            <th>Nom</th>
+                            <th>Poste</th>
+                            <th>Bureau</th>
+                            <th style="width: 10%">Actions</th>
+                          </tr>
+                        </thead>
+                        <tfoot>
+                          <tr>
+                            <th>Nom</th>
+                            <th>Poste</th>
+                            <th>Bureau</th>
+                            <th>Actions</th>
+                          </tr>
+                        </tfoot>
+                        <tbody>
+                          <tr>
+                            <td>Tiger Nixon</td>
+                            <td>Architecte Système</td>
+                            <td>Édimbourg</td>
+                            <td>
+                              <div class="form-button-action">
+                                <button
+                                  type="button"
+                                  data-bs-toggle="tooltip"
+                                  title="Modifier"
+                                  class="btn btn-link btn-primary btn-lg"
+                                  onclick="editRow(this)"
+                                >
+                                  <i class="fa fa-edit"></i>
+                                </button>
+                                <button
+                                  type="button"
+                                  data-bs-toggle="tooltip"
+                                  title="Supprimer"
+                                  class="btn btn-link btn-danger"
+                                  onclick="deleteRow(this)"
+                                >
+                                  <i class="fa fa-times"></i>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Garrett Winters</td>
+                            <td>Comptable</td>
+                            <td>Tokyo</td>
+                            <td>
+                              <div class="form-button-action">
+                                <button
+                                  type="button"
+                                  data-bs-toggle="tooltip"
+                                  title="Modifier"
+                                  class="btn btn-link btn-primary btn-lg"
+                                  onclick="editRow(this)"
+                                >
+                                  <i class="fa fa-edit"></i>
+                                </button>
+                                <button
+                                  type="button"
+                                  data-bs-toggle="tooltip"
+                                  title="Supprimer"
+                                  class="btn btn-link btn-danger"
+                                  onclick="deleteRow(this)"
+                                >
+                                  <i class="fa fa-times"></i>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Ashton Cox</td>
+                            <td>Auteur Technique Junior</td>
+                            <td>San Francisco</td>
+                            <td>
+                              <div class="form-button-action">
+                                <button
+                                  type="button"
+                                  data-bs-toggle="tooltip"
+                                  title="Modifier"
+                                  class="btn btn-link btn-primary btn-lg"
+                                  onclick="editRow(this)"
+                                >
+                                  <i class="fa fa-edit"></i>
+                                </button>
+                                <button
+                                  type="button"
+                                  data-bs-toggle="tooltip"
+                                  title="Supprimer"
+                                  class="btn btn-link btn-danger"
+                                  onclick="deleteRow(this)"
+                                >
+                                  <i class="fa fa-times"></i>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Cedric Kelly</td>
+                            <td>Développeur JavaScript Senior</td>
+                            <td>Édimbourg</td>
+                            <td>
+                              <div class="form-button-action">
+                                <button
+                                  type="button"
+                                  data-bs-toggle="tooltip"
+                                  title="Modifier"
+                                  class="btn btn-link btn-primary btn-lg"
+                                  onclick="editRow(this)"
+                                >
+                                  <i class="fa fa-edit"></i>
+                                </button>
+                                <button
+                                  type="button"
+                                  data-bs-toggle="tooltip"
+                                  title="Supprimer"
+                                  class="btn btn-link btn-danger"
+                                  onclick="deleteRow(this)"
+                                >
+                                  <i class="fa fa-times"></i>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Airi Satou</td>
+                            <td>Comptable</td>
+                            <td>Tokyo</td>
+                            <td>
+                              <div class="form-button-action">
+                                <button
+                                  type="button"
+                                  data-bs-toggle="tooltip"
+                                  title="Modifier"
+                                  class="btn btn-link btn-primary btn-lg"
+                                  onclick="editRow(this)"
+                                >
+                                  <i class="fa fa-edit"></i>
+                                </button>
+                                <button
+                                  type="button"
+                                  data-bs-toggle="tooltip"
+                                  title="Supprimer"
+                                  class="btn btn-link btn-danger"
+                                  onclick="deleteRow(this)"
+                                >
+                                  <i class="fa fa-times"></i>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Brielle Williamson</td>
+                            <td>Spécialiste Intégration</td>
+                            <td>New York</td>
+                            <td>
+                              <div class="form-button-action">
+                                <button
+                                  type="button"
+                                  data-bs-toggle="tooltip"
+                                  title="Modifier"
+                                  class="btn btn-link btn-primary btn-lg"
+                                  onclick="editRow(this)"
+                                >
+                                  <i class="fa fa-edit"></i>
+                                </button>
+                                <button
+                                  type="button"
+                                  data-bs-toggle="tooltip"
+                                  title="Supprimer"
+                                  class="btn btn-link btn-danger"
+                                  onclick="deleteRow(this)"
+                                >
+                                  <i class="fa fa-times"></i>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Herrod Chandler</td>
+                            <td>Assistant Commercial</td>
+                            <td>San Francisco</td>
+                            <td>
+                              <div class="form-button-action">
+                                <button
+                                  type="button"
+                                  data-bs-toggle="tooltip"
+                                  title="Modifier"
+                                  class="btn btn-link btn-primary btn-lg"
+                                  onclick="editRow(this)"
+                                >
+                                  <i class="fa fa-edit"></i>
+                                </button>
+                                <button
+                                  type="button"
+                                  data-bs-toggle="tooltip"
+                                  title="Supprimer"
+                                  class="btn btn-link btn-danger"
+                                  onclick="deleteRow(this)"
+                                >
+                                  <i class="fa fa-times"></i>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Rhona Davidson</td>
+                            <td>Spécialiste Intégration</td>
+                            <td>Tokyo</td>
+                            <td>
+                              <div class="form-button-action">
+                                <button
+                                  type="button"
+                                  data-bs-toggle="tooltip"
+                                  title="Modifier"
+                                  class="btn btn-link btn-primary btn-lg"
+                                  onclick="editRow(this)"
+                                >
+                                  <i class="fa fa-edit"></i>
+                                </button>
+                                <button
+                                  type="button"
+                                  data-bs-toggle="tooltip"
+                                  title="Supprimer"
+                                  class="btn btn-link btn-danger"
+                                  onclick="deleteRow(this)"
+                                >
+                                  <i class="fa fa-times"></i>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Colleen Hurst</td>
+                            <td>Développeur JavaScript</td>
+                            <td>San Francisco</td>
+                            <td>
+                              <div class="form-button-action">
+                                <button
+                                  type="button"
+                                  data-bs-toggle="tooltip"
+                                  title="Modifier"
+                                  class="btn btn-link btn-primary btn-lg"
+                                  onclick="editRow(this)"
+                                >
+                                  <i class="fa fa-edit"></i>
+                                </button>
+                                <button
+                                  type="button"
+                                  data-bs-toggle="tooltip"
+                                  title="Supprimer"
+                                  class="btn btn-link btn-danger"
+                                  onclick="deleteRow(this)"
+                                >
+                                  <i class="fa fa-times"></i>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Sonya Frost</td>
+                            <td>Ingénieur Logiciel</td>
+                            <td>Édimbourg</td>
+                            <td>
+                              <div class="form-button-action">
+                                <button
+                                  type="button"
+                                  data-bs-toggle="tooltip"
+                                  title="Modifier"
+                                  class="btn btn-link btn-primary btn-lg"
+                                  onclick="editRow(this)"
+                                >
+                                  <i class="fa fa-edit"></i>
+                                </button>
+                                <button
+                                  type="button"
+                                  data-bs-toggle="tooltip"
+                                  title="Supprimer"
+                                  class="btn btn-link btn-danger"
+                                  onclick="deleteRow(this)"
+                                >
+                                  <i class="fa fa-times"></i>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="footer">
+          <div class="container-fluid d-flex justify-content-between">
+            <nav class="pull-left">
+              <ul class="nav">
+                <li class="nav-item">
+                  <a class="nav-link" href="#">
+                    Plateforme de Gestion
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#"> Aide </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#"> Licences </a>
+                </li>
+              </ul>
+            </nav>
+            <div class="copyright">
+              2026, développé avec <i class="fa fa-heart heart text-danger"></i>
+            </div>
+          </div>
+        </footer>
+      </div>
+
+     
+    <!--   Core JS Files   -->
+    <script src=" assets/js/core/jquery-3.7.1.min.js"></script>
+    <script src=" assets/js/core/popper.min.js"></script>
+    <script src=" assets/js/core/bootstrap.min.js"></script>
+
+    <!-- jQuery Scrollbar -->
+    <script src=" assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
+    <!-- Datatables -->
+    <script src=" assets/js/plugin/datatables/datatables.min.js"></script>
+    <!-- Kaiadmin JS -->
+    <script src=" assets/js/kaiadmin.min.js"></script>
+    <!-- Kaiadmin DEMO methods -->
+    <script src=" assets/js/setting-demo2.js"></script>
+    
+    <script>
+      var table;
+      var currentEditRow;
+
+      $(document).ready(function () {
+        // Initialiser le DataTable
+        table = $("#add-row").DataTable({
+          pageLength: 10,
+          language: {
+            search: "Rechercher:",
+            lengthMenu: "Afficher _MENU_ entrées",
+            info: "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
+            infoEmpty: "Affichage de 0 à 0 sur 0 entrées",
+            infoFiltered: "(filtré de _MAX_ entrées totales)",
+            paginate: {
+              first: "Premier",
+              last: "Dernier",
+              next: "Suivant",
+              previous: "Précédent"
+            },
+            zeroRecords: "Aucun enregistrement correspondant trouvé",
+            emptyTable: "Aucune donnée disponible dans le tableau"
+          }
+        });
+
+        // Bouton Ajouter
+        $("#addRowButton").click(function () {
+          var action =
+            '<div class="form-button-action"> <button type="button" data-bs-toggle="tooltip" title="Modifier" class="btn btn-link btn-primary btn-lg" onclick="editRow(this)"> <i class="fa fa-edit"></i> </button> <button type="button" data-bs-toggle="tooltip" title="Supprimer" class="btn btn-link btn-danger" onclick="deleteRow(this)"> <i class="fa fa-times"></i> </button> </div>';
+
+          table.row.add([
+            $("#addName").val(),
+            $("#addPosition").val(),
+            $("#addOffice").val(),
+            action,
+          ]).draw(false);
+
+          $("#addRowModal").modal("hide");
+
+          // Réinitialiser le formulaire
+          $("#addName").val("");
+          $("#addPosition").val("");
+          $("#addOffice").val("");
+
+          // Notification de succès
+          $.notify({
+            icon: 'icon-check',
+            title: 'Succès!',
+            message: 'Utilisateur ajouté avec succès',
+          },{
+            type: 'success',
+            placement: {
+              from: "top",
+              align: "right"
+            },
+            time: 1000,
+          });
+        });
+
+        // Bouton Modifier (enregistrer les modifications)
+        $("#editRowButton").click(function () {
+          if (currentEditRow) {
+            var rowData = table.row(currentEditRow).data();
+            
+            // Mettre à jour les données de la ligne
+            rowData[0] = $("#editName").val();
+            rowData[1] = $("#editPosition").val();
+            rowData[2] = $("#editOffice").val();
+            
+            table.row(currentEditRow).data(rowData).draw(false);
+            
+            $("#editRowModal").modal("hide");
+            
+            // Notification de succès
+            $.notify({
+              icon: 'icon-check',
+              title: 'Succès!',
+              message: 'Utilisateur modifié avec succès',
+            },{
+              type: 'info',
+              placement: {
+                from: "top",
+                align: "right"
+              },
+              time: 1000,
+            });
+          }
+        });
+      });
+
+      // Fonction pour éditer une ligne
+      function editRow(button) {
+        currentEditRow = $(button).closest('tr');
+        var data = table.row(currentEditRow).data();
+        
+        // Remplir le formulaire de modification avec les données existantes
+        $("#editName").val(data[0]);
+        $("#editPosition").val(data[1]);
+        $("#editOffice").val(data[2]);
+        
+        // Ouvrir le modal de modification
+        $("#editRowModal").modal("show");
+      }
+
+      // Fonction pour supprimer une ligne
+      function deleteRow(button) {
+        // Confirmation avant suppression
+        swal({
+          title: "Êtes-vous sûr?",
+          text: "Vous ne pourrez pas récupérer cet utilisateur!",
+          icon: "warning",
+          buttons: {
+            cancel: {
+              text: "Annuler",
+              visible: true,
+              className: "btn btn-danger",
+            },
+            confirm: {
+              text: "Oui, supprimer!",
+              className: "btn btn-success",
+            },
+          },
+        }).then((willDelete) => {
+          if (willDelete) {
+            table.row($(button).closest('tr')).remove().draw();
+            
+            swal("Supprimé!", "L'utilisateur a été supprimé.", {
+              icon: "success",
+              buttons: {
+                confirm: {
+                  className: "btn btn-success",
+                },
+              },
+            });
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
