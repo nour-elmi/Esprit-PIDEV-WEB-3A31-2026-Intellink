@@ -14,9 +14,10 @@
         {{ form_start(formParticipation) }}
             <div class="row">
                 {# Informations Personnelles #}
-                <div class="col-md-6 form-group-custom">
-                    {{ form_label(formParticipation.nom_p, 'Nom du candidat') }}
-                    {{ form_widget(formParticipation.nom_p, {'attr': {'class': 'form-control-custom', 'placeholder': 'Ex: Jean'}}) }}
+               <div class="col-md-6 form-group-custom">
+                    {{ form_label(formParticipation.nom_p) }}
+                    {# L'ajout de 'required' force le navigateur à bloquer si c'est vide #}
+                    {{ form_widget(formParticipation.nom_p, {'attr': {'class': 'form-control-custom', 'required': 'required'}}) }}
                 </div>
 
                 <div class="col-md-6 form-group-custom">
@@ -25,9 +26,10 @@
                 </div>
 
                 {# Dossier de candidature #}
-                <div class="col-md-12 form-group-custom">
+               <div class="col-md-12 form-group-custom">
                     {{ form_label(formParticipation.cv, 'Lien vers le CV (PDF)') }}
-                    {{ form_widget(formParticipation.cv, {'attr': {'class': 'form-control-custom', 'placeholder': 'URL de votre CV...'}}) }}
+                    {{ form_widget(formParticipation.cv, {'attr': {'class': 'form-control-custom', 'required': 'required', 'pattern': '.*\.pdf'}}) }}
+                    <small class="text-muted">Le fichier doit être au format PDF.</small>
                 </div>
 
                 <div class="col-md-12 form-group-custom">
