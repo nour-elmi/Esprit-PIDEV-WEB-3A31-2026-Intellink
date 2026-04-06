@@ -25,9 +25,15 @@ class ParticipationController extends AbstractController
             throw $this->createNotFoundException('Projet introuvable.');
         }
 
+        $user = $this->getUser();
+
+        if (!$user || !method_exists($user, 'getId') || $user->getId() === null) {
+            throw $this->createAccessDeniedException('Vous devez être connecté pour participer à un projet.');
+        }
+
         $demande = new Collaboration();
         $demande->setProjet($projet);
-        $demande->setUserId(1);
+        $demande->setUserId($user->getId());
         $demande->setEtat('EN_ATTENTE');
         $demande->setDateCreation(new \DateTime());
 
@@ -71,8 +77,14 @@ class ParticipationController extends AbstractController
     #[Route('/mes-demandes', name: 'app_mes_demandes')]
     public function mesDemandes(EntityManagerInterface $entityManager): Response
     {
+        $user = $this->getUser();
+
+        if (!$user || !method_exists($user, 'getId') || $user->getId() === null) {
+            throw $this->createAccessDeniedException('Vous devez être connecté pour voir vos demandes.');
+        }
+
         $demandes = $entityManager->getRepository(Collaboration::class)->findBy([
-            'userId' => 1
+            'userId' => $user->getId()
         ]);
 
         return $this->render('participation/mes_demandes.html.twig', [
@@ -90,6 +102,16 @@ class ParticipationController extends AbstractController
 
         if (!$demande) {
             throw $this->createNotFoundException('Demande introuvable.');
+        }
+
+        $user = $this->getUser();
+
+        if (!$user || !method_exists($user, 'getId') || $user->getId() === null) {
+            throw $this->createAccessDeniedException('Vous devez être connecté pour modifier une demande.');
+        }
+
+        if ($demande->getUserId() !== $user->getId()) {
+            throw $this->createAccessDeniedException('Vous ne pouvez modifier que vos propres demandes.');
         }
 
         if ($demande->getEtat() !== 'EN_ATTENTE') {
@@ -142,6 +164,16 @@ class ParticipationController extends AbstractController
 
         if (!$demande) {
             throw $this->createNotFoundException('Demande introuvable.');
+        }
+
+        $user = $this->getUser();
+
+        if (!$user || !method_exists($user, 'getId') || $user->getId() === null) {
+            throw $this->createAccessDeniedException('Vous devez être connecté pour supprimer une demande.');
+        }
+
+        if ($demande->getUserId() !== $user->getId()) {
+            throw $this->createAccessDeniedException('Vous ne pouvez supprimer que vos propres demandes.');
         }
 
         if ($demande->getEtat() !== 'EN_ATTENTE') {

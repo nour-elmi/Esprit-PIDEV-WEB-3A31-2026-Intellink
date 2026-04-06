@@ -30,10 +30,15 @@ class ProjetController extends AbstractController
             throw $this->createNotFoundException('Projet introuvable.');
         }
 
-        $alreadyParticipated = $entityManager->getRepository(Collaboration::class)->findOneBy([
-            'userId' => 1,
-            'projet' => $projet,
-        ]) !== null;
+        $alreadyParticipated = false;
+        $user = $this->getUser();
+
+        if ($user && method_exists($user, 'getId') && $user->getId() !== null) {
+            $alreadyParticipated = $entityManager->getRepository(Collaboration::class)->findOneBy([
+                'userId' => $user->getId(),
+                'projet' => $projet,
+            ]) !== null;
+        }
 
         return $this->render('projet/show.html.twig', [
             'projet' => $projet,

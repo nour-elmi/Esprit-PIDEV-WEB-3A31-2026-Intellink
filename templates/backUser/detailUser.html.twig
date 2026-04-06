@@ -1,0 +1,93 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Détails Utilisateur - Intel_link{% endblock %}
+
+{% block body %}
+<div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
+    <div>
+        <h3 class="fw-bold mb-3"><i class="fas fa-user-circle me-2 text-primary"></i> Profil Utilisateur</h3>
+        <h6 class="op-7 mb-2">Consultation des informations détaillées du compte</h6>
+    </div>
+    <div class="ms-md-auto py-2 py-md-0">
+        <a href="{{ path('app_admin_users') }}" class="btn btn-secondary btn-round">
+            <i class="fas fa-arrow-left me-2"></i> Retour à la liste
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card card-profile shadow" style="border-radius: 15px; border: none;">
+            
+            <div class="card-header text-center" style="background: linear-gradient(135deg, #1e293b, #334155); padding-bottom: 50px; border-radius: 15px 15px 0 0; border: none;">
+                <div class="profile-picture" style="position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%);">
+                    <div class="avatar avatar-xxl">
+                        {% set avatar_src = user.image starts with 'http' ? user.image : asset('uploads/profiles/' ~ user.image) %}
+                        <img src="{{ avatar_src }}" onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png';" alt="Avatar" class="avatar-img rounded-circle border border-white border-4" style="background: white; object-fit: cover; width: 120px; height: 120px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body mt-5 pt-4">
+                <div class="text-center mb-4">
+                    <h3 class="fw-bold mb-1" style="color: #1e293b;">{{ user.nom }}</h3>
+                    <p class="text-muted mb-2">{{ user.email }}</p>
+                    
+                    {% set isSimpleUser = (user.role|lower == 'utilisateur simple' or user.role == 'ROLE_USER') %}
+                    {% set displayStatus = isSimpleUser ? 'ACTIF' : user.statutCompte %}
+                    
+                    <span class="badge badge-{{ 'ADMIN' in user.role|upper ? 'secondary' : 'primary' }} me-1">{{ user.role|upper }}</span>
+                    {% if displayStatus == 'EN_ATTENTE' %}
+                        <span class="badge badge-warning">EN ATTENTE</span>
+                    {% elseif displayStatus == 'REJETE' %}
+                        <span class="badge badge-danger">REJETE</span>
+                    {% else %}
+                        <span class="badge badge-success">ACTIF</span>
+                    {% endif %}
+                </div>
+
+                <hr style="border-top: 1px dashed #cbd5e1; margin: 25px 0;">
+
+                <div class="row px-4">
+                    <div class="col-12 mb-3">
+                        <label class="form-label text-muted fw-bold" style="font-size: 11px; letter-spacing: 1px;">NOM COMPLET</label>
+                        <div class="p-3 rounded" style="background-color: #f8fafc; border: 1px solid #e2e8f0; color: #1e293b; font-weight: 600;">
+                            <i class="fas fa-user me-2 text-primary"></i> {{ user.nom }}
+                        </div>
+                    </div>
+
+                    <div class="col-12 mb-3">
+                        <label class="form-label text-muted fw-bold" style="font-size: 11px; letter-spacing: 1px;">ADRESSE EMAIL</label>
+                        <div class="p-3 rounded" style="background-color: #f8fafc; border: 1px solid #e2e8f0; color: #334155;">
+                            <i class="fas fa-envelope me-2 text-primary"></i> {{ user.email }}
+                        </div>
+                    </div>
+
+                    <div class="col-12 mb-3">
+                        <label class="form-label text-muted fw-bold" style="font-size: 11px; letter-spacing: 1px;">RÔLE SYSTÈME</label>
+                        <div class="p-3 rounded" style="background-color: #f8fafc; border: 1px solid #e2e8f0; color: #334155;">
+                            <i class="fas fa-shield-alt me-2 text-primary"></i> {{ user.role }}
+                        </div>
+                    </div>
+
+                    <div class="col-12 mb-3">
+                        <label class="form-label text-muted fw-bold" style="font-size: 11px; letter-spacing: 1px;">CURRICULUM VITAE (PDF)</label>
+                        <div class="p-3 rounded d-flex align-items-center" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
+                            <i class="fas fa-file-pdf text-danger fs-4 me-3"></i>
+                            
+                            {% if user.skills and user.skills != 'null' %}
+                                <a href="{{ asset('uploads/CV/' ~ user.skills) }}" target="_blank" class="fw-bold text-primary text-decoration-none" style="transition: 0.3s;">
+                                    🌍 Ouvrir le CV dans le navigateur
+                                </a>
+                            {% else %}
+                                <span class="text-muted fst-italic">Aucun CV fourni par l'utilisateur</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,480 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion & Inscription - IntelLink{% endblock %}
+
+{% block stylesheets %}
+<link href="https://cdn.lineicons.com/2.0/LineIcons.css" rel="stylesheet">
+<style>
+    /* =========================================================================
+       1. FOND BLUEPRINT (Synchronisé avec l'Accueil et le Profil)
+       ========================================================================= */
+    body {
+        background-color: #f8fafc;
+        background-image: 
+            radial-gradient(rgba(47, 128, 237, 0.1) 1px, transparent 1px),
+            radial-gradient(rgba(47, 128, 237, 0.1) 1px, transparent 1px);
+        background-position: 0 0, 20px 20px;
+        background-size: 40px 40px;
+        display: flex; justify-content: center; align-items: center;
+        height: 100vh; margin: 0; font-family: 'Heebo', 'Segoe UI', Tahoma, sans-serif;
+        overflow: hidden;
+    }
+
+    /* Lumière d'ambiance subtile en arrière-plan */
+    body::before { content: ''; position: fixed; top: -10%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(86,204,242,0.12) 0%, transparent 60%); z-index: -1; }
+    body::after { content: ''; position: fixed; bottom: -10%; right: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(47,128,237,0.08) 0%, transparent 60%); z-index: -1; }
+
+    #tsparticles {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none;
+    }
+
+    /* =========================================================================
+       2. LE CONTENEUR PRINCIPAL (ULTRA GLASSMORPHISM 3D ORIGINAL)
+       ========================================================================= */
+    .auth-container {
+        background-color: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15), 0 0 40px rgba(47, 128, 237, 0.1);
+        position: relative; overflow: hidden;
+        width: 850px; max-width: 95%; min-height: 600px;
+        transform-style: preserve-3d; /* Pour l'effet Tilt 3D */
+    }
+
+    /* Le halo de lumière qui suit la souris sur la carte */
+    .auth-container::after {
+        content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(86, 204, 242, 0.1), transparent 40%);
+        pointer-events: none; z-index: 99; transition: opacity 0.3s; opacity: 0;
+    }
+    .auth-container:hover::after { opacity: 1; }
+
+    /* =========================================================================
+       3. PANNEAUX COULISSANTS
+       ========================================================================= */
+    .form-container {
+        position: absolute; top: 0; height: 100%; transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center;
+        padding: 0 40px; box-sizing: border-box; z-index: 1;
+    }
+    .form-container form { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+
+    .sign-in-container { left: 0; z-index: 2; background-color: transparent;}
+    .sign-up-container { left: 0; opacity: 0; z-index: 1; background-color: transparent;}
+
+    /* OVERLAY ORIGINAL BLEU VIF */
+    .overlay-container {
+        position: absolute; top: 0; left: 50%; width: 50%; height: 100%;
+        overflow: hidden; transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100;
+    }
+    .overlay {
+        background: linear-gradient(135deg, #0598ff, #2F80ED);
+        color: #ffffff; position: relative; left: -100%; height: 100%; width: 200%;
+        transform: translateX(0); transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1); display: flex;
+    }
+    .overlay-panel {
+        position: absolute; display: flex; align-items: center; justify-content: center; flex-direction: column;
+        text-align: center; top: 0; height: 100%; width: 50%; padding: 0 40px;
+        transform: translateX(0); transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .overlay-left { transform: translateX(-20%); }
+    .overlay-right { right: 0; transform: translateX(0); }
+
+    /* ANIMATION CSS */
+    .auth-container.right-panel-active .sign-in-container { transform: translateX(100%); opacity: 0; z-index: 1; }
+    .auth-container.right-panel-active .overlay-container { transform: translateX(-100%); }
+    .auth-container.right-panel-active .sign-up-container { transform: translateX(100%); opacity: 1; z-index: 5; }
+    .auth-container.right-panel-active .overlay { transform: translateX(50%); }
+    .auth-container.right-panel-active .overlay-left { transform: translateX(0); }
+    .auth-container.right-panel-active .overlay-right { transform: translateX(20%); }
+
+    /* =========================================================================
+       4. TYPOGRAPHIE & INPUTS (Néon effect original)
+       ========================================================================= */
+    h1 { font-family: 'Fira Sans', sans-serif; font-weight: 900; margin: 0 0 10px 0; color: #323450; font-size: 32px; letter-spacing: -1px; }
+    h1.white-text { color: white; font-size: 36px; text-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+    p { font-size: 14px; margin: 0 0 25px 0; color: #585978; }
+
+    .input-group { position: relative; width: 100%; max-width: 320px; }
+    
+    input[type="text"], input[type="email"], input[type="password"], select {
+        background-color: rgba(255,255,255,0.5); border: none; border-bottom: 2px solid #e8edf5;
+        padding: 10px 5px 10px 35px; width: 100%; outline: none; font-size: 14px;
+        color: #323450; transition: all 0.4s ease; border-radius: 8px 8px 0 0;
+    }
+    
+    /* L'effet Néon au focus */
+    input:focus, select:focus { 
+        background-color: #ffffff; border-bottom-color: #0598ff;
+        box-shadow: 0px 4px 15px -5px rgba(5, 152, 255, 0.4);
+    }
+
+    /* Indications de validation HTML5 */
+    input:valid:not(:placeholder-shown) { border-bottom-color: #2ecc71; }
+    input:invalid:not(:placeholder-shown) { border-bottom-color: #e74c3c; }
+
+    /* 🛠️ LE FIX POUR MASQUER L'ŒIL NATIF DE EDGE/CHROME 🛠️ */
+    input[type="password"]::-ms-reveal,
+    input[type="password"]::-ms-clear {
+        display: none;
+    }
+    input[type="password"]::-webkit-contacts-auto-fill-button,
+    input[type="password"]::-webkit-credentials-auto-fill-button {
+        visibility: hidden;
+        display: none !important;
+        pointer-events: none;
+    }
+    
+    .input-group > i.icon-left { position: absolute; left: 10px; top: 12px; color: #a0a4b8; font-size: 16px; transition: 0.4s;}
+    input:focus + i.icon-left, select:focus + i.icon-left { color: #0598ff; transform: scale(1.1); }
+
+    select { appearance: none; cursor: pointer; color: #585978; }
+
+    /* NOTRE PROPRE ŒIL MAGIQUE */
+    .toggle-password {
+        position: absolute; right: 10px; top: 8px; cursor: pointer;
+        color: #a0a4b8; background: none; border: none; font-size: 16px; padding: 5px; outline: none; transition: 0.3s;
+    }
+    .toggle-password:hover { color: #0598ff; transform: scale(1.1); }
+
+    /* =========================================================================
+       5. BOUTONS ORIGINAUX
+       ========================================================================= */
+    button.btn-primary {
+        border-radius: 30px; border: 2px solid transparent; background: linear-gradient(90deg, #0598ff, #2F80ED);
+        color: #FFFFFF; font-size: 14px; font-weight: bold; padding: 12px 45px;
+        letter-spacing: 1px; cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        width: 220px; margin-top: 5px; box-shadow: 0 8px 20px rgba(5, 152, 255, 0.3);
+    }
+    button.btn-primary:hover:not(:disabled) { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 25px rgba(5, 152, 255, 0.4); }
+    button.btn-primary:active:not(:disabled) { transform: scale(0.95); }
+    
+    button.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); box-shadow: none; transform: none; }
+    
+    button.btn-ghost { background: transparent; border: 2px solid #FFFFFF; box-shadow: none; }
+    button.btn-ghost:hover { background-color: #ffffff; color: #0598ff; }
+
+    button.btn-github {
+        background: #24292e; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 8px 20px rgba(36, 41, 46, 0.3);
+    }
+    button.btn-github:hover { background: #1b1f23; box-shadow: 0 12px 25px rgba(36, 41, 46, 0.4); }
+
+    /* =========================================================================
+       6. UPLOADS & BARRE DE FORCE
+       ========================================================================= */
+    .file-upload-row { display: flex; align-items: center; gap: 10px; width: 100%; max-width: 320px; }
+    .file-upload-label { background-color: #ecf0f1; color: #2c3e50; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: bold; transition: 0.3s; margin: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
+    .file-upload-label:hover { background-color: #d5dbdb; transform: translateY(-1px); }
+    .file-name { font-size: 11px; color: gray; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500;}
+    
+    .strength-bar-container { width: 100%; max-width: 320px; height: 4px; background: #e8edf5; border-radius: 5px; overflow: hidden; margin-top: -5px; }
+    .strength-bar { height: 100%; width: 0%; background: #e74c3c; transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.4s ease; }
+
+    .error-msg { background: rgba(235, 87, 87, 0.1); border: 1px solid rgba(235, 87, 87, 0.3); color: #eb5757; padding: 10px; border-radius: 8px; font-size: 12px; font-weight:bold; text-align: center; max-width: 320px; width: 100%; margin-bottom: 15px; }
+    .match-error { color: #e74c3c; font-size: 11px; font-weight: 700; width: 100%; max-width: 320px; text-align: left; display: none; margin-top: -10px; }
+
+    /* =========================================================================
+       7. AVATAR MODAL & ANIMATIONS
+       ========================================================================= */
+    .avatar-preview-img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border: 2px solid #fff; transition: 0.4s; }
+    .avatar-preview-img.pop { animation: avatarPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    @keyframes avatarPop { 0% { transform: scale(1); } 50% { transform: scale(1.2); box-shadow: 0 10px 25px rgba(5,152,255,0.4); border-color: #0598ff; } 100% { transform: scale(1); } }
+
+    .avatar-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 100000; justify-content: center; align-items: center; }
+    .avatar-grid { background: white; padding: 35px; border-radius: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); text-align: center; animation: scaleIn 0.3s ease-out; }
+    @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .avatar-grid img { width: 75px; height: 75px; cursor: pointer; transition: 0.3s; border-radius: 50%; border: 3px solid transparent; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .avatar-grid img:hover { transform: scale(1.15) rotate(5deg); box-shadow: 0 10px 20px rgba(5,152,255,0.2); border-color: #0598ff; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div id="tsparticles"></div>
+
+<div class="auth-container" id="auth-container" data-tilt data-tilt-max="2" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.1">
+    
+    <div class="form-container sign-in-container">
+        <form action="{{ path('app_login') }}" method="POST">
+            <h1>Connexion</h1>
+            <p>Heureux de vous revoir sur IntelLink.</p>
+            
+            {% for message in app.flashes('error_login') %}
+                <div class="error-msg">{{ message }}</div>
+            {% endfor %}
+            {% if error %}
+                <div class="error-msg">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+            {% endif %}
+
+            <div class="input-group">
+                <input type="email" name="_username" placeholder="Email" value="{{ last_username }}" required />
+                <i class="lni lni-envelope icon-left"></i>
+            </div>
+            
+            <div class="input-group">
+                <input type="password" id="login-password" name="_password" placeholder="Mot de passe" required />
+                <i class="lni lni-lock icon-left"></i>
+                <button type="button" class="toggle-password" onclick="togglePassword('login-password', this)">
+                    <i class="lni lni-eye"></i>
+                </button>
+            </div>
+            
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+            <div style="width: 100%; text-align: right; margin-top: -5px; max-width: 320px;">
+                <a href="#" style="color: #8b92a5; font-size: 12px; text-decoration: none; font-weight:600; transition: 0.3s;" onmouseover="this.style.color='#0598ff'" onmouseout="this.style.color='#8b92a5'">Mot de passe oublié ?</a>
+            </div>
+
+            <button type="submit" class="btn-primary">Accéder à mon espace</button>
+            
+            <div style="display: flex; align-items: center; width: 100%; max-width: 320px; margin: 10px 0; color: #a0a4b8; font-size: 11px; font-weight: bold;">
+                <hr style="flex: 1; border: 0; border-top: 1px solid #e8edf5;">
+                <span style="margin: 0 10px;">OU</span>
+                <hr style="flex: 1; border: 0; border-top: 1px solid #e8edf5;">
+            </div>
+
+            <button type="button" class="btn-primary btn-github" onclick="window.location.href='#'">
+                <i class="lni lni-github-original" style="font-size: 20px;"></i> Continuer avec GitHub
+            </button>
+        </form>
+    </div>
+
+    <div class="form-container sign-up-container">
+        <form action="{{ path('app_register') }}" method="POST" enctype="multipart/form-data">
+            <h1>Inscription</h1>
+            
+            {% for message in app.flashes('error_signup') %}
+                <div class="error-msg" style="margin-bottom: 5px;">{{ message }}</div>
+                <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        document.getElementById('auth-container').classList.add("right-panel-active");
+                    });
+                </script>
+            {% endfor %}
+
+            <div class="file-upload-row" style="justify-content: center; gap: 20px; margin-bottom: 5px;">
+                <img id="avatar-preview" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="avatar-preview-img">
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <label for="image_profil" class="file-upload-label" style="background: linear-gradient(90deg, #0598ff, #2F80ED); color: white; border: none; text-align:center;"><i class="lni lni-upload"></i> Importer photo</label>
+                    <input type="file" id="image_profil" name="image_profil" accept="image/png, image/jpeg" style="display: none;" onchange="previewImage(this)">
+                    
+                    <button type="button" class="file-upload-label" style="background-color: #ecf0f1; border: none; outline: none; color: #323450;" onclick="document.getElementById('avatarModal').style.display='flex'">
+                        <i class="lni lni-emoji-smile"></i> Choisir avatar
+                    </button>
+                    <input type="hidden" id="avatar_url_input" name="avatar_url" value="">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <input type="text" name="nom" placeholder="Nom complet" required />
+                <i class="lni lni-user icon-left"></i>
+            </div>
+            <div class="input-group">
+                <input type="email" name="email" placeholder="Email" required />
+                <i class="lni lni-envelope icon-left"></i>
+            </div>
+            
+            <div class="input-group">
+                <input type="password" id="signup-password" name="password" placeholder="Mot de passe" required onkeyup="checkStrength(this.value)" />
+                <i class="lni lni-lock icon-left"></i>
+                <button type="button" class="toggle-password" onclick="togglePassword('signup-password', this)">
+                    <i class="lni lni-eye"></i>
+                </button>
+            </div>
+            <div class="strength-bar-container"><div class="strength-bar" id="strength-bar"></div></div>
+
+            <div class="input-group">
+                <input type="password" id="confirm-password" placeholder="Confirmer le mot de passe" required onkeyup="validateRegistration()" />
+                <i class="lni lni-checkmark-circle icon-left"></i>
+            </div>
+            <div id="match-error" class="match-error">Les mots de passe ne correspondent pas.</div>
+
+            <div class="input-group">
+                <select name="role_demande">
+                    <option value="utilisateur simple">Sélectionner un rôle pro (Optionnel)</option>
+                    <option value="CHEF PROJET">CHEF PROJET</option>
+                    <option value="RECRUTEUR">RECRUTEUR</option>
+                    <option value="FORMATEUR">FORMATEUR</option>
+                </select>
+                <i class="lni lni-briefcase icon-left"></i>
+            </div>
+
+            <div class="file-upload-row" style="border-bottom: 2px solid #e8edf5; padding-bottom: 10px;">
+                <label for="cv_pdf" class="file-upload-label" style="background-color: #ecf0f1;"><i class="lni lni-paperclip"></i> Joindre CV (PDF)</label>
+                <input type="file" id="cv_pdf" name="cv_pdf" accept="application/pdf" style="display: none;" onchange="updateFileName(this)">
+                <span id="pdf-file-name" class="file-name">Aucun fichier</span>
+            </div>
+
+            <button type="submit" class="btn-primary" id="regSubmitBtn" style="margin-top: 10px;" disabled>S'inscrire</button>
+        </form>
+    </div>
+
+    <div class="overlay-container">
+        <div class="overlay">
+            <div class="overlay-panel overlay-left">
+                <h1 class="white-text">Bon retour !</h1>
+                <p class="white-text-p">Déjà inscrit ? Connectez-vous.</p>
+                <button class="btn-primary btn-ghost" id="signInBtn">Se connecter</button>
+            </div>
+            <div class="overlay-panel overlay-right">
+                <h1 class="white-text">Bienvenue !</h1>
+                <p class="white-text-p">Rejoignez la communauté IntelLink dès aujourd'hui.</p>
+                <button class="btn-primary btn-ghost" id="signUpBtn">S'inscrire</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="avatar-modal" id="avatarModal" onclick="closeModal(event)">
+    <div class="avatar-grid">
+        <h3 style="grid-column: span 4; font-family: 'Fira Sans'; margin-bottom: 10px; color: #323450; font-weight: 900;">Choisir un avatar</h3>
+        {% set avatars = [
+            "https://cdn-icons-png.flaticon.com/512/4140/4140047.png", "https://cdn-icons-png.flaticon.com/512/1144/1144709.png",
+            "https://cdn-icons-png.flaticon.com/512/6997/6997662.png", "https://cdn-icons-png.flaticon.com/512/147/147140.png",
+            "https://cdn-icons-png.flaticon.com/512/147/147144.png", "https://cdn-icons-png.flaticon.com/512/4140/4140048.png",
+            "https://cdn-icons-png.flaticon.com/512/147/147142.png", "https://cdn-icons-png.flaticon.com/512/147/147129.png"
+        ] %}
+        {% for url in avatars %}
+            <img src="{{ url }}" alt="Avatar" onclick="selectAvatar('{{ url }}')">
+        {% endfor %}
+        <button type="button" class="btn-primary" style="grid-column: span 4; width: 100%;" onclick="document.getElementById('avatarModal').style.display='none'">Fermer</button>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.2/vanilla-tilt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tsparticles-slim@2.0.6/tsparticles.slim.bundle.min.js"></script>
+
+<script>
+    // 1. ANIMATION DES PANNEAUX COULISSANTS
+    const signUpButton = document.getElementById('signUpBtn');
+    const signInButton = document.getElementById('signInBtn');
+    const container = document.getElementById('auth-container');
+
+    signUpButton.addEventListener('click', () => { container.classList.add("right-panel-active"); });
+    signInButton.addEventListener('click', () => { container.classList.remove("right-panel-active"); });
+
+    // 2. TOGGLE MOT DE PASSE (Sans conflit d'icônes natives)
+    function togglePassword(inputId, buttonElement) {
+        const input = document.getElementById(inputId);
+        const icon = buttonElement.querySelector('i');
+        
+        if (input.type === "password") {
+            input.type = "text";
+            icon.className = "lni lni-eye-crossed";
+        } else {
+            input.type = "password";
+            icon.className = "lni lni-eye";
+        }
+    }
+
+    // 3. BARRE DE FORCE ET VALIDATION MOT DE PASSE
+    function checkStrength(password) {
+        const bar = document.getElementById('strength-bar');
+        const len = password.length;
+        let percentage = Math.min((len / 8.0) * 100, 100);
+        bar.style.width = percentage + "%";
+
+        if (len >= 8) { bar.style.backgroundColor = "#2ecc71"; } 
+        else if (len >= 5) { bar.style.backgroundColor = "#f39c12"; } 
+        else { bar.style.backgroundColor = "#e74c3c"; }
+        
+        validateRegistration(); // Vérifier la correspondance après chaque frappe
+    }
+
+    function validateRegistration() {
+        const password = document.getElementById('signup-password').value;
+        const confirm = document.getElementById('confirm-password').value;
+        const submitBtn = document.getElementById('regSubmitBtn');
+        const errorMsg = document.getElementById('match-error');
+
+        const isMatch = (password === confirm && password !== "");
+        
+        if (confirm !== "" && !isMatch) {
+            errorMsg.style.display = "block";
+        } else {
+            errorMsg.style.display = "none";
+        }
+
+        // Le mot de passe doit faire 8 caractères ET correspondre
+        if (isMatch && password.length >= 8) {
+            submitBtn.disabled = false;
+        } else {
+            submitBtn.disabled = true;
+        }
+    }
+
+    // 4. ANIMATION POP DE L'AVATAR
+    function triggerAvatarPop() {
+        const img = document.getElementById('avatar-preview');
+        img.classList.remove('pop');
+        void img.offsetWidth; // Trigger reflow
+        img.classList.add('pop');
+    }
+
+    // 5. PREVIEW DE L'IMAGE LOCALE
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) { 
+                document.getElementById('avatar-preview').src = e.target.result; 
+                document.getElementById('avatar_url_input').value = ""; 
+                triggerAvatarPop();
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // 6. SÉLECTION D'UN AVATAR DE LA MODALE
+    function selectAvatar(url) {
+        document.getElementById('avatar-preview').src = url; 
+        document.getElementById('avatar_url_input').value = url; 
+        document.getElementById('image_profil').value = ''; 
+        document.getElementById('avatarModal').style.display = 'none'; 
+        triggerAvatarPop();
+    }
+
+    function closeModal(event) {
+        if (event.target.id === 'avatarModal') { document.getElementById('avatarModal').style.display = 'none'; }
+    }
+
+    // 7. UPDATE NOM FICHIER CV
+    function updateFileName(input) {
+        const label = document.getElementById('pdf-file-name');
+        if (input.files && input.files[0]) {
+            label.textContent = input.files[0].name;
+            label.style.color = "#0598ff";
+            label.style.fontWeight = "bold";
+        } else {
+            label.textContent = "Aucun fichier";
+            label.style.color = "gray";
+            label.style.fontWeight = "normal";
+        }
+    }
+
+    // 8. EFFET LUMINEUX MOUSE HOVER SUR LE CONTAINER
+    container.addEventListener("mousemove", (e) => {
+        const rect = container.getBoundingClientRect();
+        container.style.setProperty("--mouse-x", `${e.clientX - rect.left}px`);
+        container.style.setProperty("--mouse-y", `${e.clientY - rect.top}px`);
+    });
+
+    // 9. RÉSEAU NEURONAL EN ARRIÈRE-PLAN
+    tsParticles.load("tsparticles", {
+        fpsLimit: 60,
+        interactivity: { events: { onHover: { enable: true, mode: "grab" }, onClick: { enable: true, mode: "push" } }, modes: { grab: { distance: 150, links: { opacity: 0.5 } } } },
+        particles: {
+            color: { value: "#0598ff" },
+            links: { color: "#2F80ED", distance: 150, enable: true, opacity: 0.3, width: 1 },
+            move: { enable: true, speed: 1.2, direction: "none", random: false, straight: false, outModes: { default: "bounce" } },
+            number: { density: { enable: true, area: 800 }, value: 50 },
+            opacity: { value: 0.5 },
+            shape: { type: "circle" },
+            size: { value: { min: 1, max: 3 } }
+        },
+        detectRetina: true
+    });
+</script>
+{% endblock %}

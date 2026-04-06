@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>{% block title %}Administration - Intel_link{% endblock %}</title>
+    <meta content="width=device-width, initial-scale=1.0, shrink-to-fit=no" name="viewport" />
+    <link rel="icon" href="{{ asset('back-office/img/logo - petit.png') }}" type="image/x-icon" />
+
+    <script src="{{ asset('back-office/js/plugin/webfont/webfont.min.js') }}"></script>
+    <script>
+        WebFont.load({
+            google: { families: ["Public Sans:300,400,500,600,700"] },
+            custom: {
+                families: ["Font Awesome 5 Solid", "Font Awesome 5 Regular", "Font Awesome 5 Brands", "simple-line-icons"],
+                urls: ["{{ asset('back-office/css/fonts.min.css') }}"],
+            },
+            active: function () { sessionStorage.fonts = true; },
+        });
+    </script>
+
+    <link rel="stylesheet" href="{{ asset('back-office/css/bootstrap.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('back-office/css/plugins.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('back-office/css/kaiadmin.min.css') }}" />
+
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+    <div class="wrapper">
+        <div class="sidebar" data-background-color="dark">
+            <div class="sidebar-logo">
+                <div class="logo-header" data-background-color="white"> 
+                    <a href="#" class="logo">
+                        <img src="{{ asset('back-office/img/logo.png') }}" alt="navbar brand" class="navbar-brand" height="50" />
+                    </a>
+                    <div class="nav-toggle">
+                        <button class="btn btn-toggle toggle-sidebar"><i class="gg-menu-right"></i></button>
+                        <button class="btn btn-toggle sidenav-toggler"><i class="gg-menu-left"></i></button>
+                    </div>
+                    <button class="topbar-toggler more"><i class="gg-more-vertical-alt"></i></button>
+                </div>
+            </div>
+            <div class="sidebar-wrapper scrollbar scrollbar-inner">
+                <div class="sidebar-content">
+                    <ul class="nav nav-secondary">
+                        <li class="nav-item">
+                            <a href="#"><i class="fas fa-home"></i><p>Dashboard</p></a>
+                        </li>
+                        <li class="nav-section">
+                            <span class="sidebar-mini-icon"><i class="fa fa-ellipsis-h"></i></span>
+                            <h4 class="text-section">Modules de Gestion</h4>
+                        </li>
+
+                        <li class="nav-item {{ app.request.attributes.get('_route') matches '/^app_admin_user/' ? 'active' : '' }}">
+                            <a href="{{ path('app_admin_users') }}">
+                                <i class="fas fa-users-cog"></i><p>Utilisateurs</p>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ app.request.attributes.get('_route') matches '/^app_admin_reclamation/' ? 'active' : '' }}">
+                            <a href="{{ path('app_admin_reclamations') }}">
+                                <i class="fas fa-exclamation-triangle"></i><p>Réclamations</p>
+                            </a>
+                        </li>
+                        <li class="nav-item"><a href="#"><i class="fas fa-graduation-cap"></i><p>Formations</p></a></li>
+                        <li class="nav-item"><a href="#"><i class="fas fa-briefcase"></i><p>Offres d'Emploi</p></a></li>
+                        <li class="nav-item"><a href="#"><i class="fas fa-handshake"></i><p>Projets</p></a></li>
+                        <li class="nav-item"><a href="#"><i class="fas fa-comments"></i><p>Forum</p></a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-panel">
+            <div class="main-header">
+                <div class="main-header-logo">
+                    <div class="logo-header" data-background-color="dark2">
+                        <div class="nav-toggle">
+                            <button class="btn btn-toggle toggle-sidebar"><i class="gg-menu-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <nav class="navbar navbar-header navbar-header-transparent navbar-expand-lg border-bottom">
+                    <div class="container-fluid">
+                        <ul class="navbar-nav topbar-nav ms-md-auto align-items-center">
+                            <li class="nav-item topbar-user dropdown hidden-caret">
+                                <a class="dropdown-toggle profile-pic" data-bs-toggle="dropdown" href="#" aria-expanded="false">
+                                    <div class="avatar-sm">
+                                        <img src="{{ asset('back-office/img/profile.jpg') }}" alt="..." class="avatar-img rounded-circle" />
+                                    </div>
+                                    <span class="profile-username">
+                                        <span class="op-7">Bonjour,</span> <span class="fw-bold">{{ app.user ? app.user.nom : 'Admin' }}</span>
+                                    </span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-user animated fadeIn">
+                                    <div class="dropdown-user-scroll scrollbar-outer">
+                                        <li>
+                                            <a class="dropdown-item text-danger" href="{{ path('app_logout') }}"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+                                        </li>
+                                    </div>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+
+            <div class="container">
+                <div class="page-inner">
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success">{{ message }}</div>
+                    {% endfor %}
+                    {% for message in app.flashes('error') %}
+                        <div class="alert alert-danger">{{ message }}</div>
+                    {% endfor %}
+
+                    {% block body %}{% endblock %}
+                </div>
+            </div>
+
+            <footer class="footer">
+                <div class="container-fluid d-flex justify-content-between">
+                    <div class="copyright">
+                        2026, Intel_link - Développé avec <i class="fa fa-heart heart text-danger"></i>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <script src="{{ asset('back-office/js/core/jquery-3.7.1.min.js') }}"></script>
+    <script src="{{ asset('back-office/js/core/popper.min.js') }}"></script>
+    <script src="{{ asset('back-office/js/core/bootstrap.min.js') }}"></script>
+    <script src="{{ asset('back-office/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js') }}"></script>
+    <script src="{{ asset('back-office/js/kaiadmin.min.js') }}"></script>
+    {% block javascripts %}{% endblock %}
+</body>
+</html>
