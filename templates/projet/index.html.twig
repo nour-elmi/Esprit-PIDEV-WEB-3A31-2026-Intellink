@@ -1,0 +1,179 @@
+{% extends 'base_projet.html.twig' %}
+
+{% block title %}Projets disponibles{% endblock %}
+
+{% block body %}
+<section class="user-projects-page">
+    <div class="container">
+
+        <section class="catalog-hero">
+            <div class="catalog-hero-left">
+                <span class="catalog-badge">Espace apprenant</span>
+                <h1>Projets disponibles</h1>
+                <p>Explorez les projets, trouvez ceux qui vous inspirent et rejoignez une collaboration qui vous correspond.</p>
+            </div>
+
+            <div class="catalog-hero-right single-action">
+                <a href="{{ path('app_mes_demandes') }}" class="catalog-secondary-btn hero-participation-btn">
+                    Mes participations
+                </a>
+            </div>
+        </section>
+
+        <section class="user-projects-toolbar">
+            <div class="toolbar-title">
+                <h2>Explorer les projets</h2>
+                <p>Recherche et filtre en direct.</p>
+            </div>
+
+            <div class="user-projects-filters">
+                <div class="filter-box filter-box-search">
+                    <label for="liveSearch">Recherche</label>
+                    <input
+                        type="text"
+                        id="liveSearch"
+                        class="filter-input-user"
+                        placeholder="Titre, description ou créateur..."
+                    >
+                </div>
+
+                <div class="filter-box">
+                    <label for="liveStatus">Statut</label>
+                    <select id="liveStatus" class="filter-input-user">
+                        <option value="all">Tous</option>
+                        <option value="en attente">En attente</option>
+                        <option value="en cours">En cours</option>
+                        <option value="termine">Terminé</option>
+                    </select>
+                </div>
+
+                <div class="filter-box filter-box-reset">
+                    <label>&nbsp;</label>
+                    <button type="button" id="resetFilters" class="reset-user-btn">
+                        Réinitialiser
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <div id="emptyState" class="user-empty-state" style="display:none;">
+            <div class="empty-emoji">📁</div>
+            <h3>Aucun projet trouvé</h3>
+            <p>Essaie une autre recherche ou change le filtre.</p>
+        </div>
+
+        <section id="projectsGrid" class="user-projects-grid">
+            {% for projet in projets %}
+                {% set statut = projet.statut|lower %}
+                <article
+                    class="user-project-card"
+                    data-id="{{ projet.id }}"
+                    data-titre="{{ projet.titre|lower }}"
+                    data-description="{{ (projet.description ?? '')|lower }}"
+                    data-createur="{{ projet.createur|lower }}"
+                    data-statut="{{ projet.statut|lower }}"
+                >
+                    <div class="user-project-card-top">
+                        <div class="project-owner-line">
+                            <div class="project-owner-avatar">
+                                {{ projet.titre|slice(0, 1)|upper }}
+                            </div>
+
+                            <div class="project-owner-text">
+                                <h3>{{ projet.titre }}</h3>
+                                <span class="owner-mail">{{ projet.createur }}</span>
+                            </div>
+                        </div>
+
+                        <span class="project-status-badge
+                            {% if statut == 'en cours' %}status-green
+                            {% elseif statut == 'en attente' %}status-yellow
+                            {% else %}status-gray{% endif %}
+                        ">
+                            {{ projet.statut }}
+                        </span>
+                    </div>
+
+                    <div class="user-project-card-middle">
+                        <p class="project-text">
+                            {{ projet.description ?: 'Aucune description disponible pour ce projet.' }}
+                        </p>
+                    </div>
+
+                    <div class="user-project-card-bottom">
+                        <span class="price-tag">{{ projet.prix|number_format(0, '.', ' ') }} TND</span>
+
+                        <a href="{{ path('app_projet_show', {id: projet.id}) }}" class="detail-link-btn">
+                            Voir
+                        </a>
+                    </div>
+                </article>
+            {% else %}
+                <div class="user-empty-state">
+                    <div class="empty-emoji">📁</div>
+                    <h3>Aucun projet disponible</h3>
+                    <p>Il n’y a pas encore de projet publié.</p>
+                </div>
+            {% endfor %}
+        </section>
+
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('liveSearch');
+    const statusSelect = document.getElementById('liveStatus');
+    const resetBtn = document.getElementById('resetFilters');
+    const emptyState = document.getElementById('emptyState');
+    const cards = Array.from(document.querySelectorAll('.user-project-card'));
+
+    function normalize(value) {
+        return (value || '').toString().toLowerCase().trim();
+    }
+
+    function applyFilters() {
+        const search = normalize(searchInput.value);
+        const status = normalize(statusSelect.value);
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const titre = normalize(card.dataset.titre);
+            const description = normalize(card.dataset.description);
+            const createur = normalize(card.dataset.createur);
+            const statut = normalize(card.dataset.statut);
+
+            const matchSearch =
+                !search ||
+                titre.includes(search) ||
+                description.includes(search) ||
+                createur.includes(search);
+
+            const matchStatus =
+                status === 'all' || statut === status;
+
+            const visible = matchSearch && matchStatus;
+
+            card.style.display = visible ? 'flex' : 'none';
+
+            if (visible) {
+                visibleCount++;
+            }
+        });
+
+        emptyState.style.display = visibleCount === 0 ? 'flex' : 'none';
+    }
+
+    searchInput.addEventListener('input', applyFilters);
+    statusSelect.addEventListener('change', applyFilters);
+
+    resetBtn.addEventListener('click', function () {
+        searchInput.value = '';
+        statusSelect.value = 'all';
+        applyFilters();
+    });
+
+    applyFilters();
+});
+</script>
+{% endblock %}

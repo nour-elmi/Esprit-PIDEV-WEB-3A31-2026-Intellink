@@ -1,0 +1,501 @@
+{% extends 'base_projet.html.twig' %}
+
+{% block title %}Mes participations{% endblock %}
+
+{% block body %}
+<style>
+    .participations-page {
+        background: linear-gradient(180deg, #eef2ff 0%, #f8fafc 100%);
+        min-height: 100vh;
+        padding-bottom: 50px;
+    }
+
+    .participations-container {
+        width: min(1180px, calc(100% - 48px));
+        margin: 0 auto;
+        padding-top: 28px;
+    }
+
+    .participations-hero {
+        position: relative;
+        overflow: hidden;
+        border-radius: 34px;
+        padding: 38px 42px;
+        background: linear-gradient(135deg, #1e2563 0%, #232a68 45%, #2c3ea8 100%);
+        color: white;
+        box-shadow: 0 24px 60px rgba(35, 42, 104, 0.22);
+        margin-bottom: 30px;
+    }
+
+    .participations-hero::before,
+    .participations-hero::after {
+        content: "";
+        position: absolute;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.06);
+    }
+
+    .participations-hero::before {
+        width: 260px;
+        height: 260px;
+        top: -90px;
+        right: -70px;
+    }
+
+    .participations-hero::after {
+        width: 220px;
+        height: 220px;
+        left: -80px;
+        bottom: -100px;
+    }
+
+    .hero-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+        flex-wrap: wrap;
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-icon {
+        width: 84px;
+        height: 84px;
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(37, 99, 235, 0.18);
+        border: 1px solid rgba(255,255,255,0.08);
+        font-size: 34px;
+        margin-bottom: 18px;
+    }
+
+    .hero-title {
+        font-size: 64px;
+        line-height: 1;
+        font-weight: 800;
+        letter-spacing: -1.5px;
+        margin: 0 0 18px 0;
+        color: #fff;
+    }
+
+    .hero-subtitle {
+        font-size: 20px;
+        line-height: 1.6;
+        color: rgba(255,255,255,0.88);
+        margin: 0;
+    }
+
+    .hero-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .hero-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        border-radius: 16px;
+        padding: 14px 20px;
+        font-weight: 700;
+        transition: .2s ease;
+    }
+
+    .hero-btn-back {
+        background: rgba(255,255,255,0.10);
+        color: #fff;
+        border: 1px solid rgba(255,255,255,0.10);
+    }
+
+    .hero-btn-back:hover {
+        background: rgba(255,255,255,0.16);
+        color: #fff;
+    }
+
+    .hero-stats {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 28px;
+    }
+
+    .hero-stat {
+        min-width: 210px;
+        padding: 22px 24px;
+        border-radius: 22px;
+        background: rgba(255,255,255,0.10);
+        border: 1px solid rgba(255,255,255,0.08);
+        backdrop-filter: blur(10px);
+    }
+
+    .hero-stat-label {
+        display: block;
+        font-size: 15px;
+        color: rgba(255,255,255,0.82);
+        margin-bottom: 8px;
+    }
+
+    .hero-stat-value {
+        font-size: 42px;
+        line-height: 1;
+        font-weight: 800;
+        color: #fff;
+    }
+
+    .participations-card {
+        border: 0;
+        border-radius: 28px;
+        background: rgba(255,255,255,0.84);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+        overflow: hidden;
+    }
+
+    .participations-card-header {
+        padding: 24px 28px;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .participations-card-title {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 800;
+        color: #1e3a8a;
+        letter-spacing: -0.6px;
+    }
+
+    .participations-card-subtitle {
+        margin-top: 6px;
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .participations-counter {
+        background: linear-gradient(135deg, #1d4ed8, #2563eb);
+        color: #fff;
+        padding: 12px 18px;
+        border-radius: 999px;
+        font-weight: 800;
+        box-shadow: 0 12px 24px rgba(37, 99, 235, 0.20);
+    }
+
+    .participations-card-body {
+        padding: 26px 28px 30px 28px;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .custom-table {
+        width: 100%;
+        min-width: 1050px;
+        border-collapse: separate;
+        border-spacing: 0 16px;
+    }
+
+    .custom-table thead th {
+        border: 0;
+        background: transparent;
+        color: #0f172a;
+        font-size: 13px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 0 14px 10px 14px;
+        white-space: nowrap;
+    }
+
+    .custom-table tbody tr {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+        transition: .2s ease;
+    }
+
+    .custom-table tbody tr:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 32px rgba(15, 23, 42, 0.10);
+    }
+
+    .custom-table tbody td {
+        border: 0;
+        padding: 22px 14px;
+        vertical-align: middle;
+    }
+
+    .custom-table tbody tr td:first-child {
+        border-top-left-radius: 20px;
+        border-bottom-left-radius: 20px;
+    }
+
+    .custom-table tbody tr td:last-child {
+        border-top-right-radius: 20px;
+        border-bottom-right-radius: 20px;
+    }
+
+    .project-badge {
+        font-weight: 800;
+        color: #0f172a;
+        font-size: 17px;
+    }
+
+    .role-box,
+    .dispo-box {
+        display: inline-flex;
+        align-items: center;
+        min-height: 46px;
+        padding: 12px 16px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #eff6ff, #eef2ff);
+        color: #334155;
+        font-weight: 700;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 130px;
+        padding: 12px 18px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .status-pending {
+        background: linear-gradient(135deg, #ffedd5, #fde6c7);
+        color: #c2410c;
+    }
+
+    .status-accepted {
+        background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+        color: #15803d;
+    }
+
+    .status-refused {
+        background: linear-gradient(135deg, #fee2e2, #fecaca);
+        color: #dc2626;
+    }
+
+    .action-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .custom-btn {
+        border: 0;
+        border-radius: 16px;
+        padding: 12px 18px;
+        font-weight: 800;
+        text-decoration: none;
+        transition: .2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+    }
+
+    .btn-edit {
+        background: linear-gradient(135deg, #fb923c, #f59e0b);
+        color: #fff;
+        box-shadow: 0 10px 20px rgba(245, 158, 11, 0.20);
+    }
+
+    .btn-edit:hover {
+        transform: translateY(-2px);
+        color: #fff;
+    }
+
+    .btn-delete {
+        background: linear-gradient(135deg, #ef4444, #f87171);
+        color: #fff;
+        box-shadow: 0 10px 20px rgba(239, 68, 68, 0.20);
+    }
+
+    .btn-delete:hover {
+        transform: translateY(-2px);
+        color: #fff;
+    }
+
+    .btn-view {
+        background: linear-gradient(135deg, #eff6ff, #dbeafe);
+        color: #2563eb;
+    }
+
+    .btn-view:hover {
+        transform: translateY(-2px);
+        color: #1d4ed8;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 34px 18px;
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    @media (max-width: 991px) {
+        .participations-container {
+            width: min(100% - 24px, 1180px);
+        }
+
+        .participations-hero {
+            padding: 28px 24px;
+            border-radius: 24px;
+        }
+
+        .hero-title {
+            font-size: 42px;
+        }
+
+        .hero-subtitle {
+            font-size: 17px;
+        }
+
+        .hero-stat {
+            min-width: 160px;
+        }
+
+        .participations-card-header,
+        .participations-card-body {
+            padding-left: 18px;
+            padding-right: 18px;
+        }
+
+        .participations-card-title {
+            font-size: 22px;
+        }
+    }
+</style>
+
+<div class="participations-page">
+    <div class="participations-container">
+        <section class="participations-hero">
+            <div class="hero-top">
+                <div>
+                    <div class="hero-icon">📋</div>
+                    <h1 class="hero-title">Mes participations</h1>
+                    <p class="hero-subtitle">Suivez toutes vos demandes envoyées avec une interface plus moderne et plus claire.</p>
+                </div>
+
+                <div class="hero-actions">
+                    <a href="{{ path('app_projet_index') }}" class="hero-btn hero-btn-back">
+                        ← Retour aux projets
+                    </a>
+                </div>
+            </div>
+
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="hero-stat-label">Total demandes</span>
+                    <div class="hero-stat-value">{{ demandes|length }}</div>
+                </div>
+
+                <div class="hero-stat">
+                    <span class="hero-stat-label">En attente</span>
+                    <div class="hero-stat-value">
+                        {{ demandes|filter(d => d.etat == 'EN_ATTENTE')|length }}
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="participations-card">
+            <div class="participations-card-header">
+                <div>
+                    <h2 class="participations-card-title">Tableau des participations</h2>
+                    <div class="participations-card-subtitle">Consultez, modifiez ou supprimez vos demandes.</div>
+                </div>
+
+                <div class="participations-counter">
+                    {{ demandes|length }} résultat(s)
+                </div>
+            </div>
+
+            <div class="participations-card-body">
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Projet</th>
+                                <th>Rôle</th>
+                                <th>Disponibilité</th>
+                                <th>État</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for participation in demandes %}
+                                <tr>
+                                    <td>
+                                        <span class="project-badge">{{ participation.projet.titre }}</span>
+                                    </td>
+
+                                    <td>
+                                        <div class="role-box">{{ participation.roleSouhaite }}</div>
+                                    </td>
+
+                                    <td>
+                                        <div class="dispo-box">{{ participation.disponibilite }}</div>
+                                    </td>
+
+                                    <td>
+                                        {% if participation.etat == 'EN_ATTENTE' %}
+                                            <span class="status-pill status-pending">En attente</span>
+                                        {% elseif participation.etat == 'ACCEPTEE' %}
+                                            <span class="status-pill status-accepted">Acceptée</span>
+                                        {% elseif participation.etat == 'REFUSEE' %}
+                                            <span class="status-pill status-refused">Refusée</span>
+                                        {% else %}
+                                            <span class="status-pill status-pending">{{ participation.etat }}</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        <div class="action-group">
+                                            {% if participation.etat == 'EN_ATTENTE' %}
+                                                <a href="{{ path('app_participation_edit', {'id': participation.id}) }}" class="custom-btn btn-edit">
+                                                    Modifier
+                                                </a>
+
+                                                <a href="{{ path('app_participation_delete', {'id': participation.id}) }}" class="custom-btn btn-delete" onclick="return confirm('Supprimer cette participation ?');">
+                                                    Supprimer
+                                                </a>
+                                            {% endif %}
+
+                                            <a href="{{ path('app_projet_show', {'id': participation.projet.id}) }}" class="custom-btn btn-view">
+                                                Voir projet
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5">
+                                        <div class="empty-state">Aucune participation trouvée.</div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
