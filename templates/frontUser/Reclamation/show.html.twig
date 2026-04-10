@@ -1,0 +1,256 @@
+{% extends 'base.html.twig' %}
+{% block title %}Détails Ticket #{{ reclamation.id }} - Intel_link{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/bootstrap-5.0.0-beta1.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/lindy-uikit.css') }}">
+    <link href="https://cdn.lineicons.com/2.0/LineIcons.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <style>
+        html { scroll-behavior: smooth; overflow-x: hidden; }
+        body { 
+            background-color: #e2e8f0 !important; 
+            background-image: radial-gradient(rgba(47, 128, 237, 0.05) 1px, transparent 1px), radial-gradient(rgba(47, 128, 237, 0.05) 1px, transparent 1px);
+            background-position: 0 0, 20px 20px; background-size: 40px 40px;
+            font-family: "Heebo", sans-serif; margin: 0; color: #0f172a; 
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #2F80ED; border-radius: 10px; } ::-webkit-scrollbar-thumb:hover { background: #56CCF2; }
+
+        .scroll-progress-bar { position: fixed; top: 0; left: 0; height: 4px; background: linear-gradient(90deg, #2F80ED, #56CCF2); z-index: 100000; width: 0%; box-shadow: 0 0 15px rgba(86, 204, 242, 0.8); border-radius: 0 5px 5px 0; }
+        
+        .glass-navbar { background: rgba(255, 255, 255, 0.8) !important; backdrop-filter: blur(25px); border-bottom: 1px solid rgba(0,0,0,0.05); transition: transform 0.4s; }
+        .navbar-hidden { transform: translateY(-100%); }
+        
+        /* CYBER GLITCH ADAPTÉ POUR L'IMAGE DU LOGO */
+        .glitch-logo { position: relative; display: inline-block; text-decoration: none; }
+        .glitch-img-main { height: 35px; display: block; position: relative; z-index: 2; transition: 0.3s; }
+        .glitch-img-layer { position: absolute; top: 0; left: 0; height: 35px; width: 100%; object-fit: contain; opacity: 0; z-index: 1; }
+        
+        .glitch-logo:hover .layer-1 {
+            left: 2px; opacity: 1;
+            filter: drop-shadow(-2px 0 #56CCF2);
+            animation: glitch-anim-1 0.2s infinite linear alternate-reverse;
+        }
+        .glitch-logo:hover .layer-2 {
+            left: -2px; opacity: 1;
+            filter: drop-shadow(2px 0 #2F80ED);
+            animation: glitch-anim-2 0.3s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-anim-1 { 0% { clip-path: inset(20% 0 80% 0); } 100% { clip-path: inset(50% 0 30% 0); } }
+        @keyframes glitch-anim-2 { 0% { clip-path: inset(10% 0 60% 0); } 100% { clip-path: inset(80% 0 10% 0); } }
+
+        /* PRELOADER IMAGE */
+        #preloader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; z-index: 999999; display: flex; justify-content: center; align-items: center; transition: opacity 0.8s ease-out, visibility 0.8s; }
+        .loader-logo-img { height: 60px; animation: pulse-glow-img 1.5s infinite alternate; }
+        @keyframes pulse-glow-img { 
+            0% { transform: scale(0.95); filter: drop-shadow(0 0 15px rgba(86, 204, 242, 0.2)); } 
+            100% { transform: scale(1.05); filter: drop-shadow(0 0 30px rgba(86, 204, 242, 0.6)); } 
+        }
+
+        /* BOUTONS */
+        .btn-liquid { position: relative; overflow: hidden; z-index: 1; transition: 0.3s; background: #2F80ED; color: #ffffff !important; border: none; padding: 12px 28px; border-radius: 50px; font-weight: 600; text-decoration: none; display: inline-block; box-shadow: 0 4px 12px rgba(47, 128, 237, 0.25);}
+        .btn-liquid::before { content: ''; position: absolute; top: 100%; left: 0; width: 100%; height: 200%; background: linear-gradient(135deg, #1e293b, #334155); z-index: -1; transition: top 0.6s ease; border-radius: 50% 50% 0 0; }
+        .btn-liquid:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(47, 128, 237, 0.4); }
+        .btn-liquid:hover::before { top: -20%; border-radius: 0; }
+        
+        .btn-outline-custom { background: #ffffff; color: #0f172a; border: 1px solid rgba(0,0,0,0.1); padding: 8px 24px; border-radius: 50px; font-size: 14px; font-weight: bold; text-decoration: none; transition: all 0.3s; display: inline-block;}
+        .btn-outline-custom:hover { background: #f8fafc; color: #2F80ED; border-color: #2F80ED; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(47, 128, 237, 0.15); }
+
+        /* FORMULAIRE DESIGN (Cartes blanches avec bordures) */
+        .formation-form-wrapper { 
+            background: #ffffff !important; border: 1px solid #cbd5e1 !important; border-radius: 24px; padding: 40px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08) !important; position: relative; overflow: hidden; transition: 0.3s ease; transform-style: preserve-3d;
+        }
+        .border-gradient-top::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #2F80ED, #56CCF2); }
+
+        .form-group-custom { margin-bottom: 24px; transform: translateZ(10px); }
+        .form-group-custom label { display: block; font-family: "Fira Sans", sans-serif; font-weight: 700; color: #64748b; font-size: 12px; margin-bottom: 8px; letter-spacing: 0.5px; text-transform: uppercase;}
+        .form-control-custom { width: 100%; padding: 13px 18px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 15px; color: #0f172a; background: #ffffff; transition: all 0.3s ease; outline: none; }
+        .form-control-custom:focus { border-color: #2F80ED; box-shadow: 0 0 0 4px rgba(47, 128, 237, 0.1); }
+        .form-control-custom:disabled { background-color: rgba(241, 245, 249, 0.6); color: #94a3b8; border-color: transparent;}
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="scroll-progress-bar" id="scrollBar"></div>
+    
+    <div id="preloader">
+        <img src="{{ asset('assets/img/logo.png') }}" alt="IntelLink" class="loader-logo-img">
+    </div>
+
+    <header class="header header-6 glass-navbar" id="smartNavbar" data-aos="fade-down" data-aos-duration="1000">
+        <div class="navbar-area">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-12">
+                        <nav class="navbar navbar-expand-lg">
+                            
+                            <a class="navbar-brand glitch-logo" href="{{ path('app_home') }}">
+        <img src="{{ asset('assets/img/logo.png') }}" alt="IntelLink" class="glitch-img-main">
+        <img src="{{ asset('assets/img/logo.png') }}" alt="" class="glitch-img-layer layer-1">
+        <img src="{{ asset('assets/img/logo.png') }}" alt="" class="glitch-img-layer layer-2">
+    </a>
+
+                            <div class="collapse navbar-collapse"></div>
+                            <div class="header-action d-flex align-items-center">
+                                {% if app.user %}
+                                    <div class="dropdown">
+                                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" id="profileMenu" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer; background: #ffffff; padding: 5px 15px 5px 5px; border-radius: 50px; border: 1px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+    
+                                            {% if app.user.image %}
+                                                {% set avatar_src = app.user.image starts with 'http' ? app.user.image : asset('uploads/profiles/' ~ app.user.image) %}
+                                            {% else %}
+                                                {% set avatar_src = 'https://ui-avatars.com/api/?name=' ~ app.user.nom|url_encode ~ '&background=2F80ED&color=fff&rounded=true&bold=true' %}
+                                            {% endif %}
+
+                                            <img src="{{ avatar_src }}" alt="Profil" class="radius-full" style="width: 35px; height: 35px; object-fit: cover; margin-right: 10px; border-radius: 50%;">
+                                            <span style="color: #0f172a; font-weight: 700; font-size: 14px;">{{ app.user.nom }}</span>
+                                        </a>
+                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileMenu" style="border-radius: 16px; border: 1px solid #e2e8f0; background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(15,23,42,0.1); padding: 10px; border: none;">
+                                            <li><a class="dropdown-item fw-bold" href="{{ path('app_profile') }}" style="border-radius: 8px;"><i class="lni lni-user mr-10 text-primary"></i> Mon Profil</a></li>
+                                            <li><a class="dropdown-item fw-bold" href="{{ path('app_reclamation_index') }}" style="border-radius: 8px;"><i class="lni lni-bullhorn mr-10 text-primary"></i> Mes Réclamations</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger fw-bold" href="{{ path('app_logout') }}" style="border-radius: 8px;"><i class="lni lni-exit mr-10"></i> Se déconnecter</a></li>
+                                        </ul>
+                                    </div>
+                                {% else %}
+                                    <a href="{{ path('app_login') }}" class="btn-liquid">🔐 Console d'Accès</a>
+                                {% endif %}
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-content" style="padding: 40px 0;">
+        <div style="max-width: 1100px; margin: 0 auto; padding: 0 20px;">
+            <a href="{{ path('app_reclamation_index') }}" class="btn-outline-custom" style="margin-bottom: 20px;" data-aos="fade-right">&larr; Mes Réclamations</a>
+            
+            <div style="display: flex; gap: 40px; flex-wrap: wrap;">
+                
+                <div class="formation-form-wrapper border-gradient-top" data-tilt data-tilt-max="2" data-tilt-speed="400" style="flex: 2; min-width: 300px;" data-aos="fade-up" data-aos-duration="1000">
+                    <h2 style="font-family: 'Fira Sans', sans-serif; font-weight: 900; color: #0f172a; font-size: 2.2rem; letter-spacing: -1px; margin-bottom: 10px; transform: translateZ(20px);">Détails du <span style="color: #2F80ED;">Ticket</span></h2>
+                    <hr style="margin-bottom: 20px; border-top: 1px solid #cbd5e1;">
+
+                    {% if reclamation.statut != 'OUVERT' %}
+                        <div style="background: rgba(241, 245, 249, 0.6); color: #64748b; padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #e2e8f0; transform: translateZ(10px); font-weight: 600;">
+                            <i class="lni lni-lock"></i> Ticket clôturé ou en cours. Les modifications ne sont plus possibles.
+                        </div>
+                    {% else %}
+                        <div style="color: #2563eb; background: rgba(224, 242, 254, 0.6); padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid rgba(37, 99, 235, 0.2); transform: translateZ(10px); font-weight: 600;">
+                            <i class="lni lni-pencil-alt"></i> Vous pouvez modifier ce ticket tant qu'il n'est pas pris en charge.
+                        </div>
+                    {% endif %}
+
+                    {% for message in app.flashes('success') %}
+                        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #047857; padding: 15px; border-radius: 12px; margin-bottom: 20px; font-weight:bold;">{{ message }}</div>
+                    {% endfor %}
+
+                    {% set isReadOnly = reclamation.statut != 'OUVERT' ? 'disabled' : '' %}
+
+                    <form action="{{ path('app_reclamation_show', {'id': reclamation.id}) }}" method="POST" enctype="multipart/form-data">
+                        <div class="form-group-custom">
+                            <label>OBJET</label>
+                            <input type="text" name="objet" class="form-control-custom" value="{{ reclamation.objet }}" {{ isReadOnly }} required>
+                        </div>
+
+                        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                            <div class="form-group-custom" style="flex: 1; min-width: 200px;">
+                                <label>TYPE</label>
+                                <select name="type" class="form-control-custom" {{ isReadOnly }} required>
+                                    {% for t in ['Technique', 'Facturation', 'Service Client', 'Autre'] %}
+                                        <option value="{{ t }}" {% if reclamation.type == t %}selected{% endif %}>{{ t }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group-custom" style="flex: 1; min-width: 200px;">
+                                <label>PRIORITÉ</label>
+                                <select name="priorite" class="form-control-custom" {{ isReadOnly }} required>
+                                    {% for p in ['FAIBLE', 'MOYENNE', 'ELEVEE'] %}
+                                        <option value="{{ p }}" {% if reclamation.priorite == p %}selected{% endif %}>
+                                            {% if p == 'FAIBLE' %}🟢 {% elseif p == 'MOYENNE' %}🟡 {% else %}🔴 {% endif %}{{ p }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group-custom">
+                            <label>DESCRIPTION</label>
+                            <textarea name="description" class="form-control-custom" rows="6" {{ isReadOnly }} required>{{ reclamation.description }}</textarea>
+                        </div>
+
+                        {% if reclamation.pieceJointe %}
+                            <div class="form-group-custom" style="background: rgba(47,128,237,0.05); padding: 15px; border-radius: 12px; border: 1px dashed rgba(47,128,237,0.5);">
+                                <label><i class="lni lni-paperclip"></i> PIÈCE JOINTE ACTUELLE</label>
+                                <a href="{{ asset('uploads/reclamations/' ~ reclamation.pieceJointe) }}" target="_blank" style="color: #2F80ED; font-weight: bold; text-decoration: none;">&rarr; Ouvrir le document</a>
+                            </div>
+                        {% endif %}
+
+                        {% if reclamation.statut == 'OUVERT' %}
+                            <div class="form-group-custom mt-4">
+                                <label>MODIFIER LA PIÈCE JOINTE</label>
+                                <input type="file" name="pieceJointe" class="form-control-custom" style="padding: 10px;">
+                            </div>
+                            <div style="text-align: right; margin-top: 30px; transform: translateZ(20px);">
+                                <button type="submit" class="btn-liquid"><i class="lni lni-save"></i> Mettre à jour</button>
+                            </div>
+                        {% endif %}
+                    </form>
+                </div>
+
+                <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 20px;">
+                    
+                    <div class="formation-form-wrapper" data-tilt data-tilt-max="3" data-tilt-speed="400" style="padding: 30px;" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
+                        <h4 style="font-family: 'Fira Sans', sans-serif; font-weight: 800; color: #0f172a; margin-bottom: 20px; transform: translateZ(20px);"><i class="lni lni-timer text-primary"></i> Tracking</h4>
+                        <label style="font-size: 12px; font-weight: bold; letter-spacing: 1px; color: #64748b; transform: translateZ(10px);">STATUT ACTUEL</label>
+                        <div style="padding: 12px; text-align: center; border-radius: 12px; font-weight: 800; font-size: 1.1rem; margin-top: 5px; color: white; box-shadow: 0 5px 15px rgba(0,0,0,0.1); transform: translateZ(15px);
+                            {% if reclamation.statut == 'OUVERT' %}background: linear-gradient(45deg, #f39c12, #f1c40f);
+                            {% elseif reclamation.statut == 'TRAITE' %}background: linear-gradient(45deg, #10b981, #34d399);
+                            {% else %}background: linear-gradient(45deg, #ef4444, #f87171);{% endif %}">
+                            {{ reclamation.statut }}
+                        </div>
+                        <p style="margin-top: 20px; font-size: 13px; color: #64748b; font-weight: 500; transform: translateZ(10px);"><i class="lni lni-calendar"></i> Créé le : <strong>{{ reclamation.dateCreation ? reclamation.dateCreation|date('d/m/Y H:i') : 'Inconnue' }}</strong></p>
+                    </div>
+
+                    <div class="formation-form-wrapper" data-tilt data-tilt-max="3" data-tilt-speed="400" style="padding: 30px; flex-grow: 1;" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="400">
+                        <h4 style="font-family: 'Fira Sans', sans-serif; font-weight: 800; color: #0f172a; margin-bottom: 20px; transform: translateZ(20px);"><i class="lni lni-comments text-primary"></i> Réponse Admin</h4>
+                        <div style="background: rgba(248, 250, 252, 0.8); padding: 20px; border-radius: 15px; border: 1px solid #e2e8f0; min-height: 120px; color: #0f172a; font-style: italic; line-height: 1.7; transform: translateZ(15px); font-weight: 500;">
+                            {% if reclamation.reponseAdmin %}
+                                "{{ reclamation.reponseAdmin }}"
+                            {% else %}
+                                <span style="color: #64748b;"><i class="lni lni-hourglass"></i> Votre demande est en file d'attente. Un administrateur l'analysera prochainement.</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.2/vanilla-tilt.min.js"></script>
+
+    <script>
+        window.addEventListener('load', () => { setTimeout(() => { document.getElementById('preloader').style.opacity = '0'; setTimeout(() => document.getElementById('preloader').style.display = 'none', 800); }, 500); });
+        AOS.init({ once: true, offset: 50 });
+
+        let lastScrollTop = 0; const navbar = document.getElementById('smartNavbar'), progressBar = document.getElementById('scrollBar');
+        window.addEventListener('scroll', () => {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            progressBar.style.width = ((scrollTop / (document.documentElement.scrollHeight - document.documentElement.clientHeight)) * 100) + "%";
+            scrollTop > lastScrollTop && scrollTop > 100 ? navbar.classList.add('navbar-hidden') : navbar.classList.remove('navbar-hidden');
+            lastScrollTop = scrollTop;
+        });
+
+        // Activation de la 3D Tilt sur les panneaux
+        VanillaTilt.init(document.querySelectorAll(".formation-form-wrapper"), { max: 2, speed: 400, glare: true, "max-glare": 0.05 });
+    </script>
+{% endblock %}

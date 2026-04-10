@@ -1,0 +1,108 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Participations du projet{% endblock %}
+
+{% block body %}
+<div class="card admin-projects-card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h4 class="card-title mb-1">Participations du projet</h4>
+                <p class="admin-projects-subtitle mb-0">
+                    Projet : <strong>{{ projet.titre }}</strong>
+                </p>
+            </div>
+
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+                <span class="admin-projects-counter">{{ participations|length }} participation(s)</span>
+                <a href="{{ path('admin_projets') }}" class="btn btn-outline-primary btn-sm">Retour</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="table-participations" class="table admin-projects-table align-middle">
+                <thead>
+                    <tr>
+                        <th>User ID</th>
+                        <th>État</th>
+                        <th>Rôle souhaité</th>
+                        <th>Disponibilité</th>
+                        <th>Portfolio</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for participation in participations %}
+                        <tr>
+                            <td>
+                                <span class="admin-creator-chip">
+                                    <i class="fa fa-user me-2"></i>{{ participation.userId }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {% set etat = participation.etat|default('')|lower %}
+                                {% if 'acceptee' in etat or 'accept' in etat %}
+                                    <span class="admin-badge green">Acceptée</span>
+                                {% elseif 'refusee' in etat or 'refus' in etat %}
+                                    <span class="admin-badge red">Refusée</span>
+                                {% elseif 'attente' in etat %}
+                                    <span class="admin-badge orange">En attente</span>
+                                {% else %}
+                                    <span class="admin-badge gray">{{ participation.etat ?: '-' }}</span>
+                                {% endif %}
+                            </td>
+
+                            <td><span class="admin-price-chip">{{ participation.roleSouhaite ?: '-' }}</span></td>
+                            <td><span class="admin-price-chip">{{ participation.disponibilite ?: '-' }}</span></td>
+
+                            <td>
+                                {% if participation.portfolio %}
+                                    <a href="{{ participation.portfolio }}" target="_blank" class="btn btn-primary btn-sm">Ouvrir</a>
+                                {% else %}
+                                    <span class="admin-price-chip">Aucun lien</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if participation.dateCreation %}
+                                    <span class="admin-price-chip">{{ participation.dateCreation|date('d/m/Y H:i') }}</span>
+                                {% else %}
+                                    <span class="admin-price-chip">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">Aucune participation trouvée</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    $(document).ready(function () {
+        $('#table-participations').DataTable({
+            pageLength: 10,
+            paging: false,
+            info: false,
+            autoWidth: false,
+            responsive: false,
+            language: {
+                search: "Rechercher :",
+                lengthMenu: "Afficher _MENU_ entrées",
+                zeroRecords: "Aucun résultat",
+                emptyTable: "Aucune donnée disponible"
+            }
+        });
+    });
+</script>
+{% endblock %}

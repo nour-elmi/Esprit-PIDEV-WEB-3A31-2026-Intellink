@@ -1,0 +1,150 @@
+{% extends 'formation/base.html.twig' %}
+
+{% block title %}{{ formation.titre }}{% endblock %}
+{% block role_badge_class %}badge-utilisateur{% endblock %}
+{% block role_label %}Apprenant{% endblock %}
+
+{% block body %}
+
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-content">
+            <a href="{{ path('app_utilisateur_formations') }}" class="back-link" style="color: rgba(255,255,255,0.7);">
+                <i class="lni lni-arrow-left"></i> Retour aux formations
+            </a>
+            <h1>{{ formation.titre }}</h1>
+            
+        </div>
+    </div>
+</section>
+
+<div class="main-content">
+    <div class="container">
+        <div class="row g-4">
+
+            <!-- VIDEO + DESCRIPTION -->
+            <div class="col-lg-8">
+                <div class="video-card-show">
+
+                    <!-- VIDEO avec blur si non inscrit -->
+                    <div class="video-wrapper">
+                        {% if 'youtube.com' in formation.urlVideo or 'youtu.be' in formation.urlVideo %}
+                            {% set videoId = formation.urlVideo|split('v=')[1] ?? formation.urlVideo|split('youtu.be/')[1] %}
+                            {% set videoId = videoId|split('&')[0] %}
+                            <iframe src="https://www.youtube.com/embed/{{ videoId }}"
+                                class="{{ dejaInscrit ? '' : 'video-blurred' }}"
+                                allowfullscreen></iframe>
+                        {% else %}
+                            <iframe src="{{ formation.urlVideo }}"
+                                class="{{ dejaInscrit ? '' : 'video-blurred' }}"
+                                allowfullscreen></iframe>
+                        {% endif %}
+
+                        {% if not dejaInscrit %}
+                        <div class="video-blur-overlay">
+                            <div class="blur-overlay-content">
+                                <div class="blur-lock-icon">
+                                    <i class="lni lni-lock-alt"></i>
+                                </div>
+                                <h5>Contenu réservé aux inscrits</h5>
+                                <p>Inscrivez-vous pour accéder à la vidéo complète</p>
+                                <a href="{{ path('app_utilisateur_participer', {id: formation.idFormation}) }}"
+                                   class="btn-primary-custom">
+                                    <i class="lni lni-pencil-alt"></i> S'inscrire maintenant
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="video-desc-body">
+                        <div class="video-desc-title">
+                            <i class="lni lni-text-align-left"></i> Description
+                        </div>
+                        <p style="color: var(--body-color); line-height: 1.8;">
+                            {{ formation.description ?? 'Aucune description disponible.' }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIDEBAR -->
+            <div class="col-lg-4">
+                <div class="sidebar-sticky">
+
+                    <!-- INFOS -->
+                    <div class="info-card-show">
+                        <div class="info-card-header">
+                            <i class="lni lni-information"></i>
+                            <span>Informations</span>
+                        </div>
+                        <div class="info-card-body">
+                            <div class="info-item">
+                                <span class="info-item-label">Domaine</span>
+                                <span class="tag tag-primary">
+                                    <i class="lni lni-tag"></i> {{ formation.domaine ?? 'N/A' }}
+                                </span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-label">Niveau</span>
+                                {% if formation.niveau == 'Débutant' %}
+                                    <span class="tag tag-success">{{ formation.niveau }}</span>
+                                {% elseif formation.niveau == 'Intermédiaire' %}
+                                    <span class="tag tag-warning">{{ formation.niveau }}</span>
+                                {% else %}
+                                    <span class="tag tag-dark">{{ formation.niveau }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-label">Inscrits</span>
+                                <span class="info-item-value">
+                                    <i class="lni lni-users" style="color: var(--primary);"></i>
+                                    {{ formation.participations|length }} participants
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card-show">
+    <div class="info-card-header" style="background: linear-gradient(135deg, var(--primary) 0%, #1a6fd8 100%);">
+        <i class="lni lni-pencil-alt" style="color: white;"></i>
+        <span>Quiz</span>
+    </div>
+    <div class="info-card-body">
+        {% if dejaInscrit %}
+            <div style="text-align: center; padding: 10px 0;">
+                <div style="width: 56px; height: 56px; background: var(--primary-light);
+                            border-radius: 50%; display: flex; align-items: center;
+                            justify-content: center; margin: 0 auto 12px;">
+                    <i class="lni lni-pencil-alt" style="font-size: 26px; color: var(--primary);"></i>
+                </div>
+                <p style="color: var(--body-color); font-size: 14px; margin-bottom: 16px;">
+                    Testez vos connaissances sur cette formation.
+                </p>
+                <button class="btn-primary-custom" style="width: 100%; justify-content: center; opacity: 0.6; cursor: not-allowed;" disabled>
+    <i class="lni lni-pencil-alt"></i> Quiz bientôt disponible
+</button>
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 10px 0;">
+                <div style="width: 56px; height: 56px; background: rgba(50,52,80,0.06);
+                            border-radius: 50%; display: flex; align-items: center;
+                            justify-content: center; margin: 0 auto 12px;">
+                    <i class="lni lni-lock-alt" style="font-size: 26px; color: var(--body-color);"></i>
+                </div>
+                <p style="color: var(--body-color); font-size: 14px;">
+                    Inscrivez-vous pour accéder au quiz.
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

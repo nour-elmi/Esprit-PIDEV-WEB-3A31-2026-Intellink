@@ -1,0 +1,104 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Gestion des Utilisateurs - Intel_link{% endblock %}
+
+{% block body %}
+<div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
+    <div>
+        <h3 class="fw-bold mb-3"><i class="fas fa-users me-2 text-primary"></i> Gestion des Utilisateurs</h3>
+        <h6 class="op-7 mb-2">Administrez les comptes, rôles et accès de la plateforme</h6>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card card-round">
+            <div class="card-header">
+                <div class="card-head-row card-tools-still-right">
+                    <form action="{{ path('app_admin_users') }}" method="GET" class="d-flex w-50">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa fa-search"></i></span>
+                            <input type="text" name="search" value="{{ searchQuery }}" class="form-control" placeholder="Rechercher par Nom ou Email...">
+                            <button type="submit" class="btn btn-primary">Rechercher</button>
+                        </div>
+                    </form>
+                    <div class="card-tools">
+                        <a href="{{ path('app_admin_users') }}" class="btn btn-icon btn-link btn-primary btn-xs btn-refresh-card">
+                            <span class="fa fa-sync-alt"></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="row">
+                    {% for u in users %}
+                        <div class="col-sm-6 col-md-4 col-lg-3 mb-4 d-flex align-items-stretch">
+                            <div class="card card-profile shadow-sm w-100" style="border-radius: 12px; border: none; overflow: hidden;">
+                                
+                                <div class="card-header text-center" style="background: linear-gradient(135deg, #2F80ED, #56CCF2); padding-bottom: 45px; border: none; position: relative; min-height: 120px;">
+                                    <div class="profile-picture" style="position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%);">
+                                        <div class="avatar avatar-xl">
+                                            {% set avatar_src = u.image starts with 'http' ? u.image : asset('uploads/profiles/' ~ u.image) %}
+                                            <img src="{{ avatar_src }}" onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png';" alt="Avatar" class="avatar-img rounded-circle border border-white border-3" style="background: white; object-fit: cover; width: 80px; height: 80px;">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card-body text-center mt-3 pt-3 d-flex flex-column" style="padding: 15px;">
+                                    <h5 class="mb-1 fw-bold" style="color: #1e293b; font-size: 16px;">{{ u.nom }}</h5>
+                                    <p class="text-muted small mb-3" style="font-size: 12px; word-break: break-all;">{{ u.email }}</p>
+                                    
+                                    {% set isSimpleUser = (u.role|lower == 'utilisateur simple' or u.role == 'ROLE_USER') %}
+                                    {% set displayStatus = isSimpleUser ? 'ACTIF' : u.statutCompte %}
+
+                                    <div class="mb-3 mt-auto">
+                                        <span class="badge badge-{{ 'ADMIN' in u.role|upper ? 'secondary' : 'primary' }}" style="font-size: 10px; padding: 4px 8px;">{{ u.role|upper }}</span>
+                                        
+                                        {% if displayStatus == 'EN_ATTENTE' %}
+                                            <span class="badge badge-warning" style="font-size: 10px; padding: 4px 8px;">EN ATTENTE</span>
+                                        {% elseif displayStatus == 'REJETE' %}
+                                            <span class="badge badge-danger" style="font-size: 10px; padding: 4px 8px;">REJETE</span>
+                                        {% else %}
+                                            <span class="badge badge-success" style="font-size: 10px; padding: 4px 8px;">ACTIF</span>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="d-flex justify-content-center gap-1 mt-auto">
+                                        <a href="{{ path('app_admin_user_detail', {'id': u.id}) }}" class="btn btn-info btn-xs btn-icon" title="Voir le profil">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ path('app_admin_reclamations', {'user_id': u.id}) }}" class="btn btn-warning btn-xs btn-icon" title="Réclamations">
+                                            <i class="fas fa-bullhorn"></i>
+                                        </a>
+
+                                        {% if displayStatus == 'EN_ATTENTE' and not isSimpleUser %}
+                                            <form action="{{ path('app_admin_user_status', {'id': u.id, 'statut': 'ACTIF'}) }}" method="POST" style="display:inline;">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('status' ~ u.id) }}">
+                                                <button type="submit" class="btn btn-success btn-xs btn-icon" title="Accepter"><i class="fas fa-check"></i></button>
+                                            </form>
+                                            <form action="{{ path('app_admin_user_status', {'id': u.id, 'statut': 'REJETE'}) }}" method="POST" style="display:inline;">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('status' ~ u.id) }}">
+                                                <button type="submit" class="btn btn-danger btn-xs btn-icon" title="Refuser"><i class="fas fa-times"></i></button>
+                                            </form>
+                                        {% else %}
+                                            <form action="{{ path('app_admin_user_delete', {'id': u.id}) }}" method="POST" style="display:inline;" onsubmit="return confirm('Voulez-vous vraiment supprimer ce compte ?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ u.id) }}">
+                                                <button type="submit" class="btn btn-danger btn-xs btn-icon" title="Supprimer"><i class="fas fa-trash"></i></button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="col-12 text-center py-5">
+                            <h4 class="text-muted">Aucun utilisateur trouvé.</h4>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

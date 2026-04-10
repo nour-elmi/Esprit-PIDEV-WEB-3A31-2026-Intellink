@@ -1,0 +1,94 @@
+{% extends 'formation/base.html.twig' %}
+
+{% block title %}S'inscrire — {{ formation.titre }}{% endblock %}
+{% block role_badge_class %}badge-utilisateur{% endblock %}
+{% block role_label %}Apprenant{% endblock %}
+
+{% block body %}
+
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-content">
+            
+            <h1>Inscription à la formation</h1>
+            <p>{{ formation.titre }}</p>
+        </div>
+    </div>
+</section>
+
+<div class="main-content">
+    <div class="container">
+
+        <a href="{{ path('app_utilisateur_formation_show', {id: formation.idFormation}) }}" class="back-link">
+            <i class="lni lni-arrow-left"></i> Retour à la formation
+        </a>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+
+                <!-- Formation recap -->
+                <div class="alert-custom alert-info-custom mb-4">
+                    <i class="lni lni-graduation"></i>
+                    <div>
+                        <strong>{{ formation.titre }}</strong><br>
+                        <span style="font-size: 13px;">
+                            {{ formation.domaine ?? '' }}
+                            {% if formation.domaine and formation.niveau %} · {% endif %}
+                            {{ formation.niveau ?? '' }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="formation-form-wrapper">
+                    <div class="section-title mb-4">
+                        <h2 style="font-size: 22px;">Formulaire d'inscription</h2>
+                        <div class="title-line"></div>
+                    </div>
+
+                    <form method="POST">
+
+    {% if errors is defined and errors|length > 0 %}
+        <div class="alert alert-danger">
+            Veuillez corriger les erreurs.
+        </div>
+    {% endif %}
+
+    <div class="form-group-custom">
+        <label>Votre poste actuel *</label>
+
+        <input type="text" name="posteActuel" class="form-control-custom"
+               value="{{ old.posteActuel ?? '' }}"
+               placeholder="Ex: Développeur, Étudiant..."
+               pattern="[A-Za-zÀ-ÿ\s]+"
+               title="Seulement des lettres">
+
+        {% if errors.posteActuel is defined %}
+            <small style="color:red">{{ errors.posteActuel }}</small>
+        {% endif %}
+    </div>
+
+    <div class="form-group-custom">
+        <label>Vos attentes *</label>
+
+        <textarea name="attentes" class="form-control-custom"
+                  placeholder="Décrivez vos attentes...">{{ old.attentes ?? '' }}</textarea>
+
+        {% if errors.attentes is defined %}
+            <small style="color:red">{{ errors.attentes }}</small>
+        {% endif %}
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn-success-custom">
+            Confirmer l'inscription
+        </button>
+    </div>
+
+</form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

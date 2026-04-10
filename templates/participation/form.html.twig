@@ -1,0 +1,129 @@
+{% extends 'base_projet.html.twig' %}
+
+{% block title %}Participer au projet{% endblock %}
+
+{% block body %}
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-content">
+            <div class="hero-icon">📝</div>
+            <h1>{% if editMode is defined and editMode %}Modifier ma demande{% else %}Participer au projet{% endif %}</h1>
+            <p>{{ projet.titre }}</p>
+        </div>
+    </div>
+</section>
+
+<div class="main-content">
+    <div class="container">
+        <a href="{{ path('app_projet_show', {id: projet.id}) }}" class="back-link back-link-modern">
+            <span class="back-link-icon">←</span>
+            <span>Retour au projet</span>
+        </a>
+
+        <div class="form-wrapper-custom participation-form-card">
+            {{ form_start(form) }}
+
+            <div class="form-grid participation-form-grid">
+                <div class="form-group-custom">
+                    {{ form_label(form.roleSouhaite) }}
+                    <div class="choice-card-group">
+                        {% for child in form.roleSouhaite %}
+                            <label class="choice-card">
+                                {{ form_widget(child) }}
+                                <span class="choice-card-text">{{ child.vars.label }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                    {{ form_errors(form.roleSouhaite) }}
+
+                    <div class="conditional-field-wrapper" data-conditional-target="role" style="display:none;">
+                        {{ form_label(form.autreRole) }}
+                        {{ form_widget(form.autreRole) }}
+                        {{ form_errors(form.autreRole) }}
+                    </div>
+                </div>
+
+                <div class="form-group-custom">
+                    {{ form_label(form.disponibilite) }}
+                    <div class="choice-card-group">
+                        {% for child in form.disponibilite %}
+                            <label class="choice-card">
+                                {{ form_widget(child) }}
+                                <span class="choice-card-text">{{ child.vars.label }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                    {{ form_errors(form.disponibilite) }}
+
+                    <div class="conditional-field-wrapper" data-conditional-target="disponibilite" style="display:none;">
+                        {{ form_label(form.autreDisponibilite) }}
+                        {{ form_widget(form.autreDisponibilite) }}
+                        {{ form_errors(form.autreDisponibilite) }}
+                    </div>
+                </div>
+
+                <div class="form-group-custom form-col-full">
+                    {{ form_label(form.portfolio) }}
+                    {{ form_widget(form.portfolio) }}
+                    {{ form_errors(form.portfolio) }}
+                </div>
+
+                <div class="form-group-custom form-col-full">
+                    {{ form_label(form.motivation) }}
+                    {{ form_widget(form.motivation) }}
+                    {{ form_errors(form.motivation) }}
+                </div>
+            </div>
+
+            <div class="form-actions participation-form-actions">
+                {{ form_widget(form.save) }}
+                <a href="{{ path('app_mes_demandes') }}" class="btn-secondary-custom btn-my-requests">
+                    Mes participations
+                </a>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    function setupConditionalRadio(fieldName, targetName) {
+        const radios = document.querySelectorAll('input[name$="[' + fieldName + ']"]');
+        const targetWrapper = document.querySelector('[data-conditional-target="' + targetName + '"]');
+        const targetInput = targetWrapper ? targetWrapper.querySelector('input') : null;
+
+        if (!radios.length || !targetWrapper || !targetInput) {
+            return;
+        }
+
+        function updateVisibility() {
+            let selectedValue = null;
+
+            radios.forEach(function (radio) {
+                if (radio.checked) {
+                    selectedValue = radio.value;
+                }
+            });
+
+            if (selectedValue === '__autre__') {
+                targetWrapper.style.display = 'block';
+            } else {
+                targetWrapper.style.display = 'none';
+                targetInput.value = '';
+            }
+        }
+
+        radios.forEach(function (radio) {
+            radio.addEventListener('change', updateVisibility);
+        });
+
+        updateVisibility();
+    }
+
+    setupConditionalRadio('roleSouhaite', 'role');
+    setupConditionalRadio('disponibilite', 'disponibilite');
+});
+</script>
+{% endblock %}

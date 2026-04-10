@@ -1,0 +1,135 @@
+{% extends 'formation/base.html.twig' %}
+
+{% block title %}Mes Inscriptions{% endblock %}
+{% block role_badge_class %}badge-utilisateur{% endblock %}
+{% block role_label %}Apprenant{% endblock %}
+
+{% block body %}
+
+<section class="page-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="hero-content">
+                   
+                    <h1>Mes Inscriptions</h1>
+                    <p>Suivez vos formations et vos scores.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 text-end">
+                <a href="{{ path('app_utilisateur_formations') }}"
+                   class="btn-outline-custom" style="color:#fff; border-color: rgba(255,255,255,0.4);">
+                    <i class="lni lni-book"></i> Voir les formations
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="main-content">
+    <div class="container">
+
+        {% for message in app.flashes('success') %}
+            <div class="alert-custom alert-success-custom">
+                <i class="lni lni-checkmark-circle"></i> {{ message }}
+            </div>
+        {% endfor %}
+
+        <div class="section-title">
+            <h2>Mes Formations</h2>
+            <p>{{ participations|length }} inscription(s) en cours</p>
+            <div class="title-line"></div>
+        </div>
+
+        {% if participations is empty %}
+            <div class="formation-table-wrapper">
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="lni lni-list"></i>
+                    </div>
+                    <h5>Aucune inscription</h5>
+                    <p>Vous n'êtes inscrit à aucune formation pour le moment.</p>
+                    <a href="{{ path('app_utilisateur_formations') }}" class="btn-primary-custom">
+                        <i class="lni lni-book"></i> Explorer les formations
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <div class="formation-table-wrapper">
+                <table class="formation-table">
+                    <thead>
+                        <tr>
+                            <th>Formation</th>
+                            <th>Poste actuel</th>
+                            <th>Date d'inscription</th>
+                            <th>Score</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for participation in participations %}
+                        <tr>
+                            <td data-label="Formation">
+                                <span class="title-cell">
+                                    {{ participation.formation.titre }}
+                                </span>
+                                <br>
+                                <div class="d-flex gap-1 mt-1">
+                                    {% if participation.formation.domaine %}
+                                        <span class="tag tag-primary" style="font-size: 11px;">{{ participation.formation.domaine }}</span>
+                                    {% endif %}
+                                    {% if participation.formation.niveau %}
+                                        <span class="tag tag-dark" style="font-size: 11px;">{{ participation.formation.niveau }}</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td data-label="Poste actuel">
+                                {{ participation.posteActuel ?? '—' }}
+                            </td>
+                            <td data-label="Date d'inscription">
+                                {% if participation.dateInscription %}
+                                    <span class="tag tag-dark">
+                                        <i class="lni lni-calendar"></i>
+                                        {{ participation.dateInscription|date('d/m/Y') }}
+                                    </span>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td data-label="Score">
+                                {% if participation.score is not null %}
+                                    {% set score = participation.score %}
+                                    {% if score >= 7 %}
+                                        <span class="score-badge score-high">{{ score }}</span>
+                                    {% elseif score >= 4 %}
+                                        <span class="score-badge score-mid">{{ score }}</span>
+                                    {% else %}
+                                        <span class="score-badge score-low">{{ score }}</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="tag tag-dark">—</span>
+                                {% endif %}
+                            </td>
+                            <td data-label="Action">
+    <div style="display: flex; gap: 8px;">
+        <a href="{{ path('app_utilisateur_modifier_participation', {id: participation.idParticipation}) }}"
+           class="btn-warning-custom">
+            <i class="lni lni-pencil"></i> Modifier
+        </a>
+        <a href="{{ path('app_utilisateur_annuler', {id: participation.idParticipation}) }}"
+           class="btn-danger-custom"
+           onclick="return confirm('Annuler cette inscription ?')">
+            <i class="lni lni-close"></i> Annuler
+        </a>
+    </div>
+</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

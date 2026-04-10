@@ -1,0 +1,127 @@
+{% extends 'formation/base.html.twig' %}
+
+{% block title %}{{ formation.titre }}{% endblock %}
+{% block role_badge_class %}badge-formateur{% endblock %}
+{% block role_label %}Formateur{% endblock %}
+
+{% block body %}
+
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-content">
+            <a href="{{ path('app_formation_index') }}" class="back-link" style="color: rgba(255,255,255,0.7);">
+                <i class="lni lni-arrow-left"></i> Retour aux formations
+            </a>
+            <h1>{{ formation.titre }}</h1>
+           
+        </div>
+    </div>
+</section>
+
+<div class="main-content">
+    <div class="container">
+        <div class="row g-4">
+
+            <!-- VIDEO + DESCRIPTION -->
+            <div class="col-lg-8">
+                <div class="detail-card">
+
+                    <!-- VIDEO -->
+                    {% if 'youtube.com' in formation.urlVideo or 'youtu.be' in formation.urlVideo %}
+                        {% set videoId = formation.urlVideo|split('v=')[1] ?? formation.urlVideo|split('youtu.be/')[1] %}
+                        {% set videoId = videoId|split('&')[0] %}
+                        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
+                            <iframe
+                                src="https://www.youtube.com/embed/{{ videoId }}"
+                                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                    {% else %}
+                        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
+                            <iframe
+                                src="{{ formation.urlVideo }}"
+                                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                    {% endif %}
+
+                    <!-- DESCRIPTION -->
+                    <div class="detail-body">
+                        <div class="detail-section-title">
+                            <i class="lni lni-text-align-left"></i> Description
+                        </div>
+                        <p style="color: var(--body-color); line-height: 1.8;">
+                            {{ formation.description ?? 'Aucune description disponible.' }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+           <!-- SIDEBAR -->
+<div class="col-lg-4">
+    <div class="sidebar-sticky">
+
+        <!-- INFOS -->
+        <div class="info-card-show">
+            <div class="info-card-header">
+                <i class="lni lni-information"></i>
+                <span>Informations</span>
+            </div>
+            <div class="info-card-body">
+                <div class="info-item">
+                    <span class="info-item-label">Domaine</span>
+                    <span class="tag tag-primary">
+                        <i class="lni lni-tag"></i> {{ formation.domaine ?? 'N/A' }}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item-label">Niveau</span>
+                    {% if formation.niveau == 'Débutant' %}
+                        <span class="tag tag-success">{{ formation.niveau }}</span>
+                    {% elseif formation.niveau == 'Intermédiaire' %}
+                        <span class="tag tag-warning">{{ formation.niveau }}</span>
+                    {% else %}
+                        <span class="tag tag-dark">{{ formation.niveau }}</span>
+                    {% endif %}
+                </div>
+                <div class="info-item">
+                    <span class="info-item-label">Inscrits</span>
+                    <span class="info-item-value">
+                        <i class="lni lni-users" style="color: var(--primary);"></i>
+                        {{ formation.participations|length }} participants
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="actions-card-show">
+            <div class="actions-card-header">
+                <i class="lni lni-cog"></i>
+                <span>Actions</span>
+            </div>
+            <div class="actions-card-body">
+                <a href="{{ path('app_formation_edit', {id: formation.idFormation}) }}"
+                   class="btn-warning-custom">
+                    <i class="lni lni-pencil"></i> Modifier la formation
+                </a>
+                <a href="{{ path('app_formation_delete', {id: formation.idFormation}) }}"
+                   class="btn-danger-custom"
+                   onclick="return confirm('Supprimer cette formation ?')">
+                    <i class="lni lni-trash"></i> Supprimer la formation
+                </a>
+                <a href="{{ path('app_formation_index') }}"
+                   class="btn-secondary-custom">
+                    <i class="lni lni-arrow-left"></i> Retour à la liste
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>        </div>
+    </div>
+</div>
+
+{% endblock %}
