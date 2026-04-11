@@ -16,9 +16,12 @@ use App\Form\EmploiType;
 final class EmploiController extends AbstractController
 {
     #[Route('/showoffre', name: 'showoffre')]
-    public function listOffresfromDB(EmploiRepository $repo)
+    public function listOffresfromDB(EmploiRepository $repo, Request $request)
     {
-        return $this->render('emploi/front/showOffre.html.twig', ["offre" => $repo->findAll()]);
+        $searchTerm = $request->query->get('search');
+        $offres = $repo->searchByTerm($searchTerm);
+        return $this->render('emploi/front/showOffre.html.twig', ['offre' => $offres,
+            'searchTerm' => $searchTerm ]);
     }
 
     #[Route('/showoffreRecruteur', name: 'showoffreRecruteur')]

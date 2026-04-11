@@ -20,6 +20,33 @@
         <div class="row g-4">
             
             <div class="col-lg-8">
+            <div class="search-bar-wrapper mb-4">
+                <form action="{{ path('showoffre') }}" method="get" class="d-flex gap-2">
+                    <div class="input-group-custom flex-grow-1" style="position: relative;">
+                        <i class="lni lni-search-alt" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #64748b;"></i>
+                        <input type="text" 
+                            name="search" 
+                            value="{{ searchTerm }}" 
+                            placeholder="Rechercher un poste ou une entreprise..." 
+                            class="form-control-custom" 
+                            style="padding-left: 45px; border: 1px solid #e2e8f0; border-radius: 12px; height: 50px; width: 100%;">
+                    </div>
+                    <button type="submit" class="btn-liquid px-4" style="height: 50px; border-radius: 12px; background: #2F80ED;">
+                        Rechercher
+                    </button>
+                    {% if searchTerm %}
+                        <a href="{{ path('showoffreRecruteur') }}" class="btn-liquid px-4" style="height: 50px; border-radius: 12px; background: #64748b; display: flex; align-items: center; justify-content: center;">
+                            Réinitialiser
+                        </a>
+                    {% endif %}
+                </form>
+            </div>
+
+            {% if searchTerm and offre is empty %}
+                <div class="alert alert-info text-center" style="border-radius: 15px;">
+                    <i class="lni lni-search"></i> Aucun résultat pour "<strong>{{ searchTerm }}</strong>"
+                </div>
+            {% endif %}
                 {% for offre in offre %}
                     <div class="detail-card mb-4">
                         <div class="detail-body">
