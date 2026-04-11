@@ -5,8 +5,11 @@ namespace App\Entity;
 use App\Enum\Statut;
 use App\Enum\TypeContrat;
 use App\Repository\EmploiRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: EmploiRepository::class)]
 #[ORM\Table(name: 'offre_emploi')]
@@ -19,31 +22,53 @@ class Emploi
     private ?int $id_offre = null;
 
     #[ORM\Column(length: 150)]
+    #[Assert\NotBlank(message: "Le titre de l'offre est obligatoire")]
     private ?string $titre = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: "La description ne peut pas être vide")]
     private ?string $description = null;
 
     #[ORM\Column(enumType: TypeContrat::class)]
     private ?TypeContrat $TypeContrat = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    #[Assert\Positive(message: "Le salaire doit être un nombre positif")]
+    #[Assert\Type(type: "numeric", message: "Le salaire doit être une valeur numérique")]
     private ?string $salaire = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Assert\NotBlank(message: "La date de début est requise")]
     private ?\DateTime $date_debut = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Assert\NotBlank(message: "La date d'expiration est requise")]
+    #[Assert\GreaterThan(
+        propertyPath: "date_debut",
+        message: "La date d'expiration doit être strictement supérieure à la date de début"
+    )]
     private ?\DateTime $date_expiration = null;
 
     #[ORM\Column( nullable: true, enumType: Statut::class)]
     private ?Statut $statut = null;
 
     #[ORM\Column(length: 150)]
+    #[Assert\NotBlank(message: "Le nom de l'entreprise est requis")]
     private ?string $nom_entreprise = null;
 
     #[ORM\Column]
     private ?int $id_user = null;
+
+    /**
+     * @var Collection<int, ListeParticipation>
+     */
+    #[ORM\OneToMany(targetEntity: ListeParticipation::class, mappedBy: 'id_offre')]
+    private Collection $listeParticipations;
+
+    public function __construct()
+    {
+        $this->listeParticipations = new ArrayCollection();
+    }
 
     public function getIdOffre(): ?int
     {
@@ -164,6 +189,36 @@ class Emploi
     public function setIdUser(int $id_user): static
     {
         $this->id_user = $id_user;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ListeParticipation>
+     */
+    public function getListeParticipations(): Collection
+    {
+        return $this->listeParticipations;
+    }
+
+    public function addListeParticipation(ListeParticipation $listeParticipation): static
+    {
+        if (!$this->listeParticipations->contains($listeParticipation)) {
+            $this->listeParticipations->add($listeParticipation);
+            $listeParticipation->setIdOffre($this);
+        }
+
+        return $this;
+    }
+
+    public function removeListeParticipation(ListeParticipation $listeParticipation): static
+    {
+        if ($this->listeParticipations->removeElement($listeParticipation)) {
+            // set the owning side to null (unless already changed)
+            if ($listeParticipation->getIdOffre() === $this) {
+                $listeParticipation->setIdOffre(null);
+            }
+        }
 
         return $this;
     }
