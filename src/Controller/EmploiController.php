@@ -52,6 +52,24 @@ final class EmploiController extends AbstractController
         $em->remove($newOffre);
         $em->flush();
         return $this->redirectToRoute('showoffreRecruteur');
+    }
 
+    #[Route('/updateOffre/{id}', name:'updateOffre')]
+    public function updateOffre($id, ManagerRegistry $Manager, EmploiRepository $repo, Request $request)
+    {
+        $em = $Manager->getManager();
+        $offre = $repo->find($id);
+        if (!$offre) {
+            throw $this->createNotFoundException("L'offre avec l'ID $id n'existe pas.");
+        }
+        $form = $this->createForm(EmploiType::class, $offre);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->flush(); 
+            return $this->redirectToRoute('showoffreRecruteur');
+        }
+        return $this->render('emploi/front/addOffre.html.twig', [
+            'formOffre' => $form->createView()
+        ]);
     }
 }

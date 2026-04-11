@@ -1,0 +1,147 @@
+{% extends 'emploi/base_emploi.html.twig' %}
+
+{% block title %}Modifier l'Offre : {{ formOffre.vars.value.titre }}{% endblock %}
+
+{% block body %}
+
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-content">
+            {# On affiche dynamiquement le titre actuel pour aider le recruteur #}
+            <h1>Modifier l'Annonce</h1>
+            <p>Mettez à jour les informations de votre offre <strong>{{ formOffre.vars.value.titre }}</strong>.</p>
+        </div>
+    </div>
+</section>
+
+<div class="main-content">
+    <div class="container">
+
+        <a href="{{ path('showoffreRecruteur') }}" class="back-link">
+            <i class="lni lni-arrow-left"></i> Annuler et retourner aux offres
+        </a>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="formation-form-wrapper" style="background: #fff; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                    <div class="section-title mb-4">
+                        <h2 style="font-size: 24px;">Édition de l'offre</h2>
+                        <div class="title-line"></div>
+                    </div>
+
+                    {{ form_start(formOffre, {'attr': {'novalidate': 'novalidate'}}) }}
+
+                        <div class="form-group-custom mb-3">
+                            <label>Titre du poste *</label>
+                            {{ form_widget(formOffre.titre, {'attr': {'class': 'form-control-custom'}}) }}
+                            <small class="text-danger">{{ form_errors(formOffre.titre) }}</small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group-custom mb-3">
+                                    <label>Nom de l'entreprise *</label>
+                                    {{ form_widget(formOffre.nom_entreprise, {'attr': {'class': 'form-control-custom'}}) }}
+                                    <small class="text-danger">{{ form_errors(formOffre.nom_entreprise) }}</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group-custom mb-3">
+                                    <label>Type de contrat *</label>
+                                    {{ form_widget(formOffre.TypeContrat, {'attr': {'class': 'form-control-custom'}}) }}
+                                    <small class="text-danger">{{ form_errors(formOffre.TypeContrat) }}</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group-custom mb-3">
+                            <label>Description du poste *</label>
+                            {{ form_widget(formOffre.description, {'attr': {'class': 'form-control-custom', 'rows': '5'}}) }}
+                            <small class="text-danger">{{ form_errors(formOffre.description) }}</small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group-custom mb-3">
+                                    <label>Salaire (DT)</label>
+                                    {{ form_widget(formOffre.salaire, {'attr': {'class': 'form-control-custom'}}) }}
+                                    <small class="text-danger">{{ form_errors(formOffre.salaire) }}</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group-custom mb-3">
+                                    <label>Statut de l'offre *</label>
+                                    {{ form_widget(formOffre.Statut, {'attr': {'class': 'form-control-custom'}}) }}
+                                    <small class="text-danger">{{ form_errors(formOffre.Statut) }}</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group-custom mb-3">
+                                    <label>Date de début *</label>
+                                    {{ form_widget(formOffre.date_debut, {'attr': {'class': 'form-control-custom'}}) }}
+                                    <small class="text-danger">{{ form_errors(formOffre.date_debut) }}</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group-custom mb-3">
+                                    <label>Date d'expiration *</label>
+                                    {{ form_widget(formOffre.date_expiration, {'attr': {'class': 'form-control-custom'}}) }}
+                                    <small class="text-danger">{{ form_errors(formOffre.date_expiration) }}</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display:none;">
+                            {{ form_rest(formOffre) }}
+                        </div>
+
+                        <div class="form-actions mt-4 text-center">
+                            <button type="submit" class="btn-liquid" style="width: 100%; justify-content: center; padding: 15px; background: linear-gradient(135deg, #2F80ED, #2D9CDB);">
+                                <i class="lni lni-reload me-2"></i> Enregistrer les modifications
+                            </button>
+                        </div>
+
+                    {{ form_end(formOffre) }}
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    /* On garde les mêmes styles pour la cohérence visuelle d'Intellink */
+    .form-control-custom {
+        width: 100%;
+        padding: 12px 20px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        transition: 0.3s;
+    }
+    .form-control-custom:focus {
+        border-color: #2F80ED;
+        background: #fff;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(47, 128, 237, 0.1);
+    }
+    .form-group-custom label {
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 8px;
+        display: block;
+        font-size: 14px;
+    }
+    .title-line {
+        height: 4px;
+        width: 50px;
+        background: linear-gradient(90deg, #2F80ED, #56CCF2);
+        border-radius: 2px;
+        margin-top: 5px;
+    }
+</style>
+
+{% endblock %}
