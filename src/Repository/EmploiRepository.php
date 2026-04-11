@@ -16,6 +16,24 @@ class EmploiRepository extends ServiceEntityRepository
         parent::__construct($registry, Emploi::class);
     }
 
+
+    public function searchByTerm(?string $term): array
+    {
+        $qb = $this->createQueryBuilder('e');
+
+        if ($term) {
+            $qb->andWhere('e.titre LIKE :term OR e.nom_entreprise LIKE :term')
+            ->setParameter('term', '%' . $term . '%');
+        }
+
+        return $qb->orderBy('e.date_debut', 'DESC')
+                ->getQuery()
+                ->getResult();
+    }
+    
+    
+
+
 //    /**
 //     * @return Emploi[] Returns an array of Emploi objects
 //     */

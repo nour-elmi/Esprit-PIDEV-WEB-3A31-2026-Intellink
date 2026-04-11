@@ -22,9 +22,14 @@ final class EmploiController extends AbstractController
     }
 
     #[Route('/showoffreRecruteur', name: 'showoffreRecruteur')]
-    public function listOffresRfromDB(EmploiRepository $repo)
+    public function listOffresRfromDB(EmploiRepository $repo, Request $request)
     {
-        return $this->render('emploi/front/showOffreR.html.twig', ["offre" => $repo->findAll()]);
+        $searchTerm = $request->query->get('search');
+        $offres = $repo->searchByTerm($searchTerm);
+        return $this->render('emploi/front/showOffreR.html.twig', [
+            'offre' => $offres,
+            'searchTerm' => $searchTerm 
+        ]);
     }
 
     #[Route('/addOffre', name:'addOffre')]
