@@ -43,4 +43,15 @@ final class EmploiController extends AbstractController
         $em->flush();
         return $this->render('emploi/front/addOffre.html.twig', ['formOffre' => $form]);
     }
+
+    #[Route('/deleteOffre/{id}', name:'deleteOffre')]
+    public function deleteOffre($id, ManagerRegistry $Manager, EmploiRepository $repo)
+    {
+        $em= $Manager->getManager();
+        $newOffre= $repo->find($id);
+        $em->remove($newOffre);
+        $em->flush();
+        return $this->redirectToRoute('showoffreRecruteur');
+
+    }
 }
