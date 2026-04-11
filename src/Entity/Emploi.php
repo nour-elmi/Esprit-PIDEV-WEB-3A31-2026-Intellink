@@ -36,8 +36,8 @@ class Emploi
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $date_expiration = null;
 
-    #[ORM\Column(type: Types::SIMPLE_ARRAY, nullable: true, enumType: Statut::class)]
-    private ?array $statut = null;
+    #[ORM\Column( nullable: true, enumType: Statut::class)]
+    private ?Statut $statut = null;
 
     #[ORM\Column(length: 150)]
     private ?string $nom_entreprise = null;
@@ -129,15 +129,15 @@ class Emploi
         return $this;
     }
 
-    /**
+    /*
      * @return Statut[]|null
      */
-    public function getStatut(): ?array
+    public function getStatut(): ?Statut
     {
         return $this->statut;
     }
 
-    public function setStatut(?array $statut): static
+    public function setStatut(?Statut $statut): static
     {
         $this->statut = $statut;
 
