@@ -28,10 +28,22 @@ final class EmploiController extends AbstractController
     public function listOffresRfromDB(EmploiRepository $repo, Request $request)
     {
         $searchTerm = $request->query->get('search');
-        $offres = $repo->searchByTerm($searchTerm);
+        $sortBy = $request->query->get('sortBy');
+        if ($sortBy) {
+            if ($sortBy == 'salaire_desc') { $offres = $repo->sortByField('salaire', 'DESC'); }
+            elseif ($sortBy == 'salaire_asc') { $offres = $repo->sortByField('salaire', 'ASC'); }
+            elseif ($sortBy == 'expiration_asc') { $offres = $repo->sortByField('date_expiration', 'ASC'); }
+            else { $offres = $repo->findAll(); }
+        } elseif ($searchTerm) {
+            $offres = $repo->searchByTerm($searchTerm);
+        } else {
+            $offres = $repo->findAll();
+        }
+
         return $this->render('emploi/front/showOffreR.html.twig', [
             'offre' => $offres,
-            'searchTerm' => $searchTerm 
+            'searchTerm' => $searchTerm,
+            'currentSort' => $sortBy
         ]);
     }
 

@@ -20,32 +20,35 @@
             
             <div class="col-lg-8">
             <div class="search-bar-wrapper mb-4">
-                    <form action="{{ path('showoffreRecruteur') }}" method="get" class="d-flex gap-2">
-                        <div class="input-group-custom flex-grow-1" style="position: relative;">
+                <form action="{{ path('showoffreRecruteur') }}" method="get" class="row g-2 align-items-center">
+                    
+                    <div class="col-md-5">
+                        <div class="input-group-custom" style="position: relative;">
                             <i class="lni lni-search-alt" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #64748b;"></i>
-                            <input type="text" 
-                                name="search" 
-                                value="{{ searchTerm }}" 
-                                placeholder="Rechercher un poste ou une entreprise..." 
-                                class="form-control-custom" 
-                                style="padding-left: 45px; border: 1px solid #e2e8f0; border-radius: 12px; height: 50px; width: 100%;">
+                            <input type="text" name="search" value="{{ searchTerm }}" 
+                                placeholder="Rechercher..." class="form-control-custom" 
+                                style="padding-left: 45px; height: 45px; width: 100%;">
                         </div>
-                        <button type="submit" class="btn-liquid px-4" style="height: 50px; border-radius: 12px; background: #2F80ED;">
-                            Rechercher
-                        </button>
-                        {% if searchTerm %}
-                            <a href="{{ path('showoffreRecruteur') }}" class="btn-liquid px-4" style="height: 50px; border-radius: 12px; background: #64748b; display: flex; align-items: center; justify-content: center;">
-                                Réinitialiser
+                    </div>
+
+                    <div class="col-md-4">
+                        <select name="sortBy" class="form-control-custom" style="height: 45px; cursor: pointer;" onchange="this.form.submit()">
+                            <option value="" selected disabled>Options de tri</option>
+                            <option value="salaire_desc" {{ currentSort == 'salaire_desc' ? 'selected' }}>Salaire : Plus élevé</option>
+                            <option value="salaire_asc" {{ currentSort == 'salaire_asc' ? 'selected' }}>Salaire : Plus bas</option>
+                            <option value="expiration_asc" {{ currentSort == 'expiration_asc' ? 'selected' }}>Expire bientôt</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 d-flex gap-2">
+                        {% if searchTerm or currentSort %}
+                            <a href="{{ path('showoffreRecruteur') }}" class="btn-liquid justify-content-center" style="height: 45px; background: #64748b;">
+                                <i class="lni lni-close"></i>
                             </a>
                         {% endif %}
-                    </form>
-                </div>
-
-                {% if searchTerm and offre is empty %}
-                    <div class="alert alert-info text-center" style="border-radius: 15px;">
-                        <i class="lni lni-search"></i> Aucun résultat pour "<strong>{{ searchTerm }}</strong>"
                     </div>
-                {% endif %}
+                </form>
+            </div>
                 {% for o in offre %}
                     <div class="detail-card mb-4">
                         <div class="detail-body">
@@ -53,9 +56,19 @@
                                 <div class="detail-section-title">
                                     <i class="lni lni-briefcase"></i> {{ o.titre }}
                                 </div>
-                                <span class="tag tag-primary">
-                                    {{ o.typeContrat ? o.typeContrat.getLabel() : 'Contrat N/A' }}
-                                </span>
+
+                                <div class="d-flex flex-column align-items-end gap-2">
+                                    {# 1. Type de Contrat #}
+                                    <span class="tag tag-primary">
+                                        {{ o.typeContrat ? o.typeContrat.getLabel() : 'Contrat N/A' }}
+                                    </span>
+                                    
+                                    {# 2. Salaire #}
+                                    <span class="tag tag-success" style="background: rgba(40, 167, 69, 0.1); color: #28a745; border: 1px solid #28a745;">
+                                        <i class="lni lni-money-location"></i> {{ o.salaire ? o.salaire ~ ' DT' : 'Salaire N/A' }}
+                                        <i class="lni lni-timer"></i> Expire le : {{ o.dateExpiration ? o.dateExpiration|date('d/m/Y') : 'N/A' }}
+                                    </span>
+                                </div>
                             </div>
                             
                             <p class="mt-3" style="color: var(--body-color); line-height: 1.6;">

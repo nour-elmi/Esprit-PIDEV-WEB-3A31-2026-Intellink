@@ -30,8 +30,20 @@ class EmploiRepository extends ServiceEntityRepository
                 ->getQuery()
                 ->getResult();
     }
+
+    public function sortByField(string $field, string $order = 'ASC'): array
+    {
+        $allowedFields = ['salaire', 'date_expiration', 'date_debut'];
+        $field = in_array($field, $allowedFields) ? $field : 'date_debut';
+        $order = strtoupper($order) === 'DESC' ? 'DESC' : 'ASC';
+
+        return $this->createQueryBuilder('e')
+            ->orderBy('e.' . $field, $order)
+            ->getQuery()
+            ->getResult();
+    }
     
-    
+
 
 
 //    /**
