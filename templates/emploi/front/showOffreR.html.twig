@@ -77,7 +77,9 @@
 
                             <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
                                 <span style="font-weight: 600; color: var(--primary);">
-                                    <i class="lni lni-users"></i> 0 Candidatures reçues
+                                    <i class="lni lni-users"></i> 
+                                    {# Utilise .listeParticipations|length pour compter les relations #}
+                                    {{ o.listeParticipations|length }} Candidatures reçues
                                 </span>
                                 <div class="d-flex gap-2">
                                     <a href="{{path('updateOffre', {id: o.idOffre})}}" class="btn-liquid px-3 py-2" style="font-size: 14px; background: linear-gradient(135deg, #6c757d, #495057);">
@@ -86,7 +88,7 @@
                                     <a href="{{ path ('deleteOffre', {id: o.idOffre}) }}" class="btn-liquid px-3 py-2" style="font-size: 14px; background: linear-gradient(135deg,rgb(231, 75, 75),rgb(165, 63, 63));">
                                         <i class="lni lni-pencil"></i> Supprimer
                                     </a>
-                                    <a href="#" class="btn-liquid px-3 py-2" style="font-size: 14px;">
+                                    <a href="{{ path('showListe', {'id_offre': o.idOffre}) }}" class="btn-liquid px-3 py-2" style="font-size: 14px;">
                                         Participants
                                     </a>
                                 </div>

@@ -70,6 +70,11 @@ class Emploi
         $this->listeParticipations = new ArrayCollection();
     }
 
+    public function getNbParticipations(): int
+    {
+        return $this->listeParticipations->count();
+    }
+
     public function getId(): ?int
     {
         return $this->id_offre;

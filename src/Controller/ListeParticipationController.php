@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\ListeParticipation;
+use App\Entity\Emploi;
 use App\Form\ListeParticipationType;
 use App\Repository\EmploiRepository;
 use App\Repository\ListeParticipationRepository;
@@ -14,12 +15,17 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class ListeParticipationController extends AbstractController
 {
-    #[Route('/showListe', name: 'showListe')]
-    public function showListe(ListeParticipationRepository $repo): Response
+    #[Route('/showListe/{id_offre}', name: 'showListe', defaults: ['id_offre' => null])]
+    public function showListe(?Emploi $offre, ListeParticipationRepository $repo): Response
     {
+        // Si un ID est passé, on filtre par offre, sinon on affiche tout
+        $participations = $offre 
+            ? $repo->findBy(['id_offre' => $offre]) 
+            : $repo->findAll();
+
         return $this->render('emploi/front/showListe.html.twig', [
-            'lesParticipations' => $repo->findAll(),
-            'offre' => $repo->findAll(), // Pour ton count dans le template
+            'lesParticipations' => $participations,
+            'offreChoisie' => $offre // Pour afficher le titre de l'offre en haut si besoin
         ]);
     }
 
