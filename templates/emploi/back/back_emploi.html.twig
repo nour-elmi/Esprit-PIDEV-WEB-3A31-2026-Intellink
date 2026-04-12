@@ -1,0 +1,98 @@
+{# templates/base_back.html.twig #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>{% block title %}Admin{% endblock %} - Gestion Emploi</title>
+    <meta content="width=device-width, initial-scale=1.0, shrink-to-fit=no" name="viewport" />
+
+    <script src="{{ asset('assets/js/plugin/webfont/webfont.min.js') }}"></script>
+    <script>
+        WebFont.load({
+            google: { families: ["Public Sans:300,400,500,600,700"] },
+            custom: {
+                families: ["Font Awesome 5 Solid", "Font Awesome 5 Regular", "Font Awesome 5 Brands", "simple-line-icons"],
+                urls: ["{{ asset('assets/css/fonts.min.css') }}"],
+            },
+            active: function () { sessionStorage.fonts = true; },
+        });
+    </script>
+
+    <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/plugins.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/kaiadmin.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/demo.css') }}" />
+</head>
+<body>
+<div class="wrapper">
+    <div class="sidebar" data-background-color="dark">
+        <div class="sidebar-logo">
+            <div class="logo-header" data-background-color="dark">
+                <a href="#" class="logo">
+                    <span style="color:white; font-weight:800; font-size:18px;">Gestion<span style="color:#4d8aff;">Emploi</span></span>
+                </a>
+                <div class="nav-toggle">
+                    <button class="btn btn-toggle toggle-sidebar"><i class="gg-menu-right"></i></button>
+                    <button class="btn btn-toggle sidenav-toggler"><i class="gg-menu-left"></i></button>
+                </div>
+            </div>
+        </div>
+        <div class="sidebar-wrapper scrollbar scrollbar-inner">
+            <div class="sidebar-content">
+                <ul class="nav nav-secondary">
+                    <li class="nav-section">
+                        <span class="sidebar-mini-icon"><i class="fa fa-ellipsis-h"></i></span>
+                        <h4 class="text-section">Modules</h4>
+                    </li>
+
+                    <li class="nav-item active">
+                        <a data-bs-toggle="collapse" href="#menuEmplois">
+                            <i class="fas fa-briefcase"></i>
+                            <p>Gestion des Emplois</p>
+                            <span class="caret"></span>
+                        </a>
+                        <div class="collapse show" id="menuEmplois">
+                            <ul class="nav nav-collapse">
+                                <li>
+                                    <a href="{{ path('showoffreBack') }}"> {# Remplacez par votre route liste emploi #}
+                                        <span class="sub-item">Liste des Offres</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-panel">
+        <nav class="navbar navbar-header navbar-header-transparent navbar-expand-lg border-bottom">
+            <div class="container-fluid">
+                <ul class="navbar-nav topbar-nav ms-md-auto align-items-center">
+                    <li class="nav-item topbar-user dropdown">
+                        <span class="profile-username">
+                            <span class="op-7">Bonjour,</span>
+                            <span class="fw-bold">Admin</span>
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="container">
+            <div class="page-inner">
+                {% block body %}{% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ asset('assets/js/core/jquery-3.7.1.min.js') }}"></script>
+<script src="{{ asset('assets/js/core/popper.min.js') }}"></script>
+<script src="{{ asset('assets/js/core/bootstrap.min.js') }}"></script>
+<script src="{{ asset('assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js') }}"></script>
+<script src="{{ asset('assets/js/kaiadmin.min.js') }}"></script>
+{% block javascripts %}{% endblock %}
+</body>
+</html>

@@ -29,6 +29,20 @@ final class ListeParticipationController extends AbstractController
         ]);
     }
 
+    #[Route('/showListeBack/{id}', name: 'showListeBack', defaults: ['id' => null])]
+    public function showListeBack(?Emploi $offre, ListeParticipationRepository $repo): Response
+    {
+        // Symfony va maintenant lier automatiquement {id} à l'objet Emploi $offre
+        $participations = $offre 
+            ? $repo->findBy(['id_offre' => $offre]) 
+            : $repo->findAll();
+
+        return $this->render('emploi/back/ListeBack.html.twig', [
+            'lesParticipations' => $participations,
+            'offreChoisie' => $offre
+        ]);
+    }
+
     // On passe l'id_offre dans l'URL pour savoir pour quel job on postule
     #[Route('/addListe/{id_offre}', name: 'addListe')]
     public function addListe(
