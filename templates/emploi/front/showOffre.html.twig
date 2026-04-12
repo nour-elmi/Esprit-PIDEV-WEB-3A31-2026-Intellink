@@ -9,7 +9,7 @@
             <a href="{{ path('showoffre') }}" class="back-link" style="color: rgba(255,255,255,0.7);">
                 <i class="lni lni-arrow-left"></i> Accueil
             </a>
-            {# On utilise 'liste' qui est le nom envoyé par ton contrôleur #}
+            {# 'offre' contient la liste des offres envoyée par le contrôleur #}
             <h1>Nos {{ offre|length }} offres d'emploi</h1>
         </div>
     </div>
@@ -20,55 +20,48 @@
         <div class="row g-4">
             
             <div class="col-lg-8">
-            <div class="search-bar-wrapper mb-4">
-                <form action="{{ path('showoffre') }}" method="get" class="d-flex gap-2">
-                    <div class="input-group-custom flex-grow-1" style="position: relative;">
-                        <i class="lni lni-search-alt" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #64748b;"></i>
-                        <input type="text" 
-                            name="search" 
-                            value="{{ searchTerm }}" 
-                            placeholder="Rechercher un poste ou une entreprise..." 
-                            class="form-control-custom" 
-                            style="padding-left: 45px; border: 1px solid #e2e8f0; border-radius: 12px; height: 50px; width: 100%;">
-                    </div>
-                    <button type="submit" class="btn-liquid px-4" style="height: 50px; border-radius: 12px; background: #2F80ED;">
-                        Rechercher
-                    </button>
-                    {% if searchTerm %}
-                        <a href="{{ path('showoffreRecruteur') }}" class="btn-liquid px-4" style="height: 50px; border-radius: 12px; background: #64748b; display: flex; align-items: center; justify-content: center;">
-                            Réinitialiser
-                        </a>
-                    {% endif %}
-                </form>
-            </div>
-
-            {% if searchTerm and offre is empty %}
-                <div class="alert alert-info text-center" style="border-radius: 15px;">
-                    <i class="lni lni-search"></i> Aucun résultat pour "<strong>{{ searchTerm }}</strong>"
+                <div class="search-bar-wrapper mb-4">
+                    <form action="{{ path('showoffre') }}" method="get" class="d-flex gap-2">
+                        <div class="input-group-custom flex-grow-1" style="position: relative;">
+                            <i class="lni lni-search-alt" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #64748b;"></i>
+                            <input type="text" 
+                                name="search" 
+                                value="{{ searchTerm|default('') }}" 
+                                placeholder="Rechercher un poste..." 
+                                class="form-control-custom" 
+                                style="padding-left: 45px; border: 1px solid #e2e8f0; border-radius: 12px; height: 50px; width: 100%;">
+                        </div>
+                        <button type="submit" class="btn-liquid px-4" style="height: 50px; border-radius: 12px; background: #2F80ED;">
+                            Rechercher
+                        </button>
+                    </form>
                 </div>
-            {% endif %}
-                {% for offre in offre %}
+
+                {# Changement ici : 'for o in offre' pour ne pas confondre l'objet et la liste #}
+                {% for o in offre %}
                     <div class="detail-card mb-4">
                         <div class="detail-body">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div class="detail-section-title">
-                                    <i class="lni lni-briefcase"></i> {{ offre.titre }}
+                                    <i class="lni lni-briefcase"></i> {{ o.titre }}
                                 </div>
                                 <span class="tag tag-primary">
-                                    {{ offre.typeContrat ? offre.typeContrat.getLabel() : 'Contrat N/A' }}
+                                    {{ o.typeContrat ? o.typeContrat.getLabel() : 'Contrat N/A' }}
                                 </span>
                             </div>
                             
                             <p class="mt-3" style="color: var(--body-color); line-height: 1.6;">
-                                {{ offre.description|slice(0, 200) }}...
+                                {{ o.description|slice(0, 200) }}...
                             </p>
 
                             <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
                                 <span style="font-weight: 600; color: var(--primary);">
-                                    <i class="lni lni-apartment"></i> {{ offre.nomEntreprise }}
+                                    <i class="lni lni-apartment"></i> {{ o.nomEntreprise }}
                                 </span>
-                                <a href="#" class="btn-liquid px-3 py-2" style="font-size: 14px;">
-                                    Voir les détails
+                                
+                                {# CHANGEMENT CRUCIAL : On envoie l'ID de l'offre à la route addListe #}
+                                <a href="{{ path('addListe', {'id_offre': o.idOffre}) }}" class="btn-liquid px-3 py-2" style="font-size: 14px; text-decoration: none; background: #2F80ED; color: white; border-radius: 8px;">
+                                    Postuler
                                 </a>
                             </div>
                         </div>
@@ -83,34 +76,31 @@
 
             <div class="col-lg-4">
                 <div class="sidebar-sticky">
-                    <div class="info-card-show">
-                        <div class="info-card-header">
-                            <i class="lni lni-information"></i>
-                            <span>Statistiques</span>
+                    <div class="info-card-show" style="background: #fff; padding: 20px; border-radius: 15px; border: 1px solid #eee;">
+                        <div class="info-card-header mb-3">
+                            <i class="lni lni-stats-up"></i>
+                            <span class="ms-2" style="font-weight: 700;">Statistiques</span>
                         </div>
                         <div class="info-card-body">
-                            <div class="info-item">
-                                <span class="info-item-label">Disponibilité</span>
-                                <span class="info-item-value">
-                                    {{ offre|length }} Postes à pourvoir
-                                </span>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Disponibilité</span>
+                                <span style="font-weight: 700;">{{ offre|length }} Postes</span>
                             </div>
-                            <div class="info-item">
-                                <span class="info-item-label">Dernière mise à jour</span>
-                                <span class="info-item-value">Aujourd'hui</span>
+                            <div class="d-flex justify-content-between">
+                                <span>Mise à jour</span>
+                                <span>Aujourd'hui</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="actions-card-show">
-                        <div class="actions-card-header">
-                            <i class="lni lni-star"></i>
-                            <span>Votre Espace</span>
+                    <div class="actions-card-show mt-3" style="background: #f8fafc; padding: 20px; border-radius: 15px;">
+                        <div class="actions-card-header mb-2" style="font-weight: 700;">
+                            <i class="lni lni-star"></i> Votre Espace
                         </div>
                         <div class="actions-card-body">
-                            <p class="small text-muted mb-3">Postulez en un clic avec votre profil Intellink.</p>
-                            <a href="#" class="btn-liquid w-100 justify-content-center">
-                                <i class="lni lni-cloud-upload me-2"></i> Déposer mon CV
+                            <p class="small text-muted mb-3">Retrouvez vos candidatures envoyées sur Intellink.</p>
+                            <a href="{{ path('showListe') }}" class="btn-liquid w-100 justify-content-center" style="background: #64748b; color: white; display: flex; padding: 10px; border-radius: 8px; text-decoration: none;">
+                                <i class="lni lni-list me-2"></i> Mes participations
                             </a>
                         </div>
                     </div>

@@ -18,7 +18,7 @@ class Emploi
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(name: "id_offre")]
     private ?int $id_offre = null;
 
     #[ORM\Column(length: 150)]
@@ -68,6 +68,11 @@ class Emploi
     public function __construct()
     {
         $this->listeParticipations = new ArrayCollection();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id_offre;
     }
 
     public function getIdOffre(): ?int

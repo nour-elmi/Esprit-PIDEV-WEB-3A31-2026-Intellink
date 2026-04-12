@@ -1,0 +1,85 @@
+{% extends 'emploi/base_emploi.html.twig' %}
+
+{% block title %}Postuler à une offre{% endblock %}
+
+{% block body %}
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-content">
+            <h1>Déposer votre candidature</h1>
+            <p>Postulez pour l'offre : <strong>{{ offre.titre }}</strong> chez {{ offre.nomEntreprise }}</p>
+        </div>
+    </div>
+</section>
+
+<div class="main-content">
+    <div class="container">
+
+        <a href="{{ path('showoffre') }}" class="back-link">
+            <i class="lni lni-arrow-left"></i> Retour aux offres
+        </a>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="formation-form-wrapper" style="background: #fff; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                    <div class="section-title mb-4">
+                        <h2 style="font-size: 24px;">Formulaire de Participation</h2>
+                        <div class="title-line"></div>
+                    </div>
+
+                    {{ form_start(formOffre, {'attr': {'novalidate': 'novalidate'}}) }}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group-custom mb-3">
+                                    <label>Nom *</label>
+                                    {{ form_widget(formOffre.nom_p, {'attr': {'class': 'form-control-custom', 'placeholder': 'Votre nom'}}) }}
+                                    <div class="text-danger">{{ form_errors(formOffre.nom_p) }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group-custom mb-3">
+                                    <label>Prénom *</label>
+                                    {{ form_widget(formOffre.prenom_p, {'attr': {'class': 'form-control-custom', 'placeholder': 'Votre prénom'}}) }}
+                                    <div class="text-danger">{{ form_errors(formOffre.prenom_p) }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group-custom mb-3">
+                            <label>Lien vers votre CV (PDF) *</label>
+                            {{ form_widget(formOffre.cv, {'attr': {'class': 'form-control-custom', 'placeholder': 'URL de votre CV'}}) }}
+                            <div class="text-danger">{{ form_errors(formOffre.cv) }}</div>
+                        </div>
+
+                        <div class="form-group-custom mb-3">
+                            <label>Compétences (Skills) *</label>
+                            {{ form_widget(formOffre.skills, {'attr': {'class': 'form-control-custom', 'placeholder': 'Ex: Java, Symfony, SQL...', 'rows': '4'}}) }}
+                            <div class="text-danger">{{ form_errors(formOffre.skills) }}</div>
+                        </div>
+
+                        {# IMPORTANT : On ne rend pas id_offre et date_participation ici car ils sont gérés par le contrôleur #}
+                        {# form_rest rendra les jetons CSRF (sécurité) cachés automatiquement #}
+                        {{ form_rest(formOffre) }}
+
+                        <div class="form-actions mt-4 text-center">
+                            <button type="submit" class="btn-liquid" style="width: 100%; justify-content: center; padding: 15px; border: none; background: #2F80ED; color: white; border-radius: 12px; cursor: pointer;">
+                                <i class="lni lni-checkmark-circle me-2"></i> Envoyer ma candidature
+                            </button>
+                        </div>
+
+                    {{ form_end(formOffre) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control-custom { width: 100%; padding: 12px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; transition: 0.3s; }
+    .form-control-custom:focus { border-color: #2F80ED; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(47, 128, 237, 0.1); }
+    .form-group-custom label { font-weight: 700; color: #1e293b; margin-bottom: 8px; display: block; font-size: 14px; }
+    .title-line { height: 4px; width: 50px; background: linear-gradient(90deg, #2F80ED, #56CCF2); border-radius: 2px; margin-top: 5px; }
+    .back-link { text-decoration: none; color: #64748b; display: inline-block; margin-bottom: 20px; font-weight: 600; }
+</style>
+{% endblock %}

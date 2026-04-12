@@ -13,21 +13,19 @@ class ListeParticipation
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
-
-    #[ORM\Column]
     private ?int $id_participation = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTime $date_participation = null;
 
     #[ORM\Column(enumType: stat::class)]
-    private ?stat $statut = null;
+    private ?stat $statut = stat::en_attente;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $date_reponse = null;
 
     #[ORM\ManyToOne(inversedBy: 'listeParticipations')]
+    #[ORM\JoinColumn(name: "id_offre", referencedColumnName: "id_offre", nullable: true)]
     private ?Emploi $id_offre = null;
 
     #[ORM\Column(nullable: true)]
@@ -46,12 +44,7 @@ class ListeParticipation
     private ?string $skills = null;
 
     #[ORM\Column]
-    private ?int $score = null;
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
+    private ?int $score = 0;
 
     public function getIdParticipation(): ?int
     {

@@ -2,34 +2,25 @@
 
 namespace App\Form;
 
-use App\Entity\Emploi;
 use App\Entity\ListeParticipation;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 
 class ListeParticipationType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
-    {
-        $builder
-            ->add('id_participation')
-            ->add('date_participation')
-            ->add('statut')
-            ->add('date_reponse')
-            ->add('id_user')
-            ->add('nom_p')
-            ->add('prenom_p')
-            ->add('cv')
-            ->add('skills')
-            ->add('score')
-            ->add('id_offre', EntityType::class, [
-                'class' => Emploi::class,
-                'choice_label' => 'id',
-            ])
-        ;
-    }
+{
+    $builder
+        ->add('nom_p')
+        ->add('prenom_p')
+        ->add('cv')
+        ->add('skills')
+        
+    ;
+}
 
     public function configureOptions(OptionsResolver $resolver): void
     {
