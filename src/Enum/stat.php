@@ -3,7 +3,7 @@ namespace App\Enum;
 
 enum stat: string
 {
-    case acceptee = 'aceptee';
+    case acceptee = 'acceptee';
     case refusee = 'refusee';
     case en_attente = 'en_attente';
 

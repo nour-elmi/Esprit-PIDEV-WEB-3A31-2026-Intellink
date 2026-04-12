@@ -51,6 +51,7 @@
                                     <th>Nom du Candidat</th>
                                     <th>Date de Postulation</th>
                                     <th>Score / Match</th>
+                                    <th>Statut </th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -61,11 +62,54 @@
                                     <td>{{ p.DateParticipation|date('d/m/Y') }}</td>
                                     <td>
                                         <span class="badge {% if p.score >= 7 %}badge-success{% else %}badge-warning{% endif %}">
-                                            {{ p.score ?? 'N/A' }}/10
+                                            {{ p.score ?? '0' }}/10
                                         </span>
                                     </td>
                                     <td>
-                                        <a href="{{ path('deleteListe', {'id': p.idParticipation}) }}" class="btn btn-danger btn-sm" onclick="return confirm('Supprimer cette candidature ?')">
+                                        {# Menu Déroulant pour le Statut #}
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm dropdown-toggle 
+                                                {% if p.statut.value == 'acceptee' %}btn-success
+                                                {% elseif p.statut.value == 'refusee' %}btn-danger
+                                                {% else %}btn-info{% endif %}" 
+                                                type="button" 
+                                                data-bs-toggle="dropdown" 
+                                                aria-expanded="false">
+                                                
+                                                {# Affichage du texte avec la bonne orthographe pour le test #}
+                                                {% if p.statut.value == 'acceptee' %}
+                                                    Acceptée
+                                                {% elseif p.statut.value == 'refusee' %}
+                                                    Refusée
+                                                {% else %}
+                                                    En attente
+                                                {% endif %}
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    {# Correction ici : 'en_attente' au lieu de 'aceptee' #}
+                                                    <a class="dropdown-item" href="{{ path('updateStatut', {'id': p.idParticipation, 'nouveauStatut': 'en_attente'}) }}">
+                                                        <i class="fa fa-clock text-info"></i> En attente
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ path('updateStatut', {'id': p.idParticipation, 'nouveauStatut': 'acceptee'}) }}">
+                                                        <i class="fa fa-check text-success"></i> Accepter
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ path('updateStatut', {'id': p.idParticipation, 'nouveauStatut': 'refusee'}) }}">
+                                                        <i class="fa fa-times text-danger"></i> Refuser
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {# On ne garde que le bouton supprimer ici pour nettoyer l'interface #}
+                                        <a href="{{ path('deleteListe', {'id': p.idParticipation}) }}" 
+                                        class="btn btn-outline-danger btn-sm" 
+                                        onclick="return confirm('Supprimer cette candidature ?')">
                                             <i class="fa fa-trash"></i>
                                         </a>
                                     </td>

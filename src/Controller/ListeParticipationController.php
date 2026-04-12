@@ -12,6 +12,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 final class ListeParticipationController extends AbstractController
 {
@@ -92,5 +93,26 @@ final class ListeParticipationController extends AbstractController
         $em->remove($Liste);
         $em->flush();
         return $this->redirectToRoute('showListeBack');
+    }
+
+    #[Route('/updateStatut/{id}/{nouveauStatut}', name: 'updateStatut')]
+    public function updateStatut(int $id, string $nouveauStatut, ListeParticipationRepository $repo, EntityManagerInterface $em): Response
+    {
+        $p = $repo->find($id);
+        
+        try {
+            // Cela va crash si $nouveauStatut n'est pas 'aceptee', 'refusee' ou 'en_attente'
+            $enumValue = \App\Enum\stat::from($nouveauStatut);
+            $p->setStatut($enumValue);
+            
+            $em->flush();
+            $this->addFlash('success', 'Statut mis à jour !');
+        } catch (\ValueError $e) {
+            $this->addFlash('error', 'Valeur de statut invalide : ' . $nouveauStatut);
+        }
+
+        $response = $this->redirectToRoute('showListeBack', ['id' => $p->getIdOffre()->getId()]);
+        $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        return $response;
     }
 }
