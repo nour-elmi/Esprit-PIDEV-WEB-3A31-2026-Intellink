@@ -83,4 +83,14 @@ final class ListeParticipationController extends AbstractController
             'offre' => $offre
         ]);
     }
+
+    #[Route('/deleteListe/{id}', name:'deleteListe')]
+    public function deleteListe($id, ManagerRegistry $Manager, ListeParticipationRepository $repo)
+    {
+        $em= $Manager->getManager();
+        $Liste= $repo->find($id);
+        $em->remove($Liste);
+        $em->flush();
+        return $this->redirectToRoute('showListeBack');
+    }
 }
