@@ -13,6 +13,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 final class ListeParticipationController extends AbstractController
 {
@@ -46,15 +48,8 @@ final class ListeParticipationController extends AbstractController
 
     // On passe l'id_offre dans l'URL pour savoir pour quel job on postule
     #[Route('/addListe/{id_offre}', name: 'addListe')]
-    public function addListe(
-        int $id_offre, 
-        ManagerRegistry $doctrine, 
-        Request $request, 
-        EmploiRepository $emploiRepo
-    ): Response {
+    public function addListe(int $id_offre, ManagerRegistry $doctrine, Request $request, EmploiRepository $emploiRepo): Response {
         $em = $doctrine->getManager();
-        
-        // 1. On récupère l'entité Emploi
         $offre = $emploiRepo->find($id_offre);
 
         if (!$offre) {
@@ -62,16 +57,39 @@ final class ListeParticipationController extends AbstractController
         }
 
         $participation = new ListeParticipation();
-        
-        // 2. ON ASSOCIE L'OFFRE AUTOMATIQUEMENT
         $participation->setIdOffre($offre);
-        $participation->setDateParticipation(new \DateTime()); // Date du jour
-        $participation->setIdUser(1); // À dynamiser plus tard
+        $participation->setDateParticipation(new \DateTime());
+        $participation->setIdUser(1); // À dynamiser avec $this->getUser() plus tard
 
         $form = $this->createForm(ListeParticipationType::class, $participation);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            
+            // 1. On récupère le fichier uploadé via le champ 'cv'
+            /** @var UploadedFile $cvFile */
+            $cvFile = $form->get('cv')->getData();
+
+            if ($cvFile) {
+                // 2. On génère un nom unique : "cv-idunique.pdf"
+                $newFilename = 'cv-' . uniqid() . '.' . $cvFile->guessExtension();
+
+                // 3. On déplace le fichier vers le dossier de destination
+                try {
+                    $cvFile->move(
+                        $this->getParameter('cv_directory'), // Ce paramètre doit être défini dans services.yaml
+                        $newFilename
+                    );
+                    
+                    // 4. On enregistre le NOM du fichier en base de données
+                    $participation->setCv($newFilename);
+                    
+                } catch (FileException $e) {
+                    // Optionnel : ajouter un message flash d'erreur si l'upload échoue
+                    $this->addFlash('error', 'Impossible d\'enregistrer le CV.');
+                }
+            }
+
             $participation->setDateParticipation(new \DateTime());
             $em->persist($participation);
             $em->flush();
