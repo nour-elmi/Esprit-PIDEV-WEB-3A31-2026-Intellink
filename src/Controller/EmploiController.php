@@ -7,6 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Repository\EmploiRepository;
+use App\Repository\ListeParticipationRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use App\Form\EmploiType;
@@ -25,12 +26,38 @@ final class EmploiController extends AbstractController
     }
 
     #[Route('/showoffreBack', name: 'showoffreBack')]
-    public function listOffresBackfromDB(EmploiRepository $repo, Request $request)
+    public function listOffresBackfromDB(EmploiRepository $repo, ListeParticipationRepository $partRepo, Request $request): Response 
     {
         $searchTerm = $request->query->get('search');
         $offres = $repo->searchByTerm($searchTerm);
-        return $this->render('emploi/back/offresBack.html.twig', ['offre' => $offres,
-            'searchTerm' => $searchTerm ]);
+        $allOffres = $repo->findAll();
+
+        // 1. Moyenne des participants par offre
+        $totalParticipations = $partRepo->count([]);
+        $totalOffres = count($allOffres);
+        $moyenne = $totalOffres > 0 ? $totalParticipations / $totalOffres : 0;
+
+        // 2. Offres expirant bientôt (sous 15 semaines)
+        // On calcule la date limite : Aujourd'hui + 105 jours
+        $dateLimite = new \DateTime();
+        $dateLimite->modify('+15 weeks');
+        
+        $offresAlert = $repo->createQueryBuilder('e')
+            ->where('e.date_expiration BETWEEN :now AND :limite')
+            ->setParameter('now', new \DateTime())
+            ->setParameter('limite', $dateLimite)
+            ->getQuery()
+            ->getResult();
+
+        return $this->render('emploi/back/offresBack.html.twig', [
+            'offre' => $offres,
+            'searchTerm' => $searchTerm,
+            'stats' => [
+                'moyenne' => round($moyenne, 1),
+                'countAlert' => count($offresAlert),
+                'totalCandidatures' => $totalParticipations
+            ]
+        ]);
     }
 
     #[Route('/showoffreRecruteur', name: 'showoffreRecruteur')]

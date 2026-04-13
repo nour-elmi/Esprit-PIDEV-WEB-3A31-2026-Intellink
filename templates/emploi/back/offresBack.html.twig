@@ -7,6 +7,69 @@
     <h3 class="fw-bold mb-3">Gestion des Offres d'Emploi</h3>
 </div>
 
+{# Section Statistiques #}
+<div class="row mb-4">
+    <div class="col-sm-6 col-md-4">
+        <div class="card card-stats card-round">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-primary bubble-shadow-small" style="background: #2F80ED; color: white; border-radius: 50%; width: 50px; height: 50px; line-height: 50px;">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ms-3">
+                        <div class="numbers">
+                            <p class="card-category" style="color: #64748b; font-size: 12px; margin-bottom: 0;">Moyenne Candidats / Offre</p>
+                            <h4 class="card-title" style="font-weight: 700; font-size: 20px;">{{ stats.moyenne }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-md-4">
+        <div class="card card-stats card-round">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-warning bubble-shadow-small" style="background: #F2994A; color: white; border-radius: 50%; width: 50px; height: 50px; line-height: 50px;">
+                            <i class="fas fa-hourglass-half"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ms-3">
+                        <div class="numbers">
+                            <p class="card-category" style="color: #64748b; font-size: 12px; margin-bottom: 0;">Alertes Expiration (15 sem.)</p>
+                            <h4 class="card-title" style="font-weight: 700; font-size: 20px;">{{ stats.countAlert }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-md-4">
+        <div class="card card-stats card-round">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-success bubble-shadow-small" style="background: #27AE60; color: white; border-radius: 50%; width: 50px; height: 50px; line-height: 50px;">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ms-3">
+                        <div class="numbers">
+                            <p class="card-category" style="color: #64748b; font-size: 12px; margin-bottom: 0;">Total Candidatures</p>
+                            <h4 class="card-title" style="font-weight: 700; font-size: 20px;">{{ stats.totalCandidatures }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <div class="col-md-12">
         <div class="card">
