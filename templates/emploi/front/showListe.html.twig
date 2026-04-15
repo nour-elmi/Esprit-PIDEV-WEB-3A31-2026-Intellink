@@ -10,7 +10,7 @@
                 <i class="lni lni-home"></i> Dashboard
             </a>
             {# On utilise la variable offre passée par le controller pour le count #}
-            <h1>{{ lesParticipations|length }} Candidatures enregistrées</h1>
+            <h1>{{ lesParticipations.getTotalItemCount }} Candidatures enregistrées</h1>
         </div>
     </div>
 </section>
@@ -66,6 +66,9 @@
                         <p class="mt-3">Aucune participation trouvée.</p>
                     </div>
                 {% endfor %}
+                <div class="navigation d-flex justify-content-center mt-4">
+                    {{ knp_pagination_render(lesParticipations) }}
+                </div>
             </div>
 
             <div class="col-lg-4">
@@ -77,7 +80,7 @@
                         </div>
                         <div class="d-flex justify-content-between">
                             <span>Total</span>
-                            <strong>{{ lesParticipations|length }}</strong>
+                            <strong>{{ lesParticipations.getTotalItemCount }}</strong>
                         </div>
                     </div>{#
                     <a href="{{ path('addListe') }}" class="btn-liquid w-100 justify-content-center mt-3" style="padding: 15px; background: #2F80ED; color: white; display: flex; border-radius: 10px; text-decoration: none;">

@@ -107,6 +107,9 @@
                         <p class="mt-3">Vous n'avez pas encore publié d'offre d'emploi.</p>
                     </div>
                 {% endfor %}
+                <div class="navigation d-flex justify-content-center mt-4">
+                {{ knp_pagination_render(offre) }}
+            </div>
             </div>
 
             <div class="col-lg-4">
@@ -119,11 +122,11 @@
                         <div class="info-card-body">
                             <div class="info-item">
                                 <span class="info-item-label">Offres actives</span>
-                                <span class="info-item-value">{{ offre|length }}</span>
+                                <h1>Vos {{ offre.getTotalItemCount }} offres publiées</h1>
                             </div>
                             <div class="info-item">
                                 <span class="info-item-label">Vues totales</span>
-                                <span class="info-item-value">--</span>
+                                <span class="info-item-value">{{ offre.getTotalItemCount }}</span>
                             </div>
                         </div>
                     </div>
