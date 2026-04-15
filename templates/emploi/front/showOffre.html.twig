@@ -10,7 +10,7 @@
                 <i class="lni lni-arrow-left"></i> Accueil
             </a>
             {# 'offre' contient la liste des offres envoyée par le contrôleur #}
-            <h1>Nos {{ offre|length }} offres d'emploi</h1>
+            <h1 class="card-title mb-0">Liste des Offres ({{ offre.getTotalItemCount }})</h1>
         </div>
     </div>
 </section>
@@ -72,6 +72,10 @@
                         <p class="mt-3">Aucune offre disponible pour le moment.</p>
                     </div>
                 {% endfor %}
+
+                <div class="navigation d-flex justify-content-center mt-4">
+                    {{ knp_pagination_render(offre) }}
+                </div>
             </div>
 
             <div class="col-lg-4">
@@ -84,7 +88,7 @@
                         <div class="info-card-body">
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Disponibilité</span>
-                                <span style="font-weight: 700;">{{ offre|length }} Postes</span>
+                                <span style="font-weight: 700;">{{ offre.getTotalItemCount }} Postes</span>
                             </div>
                             <div class="d-flex justify-content-between">
                                 <span>Mise à jour</span>

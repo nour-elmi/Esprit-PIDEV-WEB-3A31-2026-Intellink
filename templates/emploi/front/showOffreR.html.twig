@@ -66,7 +66,13 @@
                                     {# 2. Salaire #}
                                     <span class="tag tag-success" style="background: rgba(40, 167, 69, 0.1); color: #28a745; border: 1px solid #28a745;">
                                         <i class="lni lni-money-location"></i> {{ o.salaire ? o.salaire ~ ' DT' : 'Salaire N/A' }}
-                                        <i class="lni lni-timer"></i> Expire le : {{ o.dateExpiration ? o.dateExpiration|date('d/m/Y') : 'N/A' }}
+                                        {#time bundle#}
+                                        <i class="lni lni-timer"></i> 
+                                        {% if o.dateExpiration %}
+                                            Expire {{ o.dateExpiration|ago }} (le {{ o.dateExpiration|date('d/m/Y') }})
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
                                     </span>
                                 </div>
                             </div>

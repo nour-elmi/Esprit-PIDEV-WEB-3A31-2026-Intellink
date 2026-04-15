@@ -15,37 +15,49 @@ use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Knp\Component\Pager\PaginatorInterface;
 
 final class ListeParticipationController extends AbstractController
 {
     #[Route('/showListe/{id_offre}', name: 'showListe', defaults: ['id_offre' => null])]
-    public function showListe(?Emploi $offre, ListeParticipationRepository $repo): Response
+    public function showListe(?Emploi $offre, ListeParticipationRepository $repo, PaginatorInterface $paginator, Request $request): Response
     {
-        // Si un ID est passé, on filtre par offre, sinon on affiche tout
-        $participations = $offre 
+        // On crée la requête de base
+        $data = $offre 
             ? $repo->findBy(['id_offre' => $offre]) 
             : $repo->findAll();
 
+        $participations = $paginator->paginate(
+            $data, // Les données
+            $request->query->getInt('page', 1), // Numéro de page
+            5 // Nombre d'éléments par page
+        );
+
         return $this->render('emploi/front/showListe.html.twig', [
             'lesParticipations' => $participations,
-            'offreChoisie' => $offre // Pour afficher le titre de l'offre en haut si besoin
+            'offreChoisie' => $offre
         ]);
     }
 
     #[Route('/showListeBack/{id}', name: 'showListeBack', defaults: ['id' => null])]
-    public function showListeBack(?Emploi $offre, ListeParticipationRepository $repo): Response
+    public function showListeBack(?Emploi $offre, ListeParticipationRepository $repo, PaginatorInterface $paginator, Request $request): Response
     {
-        // Symfony va maintenant lier automatiquement {id} à l'objet Emploi $offre
-        $participations = $offre 
+        $data = $offre 
             ? $repo->findBy(['id_offre' => $offre]) 
             : $repo->findAll();
+
+        $participations = $paginator->paginate(
+            $data,
+            $request->query->getInt('page', 1),
+            8 // On peut en mettre plus dans le back-office
+        );
 
         return $this->render('emploi/back/ListeBack.html.twig', [
             'lesParticipations' => $participations,
             'offreChoisie' => $offre
         ]);
     }
-
+    
     // On passe l'id_offre dans l'URL pour savoir pour quel job on postule
     #[Route('/addListe/{id_offre}', name: 'addListe')]
     public function addListe(int $id_offre, ManagerRegistry $doctrine, Request $request, EmploiRepository $emploiRepo): Response {

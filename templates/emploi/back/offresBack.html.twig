@@ -75,7 +75,7 @@
         <div class="card">
             <div class="card-header">
                 <div class="d-flex align-items-center flex-wrap gap-3">
-                    <h4 class="card-title mb-0">Liste des Offres</h4>
+                    <h4 class="card-title mb-0">Liste des Offres ({{ offre.getTotalItemCount }})</h4>
                     
                     <div class="d-flex align-items-center gap-2 ms-auto">
                         <input type="text" id="searchInput" placeholder="Rechercher une offre..." 
@@ -120,6 +120,9 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                </div>
+                <div class="navigation d-flex justify-content-center mt-4">
+                    {{ knp_pagination_render(offre) }}
                 </div>
             </div>
         </div>

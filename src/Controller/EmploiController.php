@@ -11,34 +11,62 @@ use App\Repository\ListeParticipationRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use App\Form\EmploiType;
-
+use Knp\Component\Pager\PaginatorInterface;
 
 
 final class EmploiController extends AbstractController
 {
     #[Route('/showoffre', name: 'showoffre')]
-    public function listOffresfromDB(EmploiRepository $repo, Request $request)
+    public function listOffresfromDB(EmploiRepository $repo, Request $request, PaginatorInterface $paginator)
     {
         $searchTerm = $request->query->get('search');
-        $offres = $repo->searchByTerm($searchTerm);
-        return $this->render('emploi/front/showOffre.html.twig', ['offre' => $offres,
-            'searchTerm' => $searchTerm ]);
+        $data = $repo->searchByTerm($searchTerm);
+
+        $offres = $paginator->paginate(
+            $data,
+            $request->query->getInt('page', 1),
+            6
+        );
+
+        return $this->render('emploi/front/showOffre.html.twig', [
+            'offre' => $offres,
+            'searchTerm' => $searchTerm 
+        ]);
     }
 
     #[Route('/showoffreBack', name: 'showoffreBack')]
-    public function listOffresBackfromDB(EmploiRepository $repo, ListeParticipationRepository $partRepo, Request $request): Response 
+    public function listOffresBackfromDB(
+        EmploiRepository $repo, 
+        ListeParticipationRepository $partRepo, 
+        Request $request,
+        PaginatorInterface $paginator // <--- AJOUT : Injection du service
+    ): Response 
     {
         $searchTerm = $request->query->get('search');
-        $offres = $repo->searchByTerm($searchTerm);
-        $allOffres = $repo->findAll();
+    
+        $queryBuilder = $repo->createQueryBuilder('e');
 
-        // 1. Moyenne des participants par offre
+        if ($searchTerm) {
+            $queryBuilder->where('e.titre LIKE :term OR e.nom_entreprise LIKE :term') // nom_entreprise avec underscore comme dans l'entité
+                ->setParameter('term', '%'.$searchTerm.'%');
+        }
+
+        // CORRECTION ICI : id_offre au lieu de IdOffre
+        $queryBuilder->orderBy('e.id_offre', 'DESC');
+
+        // On passe le QueryBuilder directement au paginator
+        $offresPaginees = $paginator->paginate(
+            $queryBuilder, 
+            $request->query->getInt('page', 1), 
+            5 
+        );
+
+        // --- Garde tes statistiques inchangées ---
+        $allOffres = $repo->findAll();
         $totalParticipations = $partRepo->count([]);
         $totalOffres = count($allOffres);
         $moyenne = $totalOffres > 0 ? $totalParticipations / $totalOffres : 0;
 
-        // 2. Offres expirant bientôt (sous 15 semaines)
-        // On calcule la date limite : Aujourd'hui + 105 jours
         $dateLimite = new \DateTime();
         $dateLimite->modify('+15 weeks');
         
@@ -50,7 +78,7 @@ final class EmploiController extends AbstractController
             ->getResult();
 
         return $this->render('emploi/back/offresBack.html.twig', [
-            'offre' => $offres,
+            'offre' => $offresPaginees, // <--- C'est maintenant un objet de pagination
             'searchTerm' => $searchTerm,
             'stats' => [
                 'moyenne' => round($moyenne, 1),
@@ -61,20 +89,29 @@ final class EmploiController extends AbstractController
     }
 
     #[Route('/showoffreRecruteur', name: 'showoffreRecruteur')]
-    public function listOffresRfromDB(EmploiRepository $repo, Request $request)
+    public function listOffresRfromDB(EmploiRepository $repo, Request $request, PaginatorInterface $paginator)
     {
         $searchTerm = $request->query->get('search');
         $sortBy = $request->query->get('sortBy');
+        
+        // Logique de tri existante
         if ($sortBy) {
-            if ($sortBy == 'salaire_desc') { $offres = $repo->sortByField('salaire', 'DESC'); }
-            elseif ($sortBy == 'salaire_asc') { $offres = $repo->sortByField('salaire', 'ASC'); }
-            elseif ($sortBy == 'expiration_asc') { $offres = $repo->sortByField('date_expiration', 'ASC'); }
-            else { $offres = $repo->findAll(); }
+            if ($sortBy == 'salaire_desc') { $data = $repo->sortByField('salaire', 'DESC'); }
+            elseif ($sortBy == 'salaire_asc') { $data = $repo->sortByField('salaire', 'ASC'); }
+            elseif ($sortBy == 'expiration_asc') { $data = $repo->sortByField('date_expiration', 'ASC'); }
+            else { $data = $repo->findAll(); }
         } elseif ($searchTerm) {
-            $offres = $repo->searchByTerm($searchTerm);
+            $data = $repo->searchByTerm($searchTerm);
         } else {
-            $offres = $repo->findAll();
+            $data = $repo->findAll();
         }
+
+        // On pagine le résultat final
+        $offres = $paginator->paginate(
+            $data,
+            $request->query->getInt('page', 1),
+            4 // Petit nombre pour tester la pagination facilement
+        );
 
         return $this->render('emploi/front/showOffreR.html.twig', [
             'offre' => $offres,
