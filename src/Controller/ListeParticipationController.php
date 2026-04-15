@@ -16,6 +16,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Knp\Component\Pager\PaginatorInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class ListeParticipationController extends AbstractController
 {
@@ -57,7 +59,60 @@ final class ListeParticipationController extends AbstractController
             'offreChoisie' => $offre
         ]);
     }
-    
+
+    private function appelerCoherePourCV(string $nom, string $prenom, string $skills, string $offre, HttpClientInterface $httpClient): string 
+    {
+        $apiKey = "2DcO8uLgBZTWfOazk6sCoblUVlJns29uvxEIaGGl";
+        $url = "https://api.cohere.ai/v1/chat";
+
+        $prompt = "Rédige uniquement un cv professionnel de 7 lignes minimum pour $prenom $nom. Poste : $offre. Compétences : $skills";
+
+        try {
+            $response = $httpClient->request('POST', $url, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $apiKey,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'model' => 'command-r-08-2024',
+                    'message' => $prompt,
+                ],
+            ]);
+
+            $content = $response->toArray();
+
+            // En Symfony, toArray() décode déjà le JSON, 
+            // donc les caractères comme \n ou \u00e9 sont déjà convertis.
+            if (isset($content['text'])) {
+                return $content['text'];
+            }
+
+            return "Erreur : Le modèle a répondu mais le texte est absent.";
+
+        } catch (\Exception $e) {
+            return "Erreur lors de l'appel à Cohere : " . $e->getMessage();
+        }
+    }
+
+    #[Route('/cv/generate-ai', name: 'app_cv_generate_ai', methods: ['POST'])]
+    public function generateAI(Request $request, HttpClientInterface $httpClient, EmploiRepository $repo): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        
+        // On peut même récupérer le titre de l'offre dynamiquement si tu envoies l'ID
+        $offreTitre = "Poste non spécifié"; 
+        
+        $resultat = $this->appelerCoherePourCV(
+            $data['nom'] ?? '',
+            $data['prenom'] ?? '',
+            $data['skills'] ?? '',
+            $offreTitre,
+            $httpClient
+        );
+
+        return new JsonResponse(['text' => $resultat]);
+    }
+
     // On passe l'id_offre dans l'URL pour savoir pour quel job on postule
     #[Route('/addListe/{id_offre}', name: 'addListe')]
     public function addListe(int $id_offre, ManagerRegistry $doctrine, Request $request, EmploiRepository $emploiRepo): Response {
