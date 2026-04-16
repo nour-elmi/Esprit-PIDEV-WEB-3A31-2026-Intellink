@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Helvetica', sans-serif; padding: 30px; color: #333; }
+        .header { text-align: center; border-bottom: 3px solid #2F80ED; padding-bottom: 10px; margin-bottom: 30px; }
+        .cv-title { color: #2F80ED; font-size: 24px; text-transform: uppercase; margin: 0; }
+        .content { white-space: pre-wrap; line-height: 1.8; font-size: 14px; text-align: justify; }
+        .footer { position: absolute; bottom: 0; width: 100%; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #eee; padding-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="cv-title">Curriculum Vitae</h1>
+        <p>Document généré par Intelligence Artificielle</p>
+    </div>
+    
+    <div class="content">
+        {{ cv_content }}
+    </div>
+
+    <div class="footer">
+        Généré le {{ "now"|date("d/m/Y à H:i") }} - Plateforme de Gestion d'Offres d'Emploi
+    </div>
+</body>
+</html>

@@ -49,7 +49,6 @@
                         <div class="form-group-custom mb-3">
                             <label>Déposer mon CV (Format PDF) *</label>
                             <div class="cv-upload-wrapper">
-                                {# Le widget affichera un bouton "Choisir un fichier" #}
                                 {{ form_widget(formOffre.cv, {'attr': {'class': 'form-control-custom', 'accept': '.pdf'}}) }}
                                 <div class="upload-hint mt-2" style="font-size: 12px; color: #64748b;">
                                     <i class="lni lni-info-circle"></i> Taille max : 2Mo
@@ -64,12 +63,10 @@
                             <div class="text-danger">{{ form_errors(formOffre.skills) }}</div>
                         </div>
 
-                        {# IMPORTANT : On ne rend pas id_offre et date_participation ici car ils sont gérés par le contrôleur #}
-                        {# form_rest rendra les jetons CSRF (sécurité) cachés automatiquement #}
                         {{ form_rest(formOffre) }}
 
                         <div class="form-actions mt-4 text-center">
-                        <div class="d-flex gap-2 mt-4 mb-2">
+                            <div class="d-flex gap-2 mt-4 mb-2">
                                 <button type="button" id="btn-generate-cv" class="btn-liquid" style="flex: 1; justify-content: center; padding: 15px; border: 2px solid #2F80ED; background: transparent; color: #2F80ED; border-radius: 12px; cursor: pointer; font-weight: 600;">
                                     <i class="lni lni-ai me-2"></i> Générer un CV avec l'IA
                                 </button>
@@ -78,32 +75,35 @@
                                 <i class="lni lni-checkmark-circle me-2"></i> Envoyer ma candidature
                             </button>
                         </div>
-                        <div id="cv-modal" class="custom-modal">
-                            <div class="modal-content-wrapper">
-                                <div class="modal-header-custom">
-                                    <h3><i class="lni lni-invention"></i> CV Généré par Cohere IA</h3>
-                                    <span class="close-modal">&times;</span>
-                                </div>
-                                <div class="modal-body-custom">
-                                    <div id="cv-loading" style="display:none;" class="text-center p-4">
-                                        <div class="spinner-border text-primary" role="status"></div>
-                                        <p class="mt-2">L'IA rédige votre CV...</p>
-                                    </div>
-                                    <div id="cv-result-container">
-                                        <textarea id="ai-cv-text" class="form-control-custom" rows="12" style="font-family: 'Courier New', monospace; font-size: 13px;"></textarea>
-                                    </div>
-                                </div>
-                                <div class="modal-footer-custom mt-3">
-                                    <button type="button" id="btn-copy-cv" class="btn-liquid" style="background: #10b981; color: white; width: 100%;">
-                                        <i class="lni lni-copy"></i> Utiliser ce texte pour mes compétences
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
 
                     {{ form_end(formOffre) }}
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<div id="cv-modal" class="custom-modal">
+    <div class="modal-content-wrapper">
+        <div class="modal-header-custom">
+            <h3><i class="lni lni-invention"></i> CV Généré par Cohere IA</h3>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body-custom">
+            <div id="cv-loading" style="display:none; text-align:center; padding: 20px;">
+                <p>Génération en cours...</p>
+            </div>
+            <div id="cv-result-container">
+                <textarea id="ai-cv-text" class="form-control-custom" rows="12"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer-custom mt-3">
+            <form id="form-pdf" action="{{ path('download_pdf') }}" method="POST" target="_blank">
+                <input type="hidden" name="cv_text" id="hidden-cv-text">
+                <button type="submit" id="btn-download-only" class="btn-liquid" style="background: #10b981; color: white; width: 100%; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">
+                    <i class="lni lni-download"></i> Telecharger pdf
+                </button>
+            </form>
         </div>
     </div>
 </div>
@@ -114,64 +114,34 @@
     .form-group-custom label { font-weight: 700; color: #1e293b; margin-bottom: 8px; display: block; font-size: 14px; }
     .title-line { height: 4px; width: 50px; background: linear-gradient(90deg, #2F80ED, #56CCF2); border-radius: 2px; margin-top: 5px; }
     .back-link { text-decoration: none; color: #64748b; display: inline-block; margin-bottom: 20px; font-weight: 600; }
+    
+    input[type=file]::file-selector-button {
+        background: #2F80ED; border: none; padding: 8px 15px; border-radius: 8px; color: white; cursor: pointer; margin-right: 15px;
+    }
+
+    .custom-modal {
+        display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+    }
+
+    .modal-content-wrapper {
+        background-color: #fefefe; margin: 5% auto; padding: 25px; border-radius: 20px; width: 60%;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.2); animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-header-custom { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
+    .close-modal { font-size: 28px; font-weight: bold; cursor: pointer; color: #64748b; }
 </style>
-<style>
-input[type=file]::file-selector-button {
-    background: #2F80ED;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 8px;
-    color: white;
-    cursor: pointer;
-    margin-right: 15px;
-    transition: 0.3s;
-}
 
-input[type=file]::file-selector-button:hover {
-    background: #1e60b8;
-}
-/* La modale occupe tout l'écran mais est invisible par défaut */
-.custom-modal {
-    display: none; 
-    position: fixed;
-    z-index: 9999;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5); /* Fond sombre transparent */
-    backdrop-filter: blur(4px);
-}
-
-/* Le contenu de la "petite fenêtre" */
-.modal-content-wrapper {
-    background-color: #fefefe;
-    margin: 5% auto;
-    padding: 25px;
-    border-radius: 20px;
-    width: 60%; /* Taille de la fenêtre */
-    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-    animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-    from { transform: translateY(-50px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-.modal-header-custom { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
-.close-modal { font-size: 28px; font-weight: bold; cursor: pointer; color: #64748b; }
-.close-modal:hover { color: #ef4444; }
-
-</style>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById("cv-modal");
     const btnGenerate = document.getElementById("btn-generate-cv");
     const btnClose = document.querySelector(".close-modal");
-    const btnCopy = document.getElementById("btn-copy-cv");
+    const formPdf = document.getElementById('form-pdf');
 
-    // Ouvrir la modale
+    // 1. Ouvrir la modale et appeler l'IA
     btnGenerate.onclick = function() {
         const nom = document.querySelector('[name*="nom_p"]').value;
         const prenom = document.querySelector('[name*="prenom_p"]').value;
@@ -186,17 +156,15 @@ document.addEventListener('DOMContentLoaded', function() {
         generateWithAI(nom, prenom, skills);
     }
 
-    // Fermer la modale
+    // 2. Gestion de la fermeture
     btnClose.onclick = () => modal.style.display = "none";
-    
-    // Fermer si clic à l'extérieur
     window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; }
 
+    // 3. Appel API Cohere
     function generateWithAI(nom, prenom, skills) {
         document.getElementById('cv-loading').style.display = "block";
         document.getElementById('cv-result-container').style.display = "none";
 
-        // Appel vers ta future route Symfony qui contient Cohere
         fetch('/cv/generate-ai', {
             method: 'POST',
             body: JSON.stringify({ nom, prenom, skills }),
@@ -210,12 +178,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Copier le texte généré dans le champ Skills du formulaire
-    btnCopy.onclick = function() {
-        const aiText = document.getElementById('ai-cv-text').value;
-        document.querySelector('[name*="skills"]').value = aiText;
-        modal.style.display = "none";
-    };
+    // 4. Préparer le texte pour le PDF et fermer la modale proprement
+    formPdf.addEventListener('submit', function() {
+        const textFromAI = document.getElementById('ai-cv-text').value;
+        document.getElementById('hidden-cv-text').value = textFromAI;
+        
+        // On ferme la modale après un léger délai pour laisser le téléchargement s'initier
+        setTimeout(() => {
+            modal.style.display = "none";
+        }, 800);
+    });
 });
 </script>
 {% endblock %}

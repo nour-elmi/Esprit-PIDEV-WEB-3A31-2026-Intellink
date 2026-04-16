@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Nucleos\DompdfBundle\Factory\DompdfFactoryInterface;
 
 final class ListeParticipationController extends AbstractController
 {
@@ -199,5 +200,34 @@ final class ListeParticipationController extends AbstractController
         $response = $this->redirectToRoute('showListeBack', ['id' => $p->getIdOffre()->getId()]);
         $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
         return $response;
+    }
+
+    #[Route('/cv/download-pdf', name: 'download_pdf', methods: ['POST'])]
+    public function downloadPdf(Request $request, DompdfFactoryInterface $factory): Response
+    {
+        // On récupère le texte que l'IA a généré (envoyé par le formulaire de la modale)
+        $contenu = $request->request->get('cv_text');
+
+        if (!$contenu) {
+            return new Response("Erreur : Aucun contenu trouvé pour le CV.", 400);
+        }
+
+        // On utilise la factory du bundle Nucleos pour créer l'objet Dompdf
+        $dompdf = $factory->create();
+        
+        // On génère le HTML à partir d'un template Twig pour que ce soit joli
+        $html = $this->renderView('emploi/front/pdf.html.twig', [
+            'cv_content' => $contenu
+        ]);
+        
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        // On renvoie le binaire du PDF pour déclencher le téléchargement
+        return new Response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="Mon_CV_IA.pdf"'
+        ]);
     }
 }
