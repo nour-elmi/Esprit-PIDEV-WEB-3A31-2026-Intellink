@@ -140,6 +140,141 @@
         border-radius: 2px;
         margin-top: 5px;
     }
-</style>
+    .ai-suggestion-container {
+    margin-top: 10px;
+}
 
+.ai-suggestion-chip {
+    background: #f0f7ff;
+    border-left: 4px solid #2F80ED;
+    border-radius: 12px;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: all 0.2s;
+}
+
+.ai-icon {
+    font-size: 18px;
+}
+
+.ai-text {
+    flex: 1;
+    color: #1e293b;
+    font-style: italic;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.ai-append-btn {
+    background: #2F80ED;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.ai-append-btn:hover {
+    background: #1e6bd6;
+    transform: scale(1.02);
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+<script>
+const descriptionField = document.querySelector('textarea[name*="description"]');
+const titreField = document.querySelector('input[name*="titre"]');
+const entrepriseField = document.querySelector('input[name*="nom_entreprise"]');
+
+const suggestionContainer = document.createElement('div');
+suggestionContainer.className = 'ai-suggestion-container';
+suggestionContainer.style.display = 'none';
+
+if (descriptionField) {
+    descriptionField.parentNode.insertBefore(suggestionContainer, descriptionField.nextSibling);
+
+    const escapeHtml = (text) => {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    };
+
+    const updateSuggestion = _.debounce(function() {
+        const text = descriptionField.value;
+        const titre = titreField ? titreField.value : '';
+        const entreprise = entrepriseField ? entrepriseField.value : '';
+        
+        if (text.length < 15) { // Augmenté un peu pour avoir du contexte
+            suggestionContainer.style.display = 'none';
+            return;
+        }
+
+        console.log("📡 Appel de l'IA pour l'offre...");
+
+        fetch('{{ path("api_description_autocomplete") }}', {
+            method: 'POST',
+            body: JSON.stringify({ 
+                text: text,
+                titre: titre,
+                nom_entreprise: entreprise
+            }),
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(async response => {
+            // CRITIQUE : Lire en texte d'abord pour débugger les erreurs HTML/500
+            const rawResponse = await response.text();
+            
+            if (!response.ok) {
+                console.error("Erreur Serveur (HTML reçu) :", rawResponse);
+                throw new Error("Le serveur a renvoyé une erreur " + response.status);
+            }
+
+            try {
+                return JSON.parse(rawResponse);
+            } catch (e) {
+                console.error("Réponse malformée (pas du JSON) :", rawResponse);
+                throw new Error("Réponse serveur invalide");
+            }
+        })
+        .then(data => {
+            if (data.suggestion && data.suggestion.trim() !== '') {
+                suggestionContainer.innerHTML = `
+                    <div class="ai-suggestion-chip" style="background: #f0f7ff; border: 1px solid #007bff; padding: 12px; border-radius: 8px; margin-top: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <div style="display: flex; align-items: flex-start; gap: 10px;">
+                            <span class="ai-icon">✨</span>
+                            <div style="flex: 1;">
+                                <small style="color: #007bff; font-weight: bold; display: block; margin-bottom: 4px;">Suggestion IA :</small>
+                                <span class="ai-text" style="font-style: italic; color: #444;">${escapeHtml(data.suggestion)}</span>
+                            </div>
+                            <button type="button" class="ai-append-btn" style="background: #007bff; color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; align-self: center;">Ajouter</button>
+                        </div>
+                    </div>
+                `;
+                suggestionContainer.style.display = 'block';
+                
+                const appendBtn = suggestionContainer.querySelector('.ai-append-btn');
+                appendBtn.onclick = () => { // Utilisation de onclick pour éviter les doublons d'events
+                    descriptionField.value = descriptionField.value.trim() + " " + data.suggestion.trim();
+                    suggestionContainer.style.display = 'none';
+                    descriptionField.focus();
+                };
+            } else {
+                suggestionContainer.style.display = 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Erreur IA détaillée:', error);
+            suggestionContainer.style.display = 'none';
+        });
+    }, 1500); // 1.5s est souvent un bon compromis pour l'UX
+
+    descriptionField.addEventListener('input', updateSuggestion);
+}
+</script>
 {% endblock %}

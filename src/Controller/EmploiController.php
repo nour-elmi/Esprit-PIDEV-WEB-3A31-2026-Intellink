@@ -12,6 +12,9 @@ use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use App\Form\EmploiType;
 use Knp\Component\Pager\PaginatorInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Gemini\Client;
+
 
 
 final class EmploiController extends AbstractController
@@ -164,5 +167,38 @@ final class EmploiController extends AbstractController
         return $this->render('emploi/front/addOffre.html.twig', [
             'formOffre' => $form->createView()
         ]);
+    }
+
+    private Client $geminiClient;
+
+    public function __construct(Client $geminiClient)
+    {
+        $this->geminiClient = $geminiClient;
+    }
+
+    #[Route('/autocomplete-desc', name: 'api_description_autocomplete', methods: ['POST'])]
+    public function autocomplete(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $currentText = $data['text'] ?? '';
+        $jobTitle = $data['titre'] ?? '';
+        $companyName = $data['nom_entreprise'] ?? '';
+
+        if (strlen($currentText) < 10) {
+            return new JsonResponse(['suggestion' => '']);
+        }
+
+        $prompt = "Tu es un expert RH. Complète cette description de poste : \"$currentText\"";
+        if ($jobTitle) $prompt .= " pour le poste de $jobTitle";
+        if ($companyName) $prompt .= " chez $companyName";
+        $prompt .= ". Réponds uniquement par la suite du texte de façon concise. Commence directement par la continuation, sans aucun mot d'introduction et essaie de ne pas generer une longue paragraphe mais aussi pas moins de 4 lignes.";
+        try {
+            $result = $this->geminiClient->generativeModel(model: 'gemini-2.5-flash-lite')->generateContent($prompt);
+            $suggestion = $result->text();
+            $suggestion = preg_replace('/^(Absolument|Oui|Bien sûr|Voici|D\'accord|Désolé|Bonjour).*?\.\s*/i', '', $suggestion);
+            return new JsonResponse(['suggestion' => trim($suggestion)]);
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => $e->getMessage()], 500);
+        }
     }
 }

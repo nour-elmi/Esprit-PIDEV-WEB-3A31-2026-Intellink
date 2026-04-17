@@ -7,12 +7,17 @@ parameters:
     profiles_directory: '%kernel.project_dir%/public/uploads/profiles'
     cv_directory: '%kernel.project_dir%/public/uploads/cvs'
     reclamations_directory: '%kernel.project_dir%/public/uploads/reclamations'
+    gemini_api_key: '%env(GEMINI_API_KEY)%'
 
 services:
     # default configuration for services in *this* file
     _defaults:
         autowire: true
         autoconfigure: true
+        bind:
+            Gemini\Client: '@gemini'
+
+
         
 
     App\:
@@ -21,3 +26,4 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+
