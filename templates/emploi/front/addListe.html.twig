@@ -6,7 +6,7 @@
 <section class="page-hero">
     <div class="container">
         <div class="hero-content">
-            <h1>Déposer votre candidature</h1>
+            <h1 id="job-title" data-category="{{ offre.titre }}">Déposer votre candidature</h1>
             <p>Postulez pour l'offre : <strong>{{ offre.titre }}</strong> chez {{ offre.nomEntreprise }}</p>
         </div>
     </div>
@@ -190,4 +190,170 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+{#le quiz#}
+<div id="quiz-modal" class="custom-modal">
+    <div class="modal-content-wrapper" style="max-width: 500px;">
+        <div class="modal-header-custom">
+            <h3><i class="lni lni-question-circle"></i> Quiz de Validation</h3>
+            <span class="close-quiz" style="cursor:pointer; font-size:24px;">&times;</span>
+        </div>
+        <div class="modal-body-custom" id="quiz-container">
+            <div id="quiz-loading-trivia" style="text-align:center;">
+                <p>Chargement des questions...</p>
+            </div>
+            <div id="quiz-content" style="display:none;">
+                <h4 id="question-text" class="mb-4" style="font-size: 18px; color: #1e293b;"></h4>
+                <div id="options-container" class="d-grid gap-2">
+                    </div>
+                <div class="mt-4 text-muted" style="font-size: 13px;">
+                    Question <span id="current-q-index">1</span>/5
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const quizModal = document.getElementById("quiz-modal");
+    const mainForm = document.querySelector('form[name*="participation"]');
+    const scoreInput = document.querySelector('[name*="score"]');
+    let currentQuestions = [];
+    let currentQuestionIndex = 0;
+    let userScore = 0;
+
+    // Helper pour décoder les entités HTML (ex: &quot; → ")
+    function decodeHtml(html) {
+        const textarea = document.createElement('textarea');
+        textarea.innerHTML = html;
+        return textarea.value;
+    }
+
+    mainForm.onsubmit = function(e) {
+        if (scoreInput.value > 0 || userScore === -1) return true;
+        e.preventDefault();
+        quizModal.style.display = "block";
+        loadITQuestions();
+    };
+
+    function loadITQuestions() {
+        // Open Trivia DB – 5 questions, catégorie 18 (Science: Computers)
+        const url = 'https://opentdb.com/api.php?amount=5&category=18&type=multiple';
+        
+        fetch(url)
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                if (data.response_code !== 0) throw new Error('Aucune question reçue');
+                
+                // Transformer les données de l'API
+                currentQuestions = data.results.map(q => {
+                    // Décoder les entités HTML
+                    const questionText = decodeHtml(q.question);
+                    const correctAnswer = decodeHtml(q.correct_answer);
+                    const incorrectAnswers = q.incorrect_answers.map(a => decodeHtml(a));
+                    
+                    // Construire les 4 réponses (une correcte + 3 incorrectes)
+                    const allAnswers = [correctAnswer, ...incorrectAnswers];
+                    // Mélanger les réponses
+                    for (let i = allAnswers.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [allAnswers[i], allAnswers[j]] = [allAnswers[j], allAnswers[i]];
+                    }
+                    
+                    return {
+                        question: questionText,
+                        answers: {
+                            answer_a: allAnswers[0],
+                            answer_b: allAnswers[1],
+                            answer_c: allAnswers[2],
+                            answer_d: allAnswers[3]
+                        },
+                        correct_answers: {
+                            answer_a_correct: (allAnswers[0] === correctAnswer) ? "true" : "false",
+                            answer_b_correct: (allAnswers[1] === correctAnswer) ? "true" : "false",
+                            answer_c_correct: (allAnswers[2] === correctAnswer) ? "true" : "false",
+                            answer_d_correct: (allAnswers[3] === correctAnswer) ? "true" : "false"
+                        }
+                    };
+                });
+                
+                currentQuestionIndex = 0;
+                userScore = 0;
+                showQuestion();
+            })
+            .catch(err => {
+                console.error("Erreur de chargement du quiz:", err);
+                document.getElementById('quiz-loading-trivia').innerHTML = `
+                    <div style="color: #e74c3c;">⚠️ Erreur de chargement du quiz (vérifiez votre connexion réseau)</div>
+                    <button id="retry-quiz" class="btn-liquid mt-3">🔄 Réessayer</button>
+                    <button id="skip-quiz" class="btn-liquid mt-3">⏩ Continuer sans quiz</button>
+                `;
+                const retryBtn = document.getElementById('retry-quiz');
+                const skipBtn = document.getElementById('skip-quiz');
+                if (retryBtn) retryBtn.onclick = () => loadITQuestions();
+                if (skipBtn) skipBtn.onclick = () => {
+                    scoreInput.value = 0;
+                    quizModal.style.display = "none";
+                    mainForm.submit();
+                };
+            });
+    }
+
+    function showQuestion() {
+        if (!currentQuestions.length) return;
+        const q = currentQuestions[currentQuestionIndex];
+        const loadingDiv = document.getElementById('quiz-loading-trivia');
+        const contentDiv = document.getElementById('quiz-content');
+        if (loadingDiv) loadingDiv.style.display = "none";
+        if (contentDiv) contentDiv.style.display = "block";
+        
+        const questionText = document.getElementById('question-text');
+        if (questionText) questionText.innerText = q.question;
+        const qIndexSpan = document.getElementById('current-q-index');
+        if (qIndexSpan) qIndexSpan.innerText = currentQuestionIndex + 1;
+
+        const container = document.getElementById('options-container');
+        if (!container) return;
+        container.innerHTML = '';
+        
+        Object.keys(q.answers).forEach(key => {
+            const answerText = q.answers[key];
+            if (answerText) {
+                const btn = document.createElement('button');
+                btn.className = 'btn-liquid';
+                btn.style = 'background: #f1f5f9; border: 1px solid #e2e8f0; color: #1e293b; padding: 10px; border-radius: 8px; cursor: pointer; text-align: left; margin-bottom: 8px; width: 100%;';
+                btn.innerHTML = answerText;
+                const isCorrect = q.correct_answers[key + '_correct'] === "true";
+                btn.onclick = () => handleAnswer(isCorrect);
+                container.appendChild(btn);
+            }
+        });
+    }
+
+    function handleAnswer(isCorrect) {
+        if (isCorrect) userScore += 20;
+        currentQuestionIndex++;
+        if (currentQuestionIndex < currentQuestions.length) {
+            showQuestion();
+        } else {
+            finishQuiz();
+        }
+    }
+
+    function finishQuiz() {
+        if (scoreInput) scoreInput.value = userScore;
+        alert(`Quiz terminé ! Votre score : ${userScore}/100. Envoi de la candidature...`);
+        if (quizModal) quizModal.style.display = "none";
+        userScore = -1;
+        mainForm.submit();
+    }
+
+    const closeBtn = document.querySelector(".close-quiz");
+    if (closeBtn) closeBtn.onclick = () => { if (quizModal) quizModal.style.display = "none"; };
+});
+</script>
+
 {% endblock %}

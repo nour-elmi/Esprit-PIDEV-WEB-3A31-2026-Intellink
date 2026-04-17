@@ -134,6 +134,10 @@ final class ListeParticipationController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             
+
+            if ($participation->getScore() === null) {
+                $participation->setScore(0);
+            }
             // 1. On récupère le fichier uploadé via le champ 'cv'
             /** @var UploadedFile $cvFile */
             $cvFile = $form->get('cv')->getData();

@@ -10,6 +10,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 
 class ListeParticipationType extends AbstractType
 {
@@ -35,6 +36,10 @@ class ListeParticipationType extends AbstractType
             'attr' => ['class' => 'form-control-custom']
         ])
         ->add('skills')
+        ->add('score', HiddenType::class, [
+            'data' => 0,
+            'attr' => ['id' => 'quiz-score-input']
+        ]);
         
     ;
 }

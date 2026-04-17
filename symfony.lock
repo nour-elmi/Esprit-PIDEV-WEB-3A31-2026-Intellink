@@ -1,4 +1,7 @@
 {
+    "andres-montanez/recommendations-bundle": {
+        "version": "dev-master"
+    },
     "doctrine/deprecations": {
         "version": "1.1",
         "recipe": {
@@ -61,6 +64,18 @@
             "version": "3.1",
             "ref": "0a89461aec4873f9205f1fc04c96c607116abb2e"
         }
+    },
+    "php-http/discovery": {
+        "version": "1.20",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "1.18",
+            "ref": "f45b5dd173a27873ab19f5e3180b2f661c21de02"
+        },
+        "files": [
+            "./config/packages/http_discovery.yaml"
+        ]
     },
     "phpunit/phpunit": {
         "version": "11.5",
