@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Helvetica, Arial, sans-serif; color: #1a2a44; font-size: 13px; line-height: 1.5; }
+        .title { font-size: 24px; font-weight: 700; margin: 0 0 16px; }
+        .meta { margin: 0 0 18px; }
+        .meta p { margin: 0 0 4px; }
+        .content {
+            white-space: pre-line;
+            border: 1px solid #d8e2f2;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+        .badge {
+            display: inline-block;
+            background: #e8f7ee;
+            color: #176b39;
+            border: 1px solid #bde7cb;
+            border-radius: 999px;
+            padding: 5px 10px;
+            font-weight: 700;
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+        .signature img {
+            max-width: 320px;
+            border: 1px solid #d8e2f2;
+            padding: 6px;
+            border-radius: 6px;
+            background: #fff;
+        }
+        .footer {
+            margin-top: 20px;
+            color: #52627d;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="title">Contrat de participation signe</h1>
+
+    <div class="meta">
+        <p><strong>Projet:</strong> {{ demande.projet.titre }}</p>
+        <p><strong>Date de signature:</strong> {{ contrat.userSignedAt ? contrat.userSignedAt|date('d/m/Y H:i') : 'N/A' }}</p>
+        <p><strong>Statut:</strong> {{ contrat.statut }}</p>
+    </div>
+
+    <div class="badge">Contrat finalise</div>
+
+    <div class="content">{{ contrat.contenu }}</div>
+
+    {% if signatureDataUri %}
+        <div class="signature">
+            <p><strong>Signature du participant:</strong></p>
+            <img src="{{ signatureDataUri }}" alt="Signature du participant">
+        </div>
+    {% elseif signatureRenderingDisabled %}
+        <p><strong>Signature du participant:</strong> indisponible dans ce PDF (extension GD non installee sur le serveur).</p>
+    {% endif %}
+
+    <div class="footer">
+        PDF genere le {{ generatedAt|date('d/m/Y H:i') }}.
+    </div>
+</body>
+</html>

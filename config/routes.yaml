@@ -4,6 +4,7 @@ controllers:
         namespace: App\Controller
     type: attribute
 
+
 admin_projets:
     path: /admin/projets
     controller: App\Controller\AdminProjetController::index
@@ -19,4 +20,10 @@ admin_projet_delete:
     controller: App\Controller\AdminProjetController::delete
     requirements:
         id: '\d+'
+
+
+admin_projets_export_csv:
+    path: /admin/projets/export/csv
+    controller: App\Controller\AdminProjetController::exportCsv
+    methods: [GET]
 
