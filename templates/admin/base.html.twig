@@ -23,16 +23,50 @@
     <link rel="stylesheet" href="{{ asset('assets/css/demo.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/admin-projets.css') }}" />
 
+    <style>
+        .sidebar .nav-section .text-section {
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 12px;
+            font-weight: 700;
+            opacity: 0.8;
+        }
+
+        .sidebar .logo-header .logo {
+            text-decoration: none;
+        }
+
+        .sidebar .brand-admin-formation {
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: 0.2px;
+        }
+
+        .sidebar .brand-admin-formation span {
+            color: #4d8aff;
+        }
+
+        .sidebar .nav-item > a p {
+            font-weight: 600;
+        }
+
+        .sidebar .nav-collapse .sub-item {
+            font-size: 15px;
+        }
+    </style>
+
     {% block stylesheets %}{% endblock %}
 </head>
 <body>
 <div class="wrapper">
 
+    <!-- SIDEBAR -->
     <div class="sidebar" data-background-color="dark">
         <div class="sidebar-logo">
             <div class="logo-header" data-background-color="dark">
                 <a href="{{ path('admin_projets') }}" class="logo">
-                    <span class="brand-admin">Admin <span>Projets</span></span>
+                    <span class="brand-admin-formation">Form<span>ation</span></span>
                 </a>
 
                 <div class="nav-toggle">
@@ -53,21 +87,107 @@
         <div class="sidebar-wrapper scrollbar scrollbar-inner">
             <div class="sidebar-content">
                 <ul class="nav nav-secondary">
+
                     <li class="nav-section">
                         <span class="sidebar-mini-icon"><i class="fa fa-ellipsis-h"></i></span>
-                        <h4 class="text-section">Administration</h4>
+                        <h4 class="text-section">Modules de Gestion</h4>
                     </li>
 
-                    <li class="nav-item active">
-                        <a href="{{ path('admin_projets') }}">
-                            <i class="fas fa-layer-group"></i>
-                            <p>Gestion des Projets</p>
+                    <!-- Gestion des Formations -->
+                    <li class="nav-item">
+                        <a data-bs-toggle="collapse" href="#menuFormations">
+                            <i class="fas fa-graduation-cap"></i>
+                            <p>Gestion des Formations</p>
+                            <span class="caret"></span>
                         </a>
+                        <div class="collapse" id="menuFormations">
+                            <ul class="nav nav-collapse">
+                                <li>
+                                    <a href="#">
+                                        <span class="sub-item">Liste des Formations</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </li>
+
+                    <!-- Gestion du Forum -->
+                    <li class="nav-item">
+                        <a data-bs-toggle="collapse" href="#menuForum">
+                            <i class="fas fa-comments"></i>
+                            <p>Gestion du Forum</p>
+                            <span class="caret"></span>
+                        </a>
+                        <div class="collapse" id="menuForum">
+                            <ul class="nav nav-collapse">
+                                <li>
+                                    <a href="#">
+                                        <span class="sub-item">Liste des Forums</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <!-- Gestion des Emplois -->
+                    <li class="nav-item">
+                        <a data-bs-toggle="collapse" href="#menuEmplois">
+                            <i class="fas fa-briefcase"></i>
+                            <p>Gestion des Emplois</p>
+                            <span class="caret"></span>
+                        </a>
+                        <div class="collapse" id="menuEmplois">
+                            <ul class="nav nav-collapse">
+                                <li>
+                                    <a href="#">
+                                        <span class="sub-item">Offres d'Emploi</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <!-- Gestion des Projets -->
+                    <li class="nav-item active submenu">
+                        <a data-bs-toggle="collapse" href="#menuProjets" aria-expanded="true">
+                            <i class="fas fa-handshake"></i>
+                            <p>Gestion des Projets</p>
+                            <span class="caret"></span>
+                        </a>
+                        <div class="collapse show" id="menuProjets">
+                            <ul class="nav nav-collapse">
+                                <li class="active">
+                                    <a href="{{ path('admin_projets') }}">
+                                        <span class="sub-item">Liste des Projets</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <!-- Gestion des Utilisateurs -->
+                    <li class="nav-item">
+                        <a data-bs-toggle="collapse" href="#menuUtilisateurs">
+                            <i class="fas fa-users-cog"></i>
+                            <p>Gestion des Utilisateurs</p>
+                            <span class="caret"></span>
+                        </a>
+                        <div class="collapse" id="menuUtilisateurs">
+                            <ul class="nav nav-collapse">
+                                <li>
+                                    <a href="#">
+                                        <span class="sub-item">Liste des Utilisateurs</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
                 </ul>
             </div>
         </div>
     </div>
+    <!-- END SIDEBAR -->
 
     <div class="main-panel">
         <div class="container">

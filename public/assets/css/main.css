@@ -1838,6 +1838,7 @@ select.form-control-custom {
     height: 220px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.06);
+    pointer-events: none;
 }
 
 .projects-v2-badge {

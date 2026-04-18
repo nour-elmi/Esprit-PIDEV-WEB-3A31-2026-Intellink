@@ -1,0 +1,196 @@
+{% extends 'base_projet.html.twig' %}
+
+{% block title %}Contrat participation{% endblock %}
+
+{% block body %}
+<style>
+    .contrat-wrap { max-width: 1050px; margin: 24px auto; }
+    .contrat-card {
+        background: #fff;
+        border: 1px solid #e3eaf7;
+        border-radius: 22px;
+        box-shadow: 0 16px 34px rgba(16, 36, 82, 0.08);
+        overflow: hidden;
+    }
+    .contrat-head {
+        background: linear-gradient(135deg, #1d2f7a 0%, #2d49ad 100%);
+        color: #fff;
+        padding: 20px 22px;
+    }
+    .contrat-head h1 { margin: 0 0 5px; font-size: 30px; font-weight: 900; }
+    .contrat-head p { margin: 0; opacity: .92; font-weight: 600; }
+    .contrat-body { padding: 20px 22px 22px; }
+    .meta {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+    .meta-item {
+        background: #f7faff;
+        border: 1px solid #dce7fb;
+        border-radius: 12px;
+        padding: 10px;
+    }
+    .meta-item b { display: block; color: #17326f; margin-bottom: 3px; }
+    .meta-item span { color: #435c7d; font-weight: 700; }
+    .status {
+        display: inline-flex;
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 900;
+    }
+    .status.signed { background: #dcfce7; color: #15803d; }
+    .status.partial { background: #fff7dc; color: #9a6700; }
+    .status.wait { background: #e8f0ff; color: #1d4ed8; }
+    .contract-text {
+        border: 1px solid #d9e5fc;
+        background: #fbfdff;
+        border-radius: 14px;
+        padding: 14px;
+        white-space: pre-line;
+        color: #1f3a63;
+        line-height: 1.6;
+        margin-bottom: 16px;
+    }
+    .sign-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        align-items: center;
+    }
+    .sign-row input {
+        border: 1px solid #c9d7f5;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-weight: 700;
+    }
+    .btn-main {
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 14px;
+        background: linear-gradient(135deg, #16a34a, #22c55e);
+        color: #fff;
+        font-weight: 900;
+        cursor: pointer;
+    }
+    .btn-back {
+        display: inline-flex;
+        margin-top: 12px;
+        text-decoration: none;
+        color: #17326f;
+        font-weight: 800;
+    }
+    .signed-preview {
+        margin-top: 10px;
+        border: 1px solid #d9e6ff;
+        border-radius: 12px;
+        background: #f7faff;
+        padding: 10px;
+    }
+    .signed-preview img {
+        max-width: 360px;
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid #cfe0ff;
+        background: #fff;
+        padding: 6px;
+    }
+    .actions-row {
+        margin-top: 12px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    .btn-pdf {
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid #f6cc8e;
+        border-radius: 12px;
+        padding: 10px 13px;
+        background: linear-gradient(135deg, #fff2da 0%, #ffe5b3 100%);
+        color: #8a4903;
+        font-weight: 800;
+        box-shadow: 0 10px 18px rgba(234, 170, 62, 0.18);
+        transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+    }
+    .btn-pdf:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 22px rgba(234, 170, 62, 0.24);
+        filter: saturate(1.05);
+    }
+    @media (max-width: 900px) {
+        .meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .sign-row { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="contrat-wrap">
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    <section class="contrat-card">
+        <header class="contrat-head">
+            <h1>Contrat de participation</h1>
+            <p>{{ projet.titre }} - candidat: {{ candidat and candidat.nom ? candidat.nom : ('ID ' ~ contrat.userId) }}</p>
+        </header>
+
+        <div class="contrat-body">
+            {% set st = contrat.statut|default('ENVOYE_AU_USER') %}
+            {% set rawSign = contrat.userSignatureName ?? '' %}
+            {% set userSignPath = '' %}
+            {% set userSignLabel = '' %}
+            {% if rawSign starts with 'uploads/signatures/' or rawSign starts with '/uploads/signatures/' %}
+                {% set userSignPath = rawSign %}
+            {% elseif '|' in rawSign %}
+                {% set signParts = rawSign|split('|') %}
+                {% set userSignPath = signParts[0] ?? '' %}
+                {% set userSignLabel = signParts[1] ?? '' %}
+            {% elseif rawSign is not empty %}
+                {% set userSignLabel = rawSign %}
+            {% endif %}
+            <div class="meta">
+                <div class="meta-item"><b>Statut</b><span class="status {% if st == 'SIGNE' %}signed{% elseif st == 'SIGNE_PAR_USER' %}partial{% else %}wait{% endif %}">{{ st }}</span></div>
+                <div class="meta-item"><b>Signe user</b><span>{{ contrat.userSignedAt ? contrat.userSignedAt|date('d/m/Y H:i') : 'Non' }}</span></div>
+                <div class="meta-item"><b>Signe chef</b><span>{{ contrat.chefSignedAt ? contrat.chefSignedAt|date('d/m/Y H:i') : 'Non' }}</span></div>
+                <div class="meta-item"><b>Expire le</b><span>{{ contrat.expiresAt ? contrat.expiresAt|date('d/m/Y') : '-' }}</span></div>
+            </div>
+
+            <div class="contract-text">{{ contrat.contenu }}</div>
+
+            {% if contrat.userSignedAt %}
+                <div class="signed-preview">
+                    <strong>Signature utilisateur</strong>
+                    {% if userSignLabel %}
+                        <div>{{ userSignLabel }}</div>
+                    {% endif %}
+                    {% if userSignPath and (userSignPath starts with 'uploads/signatures/' or userSignPath starts with '/uploads/signatures/') %}
+                        <img src="{{ asset(userSignPath) }}" alt="Signature utilisateur">
+                    {% endif %}
+                </div>
+                <div class="actions-row">
+                    <a class="btn-pdf" href="{{ path('app_back_contrat_pdf', {id: contrat.id}) }}">
+                        <span>PDF</span>
+                        <span>Telecharger le contrat signe</span>
+                    </a>
+                </div>
+            {% else %}
+                <div class="alert alert-info">En attente de signature utilisateur.</div>
+            {% endif %}
+            <div class="alert alert-success" style="margin-top:10px;">
+                Ce contrat est final des la signature du participant.
+            </div>
+
+            <a href="{{ path('app_back_projet_demandes', {id: projet.id}) }}" class="btn-back">Retour aux demandes</a>
+        </div>
+    </section>
+</div>
+{% endblock %}
