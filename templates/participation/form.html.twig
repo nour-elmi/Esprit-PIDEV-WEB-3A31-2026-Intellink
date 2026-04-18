@@ -21,12 +21,14 @@
         </a>
 
         <div class="form-wrapper-custom participation-form-card">
-            {{ form_start(form) }}
+            {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
+
+            <div id="front-validation-box" class="alert alert-danger" style="display:none; border-radius:16px; margin-bottom:20px;"></div>
 
             <div class="form-grid participation-form-grid">
                 <div class="form-group-custom">
                     {{ form_label(form.roleSouhaite) }}
-                    <div class="choice-card-group">
+                    <div class="choice-card-group" id="role-group">
                         {% for child in form.roleSouhaite %}
                             <label class="choice-card">
                                 {{ form_widget(child) }}
@@ -34,6 +36,7 @@
                             </label>
                         {% endfor %}
                     </div>
+                    <div id="role-error" class="text-danger fw-semibold mt-2" style="display:none;"></div>
                     {{ form_errors(form.roleSouhaite) }}
 
                     <div class="conditional-field-wrapper" data-conditional-target="role" style="display:none;">
@@ -45,7 +48,7 @@
 
                 <div class="form-group-custom">
                     {{ form_label(form.disponibilite) }}
-                    <div class="choice-card-group">
+                    <div class="choice-card-group" id="dispo-group">
                         {% for child in form.disponibilite %}
                             <label class="choice-card">
                                 {{ form_widget(child) }}
@@ -53,6 +56,7 @@
                             </label>
                         {% endfor %}
                     </div>
+                    <div id="dispo-error" class="text-danger fw-semibold mt-2" style="display:none;"></div>
                     {{ form_errors(form.disponibilite) }}
 
                     <div class="conditional-field-wrapper" data-conditional-target="disponibilite" style="display:none;">
@@ -71,6 +75,8 @@
                 <div class="form-group-custom form-col-full">
                     {{ form_label(form.motivation) }}
                     {{ form_widget(form.motivation) }}
+                    <small class="text-muted d-block mt-2">Minimum 10 caractères.</small>
+                    <div id="motivation-error" class="text-danger fw-semibold mt-2" style="display:none;"></div>
                     {{ form_errors(form.motivation) }}
                 </div>
             </div>
@@ -86,6 +92,24 @@
         </div>
     </div>
 </div>
+
+<style>
+    .field-invalid .choice-card-text {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.18rem rgba(220, 53, 69, 0.12) !important;
+    }
+
+    .is-invalid-textarea,
+    .is-invalid-input {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.18rem rgba(220, 53, 69, 0.12) !important;
+        background: #fff8f8 !important;
+    }
+
+    .alert-danger {
+        line-height: 1.7;
+    }
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -124,6 +148,164 @@ document.addEventListener('DOMContentLoaded', function () {
 
     setupConditionalRadio('roleSouhaite', 'role');
     setupConditionalRadio('disponibilite', 'disponibilite');
+
+    const form = document.querySelector('form[name="demande_participation"]') || document.querySelector('form');
+    if (!form) {
+        return;
+    }
+
+    const roleInputs = form.querySelectorAll('input[name$="[roleSouhaite]"]');
+    const dispoInputs = form.querySelectorAll('input[name$="[disponibilite]"]');
+    const motivationInput = document.getElementById('demande_participation_motivation');
+    const portfolioInput = document.getElementById('demande_participation_portfolio');
+
+    const roleError = document.getElementById('role-error');
+    const dispoError = document.getElementById('dispo-error');
+    const motivationError = document.getElementById('motivation-error');
+    const globalBox = document.getElementById('front-validation-box');
+    const roleGroup = document.getElementById('role-group');
+    const dispoGroup = document.getElementById('dispo-group');
+
+    function anyChecked(nodeList) {
+        return Array.from(nodeList).some(function (input) {
+            return input.checked;
+        });
+    }
+
+    function resetErrors() {
+        globalBox.style.display = 'none';
+        globalBox.innerHTML = '';
+
+        roleError.style.display = 'none';
+        roleError.textContent = '';
+
+        dispoError.style.display = 'none';
+        dispoError.textContent = '';
+
+        motivationError.style.display = 'none';
+        motivationError.textContent = '';
+
+        roleGroup.classList.remove('field-invalid');
+        dispoGroup.classList.remove('field-invalid');
+
+        if (motivationInput) {
+            motivationInput.classList.remove('is-invalid-textarea');
+        }
+
+        if (portfolioInput) {
+            portfolioInput.classList.remove('is-invalid-input');
+        }
+    }
+
+    function showGlobalErrors(errors) {
+        if (errors.length === 0) {
+            return;
+        }
+
+        globalBox.innerHTML = '<strong>Veuillez corriger les champs suivants :</strong><br>' + errors.join('<br>');
+        globalBox.style.display = 'block';
+    }
+
+    function validateForm() {
+        resetErrors();
+
+        const errors = [];
+        const hasRole = anyChecked(roleInputs);
+        const hasDispo = anyChecked(dispoInputs);
+        const motivation = motivationInput ? motivationInput.value.trim() : '';
+        const portfolio = portfolioInput ? portfolioInput.value.trim() : '';
+
+        if (!hasRole) {
+            errors.push('Veuillez choisir un rôle souhaité.');
+            roleError.textContent = 'Veuillez choisir un rôle souhaité.';
+            roleError.style.display = 'block';
+            roleGroup.classList.add('field-invalid');
+        }
+
+        if (!hasDispo) {
+            errors.push('Veuillez choisir une disponibilité.');
+            dispoError.textContent = 'Veuillez choisir une disponibilité.';
+            dispoError.style.display = 'block';
+            dispoGroup.classList.add('field-invalid');
+        }
+
+        if (!motivation) {
+            errors.push('Veuillez renseigner votre motivation.');
+            motivationError.textContent = 'Veuillez renseigner votre motivation.';
+            motivationError.style.display = 'block';
+            if (motivationInput) {
+                motivationInput.classList.add('is-invalid-textarea');
+            }
+        } else if (motivation.length < 10) {
+            errors.push('La motivation doit contenir au moins 10 caractères.');
+            motivationError.textContent = 'La motivation doit contenir au moins 10 caractères.';
+            motivationError.style.display = 'block';
+            if (motivationInput) {
+                motivationInput.classList.add('is-invalid-textarea');
+            }
+        }
+
+        if (portfolio !== '') {
+            try {
+                new URL(portfolio);
+            } catch (e) {
+                errors.push('Le lien portfolio doit être une URL valide.');
+                if (portfolioInput) {
+                    portfolioInput.classList.add('is-invalid-input');
+                }
+            }
+        }
+
+        showGlobalErrors(errors);
+        return errors.length === 0;
+    }
+
+    form.addEventListener('submit', function (e) {
+        const isValid = validateForm();
+
+        if (!isValid) {
+            e.preventDefault();
+
+            const firstInvalid = form.querySelector('.field-invalid, .is-invalid-textarea, .is-invalid-input, .alert-danger');
+            if (firstInvalid) {
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    });
+
+    roleInputs.forEach(function (input) {
+        input.addEventListener('change', function () {
+            roleError.style.display = 'none';
+            roleError.textContent = '';
+            roleGroup.classList.remove('field-invalid');
+            globalBox.style.display = 'none';
+        });
+    });
+
+    dispoInputs.forEach(function (input) {
+        input.addEventListener('change', function () {
+            dispoError.style.display = 'none';
+            dispoError.textContent = '';
+            dispoGroup.classList.remove('field-invalid');
+            globalBox.style.display = 'none';
+        });
+    });
+
+    if (motivationInput) {
+        motivationInput.addEventListener('input', function () {
+            motivationError.style.display = 'none';
+            motivationError.textContent = '';
+            motivationInput.classList.remove('is-invalid-textarea');
+            globalBox.style.display = 'none';
+        });
+    }
+
+    if (portfolioInput) {
+        portfolioInput.addEventListener('input', function () {
+            portfolioInput.classList.remove('is-invalid-input');
+            globalBox.style.display = 'none';
+        });
+    }
 });
 </script>
 {% endblock %}

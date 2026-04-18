@@ -3,6 +3,751 @@
 {% block title %}Projets disponibles{% endblock %}
 
 {% block body %}
+<style>
+    .catalog-hero-right.hero-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+    }
+
+    .notif-wrap {
+        position: relative;
+    }
+
+    .skill-wrap {
+        position: relative;
+    }
+
+    .skill-trigger {
+        width: 48px;
+        height: 48px;
+        border: 0;
+        border-radius: 14px;
+        cursor: pointer;
+        color: #fff;
+        background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 55%, #7c3aed 100%);
+        box-shadow: 0 12px 26px rgba(30, 64, 175, 0.34);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .skill-trigger:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 16px 32px rgba(30, 64, 175, 0.4);
+    }
+
+    .skill-trigger svg {
+        width: 21px;
+        height: 21px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .skill-panel {
+        position: fixed;
+        width: min(370px, calc(100vw - 24px));
+        border-radius: 22px;
+        background: linear-gradient(180deg, rgba(255,255,255,.99) 0%, rgba(245,248,255,.99) 100%);
+        border: 1px solid #d6e2fb;
+        box-shadow: 0 26px 58px rgba(16, 32, 82, 0.28);
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(8px) scale(.98);
+        pointer-events: none;
+        transition: .2s ease;
+        z-index: 9998;
+    }
+
+    .skill-panel.open {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+    }
+
+    .skill-head {
+        padding: 12px 14px;
+        background: linear-gradient(135deg, #163a8f 0%, #265bcb 70%, #10b6a0 100%);
+        color: #fff;
+    }
+
+    .skill-title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 900;
+    }
+
+    .skill-subtitle {
+        margin: 4px 0 0;
+        font-size: 12px;
+        color: rgba(255,255,255,.9);
+        font-weight: 600;
+    }
+
+    .skill-body {
+        padding: 12px;
+    }
+
+    .skill-score-row {
+        display: grid;
+        grid-template-columns: 94px 1fr;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .skill-score-circle {
+        --score: 0;
+        width: 88px;
+        height: 88px;
+        border-radius: 999px;
+        background: conic-gradient(#2563eb calc(var(--score) * 1%), #dbeafe 0);
+        display: grid;
+        place-items: center;
+    }
+
+    .skill-score-inner {
+        width: 68px;
+        height: 68px;
+        border-radius: 999px;
+        background: #fff;
+        display: grid;
+        place-items: center;
+        font-weight: 900;
+        color: #1e3a8a;
+        line-height: 1;
+        font-size: 18px;
+    }
+
+    .skill-score-meta h4 {
+        margin: 0 0 5px;
+        color: #10295f;
+        font-size: 18px;
+        font-weight: 900;
+    }
+
+    .skill-score-meta p {
+        margin: 0;
+        color: #516a94;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .skill-badges {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .skill-badge-item {
+        border-radius: 12px;
+        background: #fff;
+        border: 1px solid #d8e5ff;
+        padding: 8px 9px;
+    }
+
+    .skill-badge-item strong {
+        display: block;
+        font-size: 12px;
+        color: #0f2a66;
+        margin-bottom: 2px;
+    }
+
+    .skill-badge-item span {
+        font-size: 11px;
+        color: #5e759c;
+        font-weight: 700;
+    }
+
+    .skill-next {
+        margin-top: 10px;
+        border-radius: 10px;
+        padding: 8px 10px;
+        background: linear-gradient(135deg, #eef4ff 0%, #e8f9f5 100%);
+        border: 1px solid #cfe0ff;
+        color: #22407a;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .notif-trigger {
+        width: 70px;
+        height: 58px;
+        border: 0;
+        border-radius: 20px;
+        cursor: pointer;
+        color: #fff;
+        background:
+            radial-gradient(120px 80px at 20% 20%, rgba(255,255,255,.24), rgba(255,255,255,0)),
+            linear-gradient(135deg, #2e63ff 0%, #5438ff 65%, #1ab98f 100%);
+        box-shadow: 0 16px 34px rgba(45, 70, 170, 0.34);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        transition: transform .2s ease, box-shadow .2s ease;
+        isolation: isolate;
+    }
+
+    .notif-trigger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 22px 40px rgba(51, 75, 176, 0.4);
+    }
+
+    .notif-trigger svg {
+        width: 25px;
+        height: 25px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        filter: drop-shadow(0 2px 6px rgba(7, 24, 74, 0.35));
+    }
+
+    .notif-trigger::after {
+        content: "";
+        position: absolute;
+        inset: 1px;
+        border-radius: 19px;
+        border: 1px solid rgba(255, 255, 255, 0.26);
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .notif-dot-count {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        min-width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #ff4b4b 0%, #ff7a3d 100%);
+        color: #fff;
+        border: 2px solid #fff;
+        font-size: 13px;
+        font-weight: 900;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 0 7px;
+        box-shadow: 0 12px 22px rgba(255, 74, 58, 0.36);
+        z-index: 3;
+    }
+
+    .notif-panel {
+        position: fixed;
+        width: min(430px, calc(100vw - 24px));
+        border-radius: 24px;
+        background: linear-gradient(180deg, rgba(255,255,255,.99) 0%, rgba(244,248,255,.99) 100%);
+        border: 1px solid #d6e2fb;
+        box-shadow: 0 28px 64px rgba(16, 32, 82, 0.28);
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(8px) scale(.98);
+        pointer-events: none;
+        transition: .2s ease;
+        z-index: 9999;
+    }
+
+    .notif-panel.open {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+    }
+
+    .notif-head {
+        padding: 14px 16px 12px;
+        background: linear-gradient(135deg, #163a8f 0%, #265bcb 65%, #10b6a0 100%);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .notif-head strong {
+        font-size: 18px;
+        font-weight: 900;
+    }
+
+    .notif-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .notif-brand-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: #9af8ec;
+        box-shadow: 0 0 0 6px rgba(154, 248, 236, 0.16);
+    }
+
+    .notif-mark-all {
+        border: 0;
+        background: rgba(255,255,255,.16);
+        color: #fff;
+        font-weight: 800;
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    .notif-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 10px 10px 8px;
+        background: linear-gradient(180deg, #f3f8ff 0%, #edf5ff 100%);
+        border-bottom: 1px solid #dce8ff;
+    }
+
+    .notif-stat {
+        border-radius: 12px;
+        padding: 9px 10px;
+        background: #ffffff;
+        border: 1px solid #d5e4ff;
+    }
+
+    .notif-stat-label {
+        display: block;
+        color: #5470a0;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .4px;
+        margin-bottom: 4px;
+    }
+
+    .notif-stat-value {
+        color: #12316f;
+        font-size: 22px;
+        font-weight: 900;
+        line-height: 1;
+    }
+
+    .notif-list {
+        max-height: 360px;
+        overflow: auto;
+        padding: 10px;
+    }
+
+    .notif-item {
+        display: block;
+        text-decoration: none;
+        border-radius: 14px;
+        padding: 12px 12px 12px 14px;
+        margin-bottom: 9px;
+        border: 1px solid #dce7fd;
+        border-left: 4px solid #bdd4ff;
+        background: #fff;
+        transition: .2s ease;
+    }
+
+    .notif-item:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px rgba(19, 45, 112, 0.12);
+        text-decoration: none;
+    }
+
+    .notif-item.unread {
+        border-color: #b9d2ff;
+        border-left-color: #2f6fff;
+        background: linear-gradient(135deg, #eef6ff 0%, #ebfcff 100%);
+    }
+
+    .notif-item.type-contract-sign {
+        border-left-color: #15a05a;
+        border-color: #bfeacb;
+        background: linear-gradient(135deg, #effdf3 0%, #e8fff6 100%);
+    }
+
+    .notif-item.type-refused {
+        border-left-color: #d13438;
+        border-color: #f3c7cb;
+        background: linear-gradient(135deg, #fff1f2 0%, #fff6f6 100%);
+    }
+
+    .notif-item.type-contract-sign .notif-item-kicker {
+        color: #0f7a42;
+    }
+
+    .notif-item.type-refused .notif-item-kicker {
+        color: #b42318;
+    }
+
+    .notif-item-kicker {
+        color: #2f5ad4;
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        margin-bottom: 4px;
+    }
+
+    .notif-item.unread .notif-item-kicker::after {
+        content: " ✦";
+        color: #0fb89f;
+    }
+
+    .notif-item-title {
+        color: #0f2a66;
+        font-size: 16px;
+        font-weight: 900;
+        margin-bottom: 4px;
+        line-height: 1.3;
+    }
+
+    .notif-item-time {
+        color: #61789a;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .notif-empty {
+        padding: 24px 14px;
+        text-align: center;
+        color: #59739a;
+        font-weight: 700;
+    }
+
+    .scan-cv-btn {
+        border: 0;
+        border-radius: 14px;
+        padding: 12px 16px;
+        color: #fff;
+        font-weight: 800;
+        font-size: 14px;
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 58%, #0ea5e9 100%);
+        box-shadow: 0 14px 26px rgba(37, 99, 235, 0.24);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+    }
+
+    .scan-cv-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 30px rgba(37, 99, 235, 0.32);
+    }
+
+    .scan-cv-btn:disabled {
+        cursor: default;
+        opacity: .72;
+    }
+
+    .cv-match-panel {
+        margin-top: 14px;
+        border-radius: 20px;
+        border: 1px solid #d5e5ff;
+        background: linear-gradient(180deg, #f7fbff 0%, #eff5ff 100%);
+        box-shadow: 0 16px 34px rgba(18, 42, 95, 0.1);
+        overflow: hidden;
+        display: none;
+    }
+
+    .cv-match-panel.show {
+        display: block;
+    }
+
+    .cv-match-head {
+        padding: 14px 16px;
+        background: linear-gradient(135deg, #143b98 0%, #2457c3 62%, #10b981 100%);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .cv-match-head h3 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 900;
+    }
+
+    .cv-match-head p {
+        margin: 3px 0 0;
+        font-size: 12px;
+        color: rgba(255,255,255,.92);
+        font-weight: 600;
+    }
+
+    .cv-match-close {
+        border: 0;
+        background: rgba(255,255,255,.18);
+        color: #fff;
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 12px;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .cv-match-body {
+        padding: 12px;
+    }
+
+    .cv-match-state {
+        border-radius: 12px;
+        padding: 10px 12px;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .cv-match-state.info {
+        background: #e8f1ff;
+        border: 1px solid #cfe1ff;
+        color: #244b86;
+    }
+
+    .cv-match-state.error {
+        background: #ffe9eb;
+        border: 1px solid #ffcbd2;
+        color: #9c1c3c;
+    }
+
+    .cv-match-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .cv-project-item {
+        border-radius: 14px;
+        border: 1px solid #d7e6ff;
+        background: #fff;
+        padding: 10px 11px;
+        box-shadow: 0 8px 20px rgba(18, 42, 95, 0.08);
+    }
+
+    .cv-project-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: flex-start;
+        margin-bottom: 6px;
+    }
+
+    .cv-project-title {
+        margin: 0;
+        color: #16357a;
+        font-size: 15px;
+        font-weight: 900;
+        line-height: 1.3;
+    }
+
+    .cv-project-score {
+        border-radius: 999px;
+        padding: 5px 9px;
+        background: linear-gradient(135deg, #dbeafe 0%, #dcfce7 100%);
+        border: 1px solid #c6dcff;
+        color: #164180;
+        font-size: 11px;
+        font-weight: 900;
+        white-space: nowrap;
+    }
+
+    .cv-project-desc {
+        margin: 0;
+        color: #58729a;
+        font-size: 12px;
+        line-height: 1.45;
+    }
+
+    .cv-project-tags {
+        margin-top: 7px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .cv-project-tag {
+        border-radius: 999px;
+        padding: 4px 8px;
+        background: #eef4ff;
+        border: 1px solid #d9e6ff;
+        color: #2d5189;
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+    .cv-project-link {
+        margin-top: 8px;
+        display: inline-flex;
+        align-items: center;
+        text-decoration: none;
+        border-radius: 999px;
+        padding: 6px 10px;
+        background: #edf3ff;
+        color: #2458b6;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .cv-project-link:hover {
+        text-decoration: none;
+        color: #1d4ed8;
+    }
+
+    .favorite-mini-chip {
+        height: 44px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 214, 105, 0.55);
+        background: linear-gradient(135deg, #fff4cd 0%, #ffe7a0 100%);
+        color: #8f5a00;
+        font-weight: 900;
+        font-size: 13px;
+        padding: 0 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 10px 20px rgba(244, 177, 42, 0.2);
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .favorite-mini-chip svg {
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+        stroke: currentColor;
+        stroke-width: 1.6;
+    }
+
+    .user-project-card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .project-top-right {
+        display: flex;
+        align-items: flex-end;
+        flex-direction: column;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    .project-owner-line {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .project-owner-text {
+        min-width: 0;
+    }
+
+    .project-owner-text h3,
+    .project-owner-text .owner-mail {
+        display: block;
+        max-width: 240px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .favorite-toggle-btn {
+        width: 30px;
+        height: 30px;
+        border-radius: 10px;
+        border: 1px solid #d6e3ff;
+        background: #f8fbff;
+        color: #6d7d9a;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: .2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .favorite-toggle-btn:hover {
+        transform: translateY(-1px) scale(1.03);
+        border-color: #f0cd62;
+    }
+
+    .favorite-toggle-btn svg {
+        width: 14px;
+        height: 14px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        transition: .2s ease;
+    }
+
+    .favorite-toggle-btn.active {
+        color: #e4a008;
+        border-color: #f2c145;
+        background: linear-gradient(135deg, #fff5d5 0%, #ffe8a8 100%);
+        box-shadow: 0 12px 22px rgba(234, 179, 8, 0.24);
+    }
+
+    .favorite-toggle-btn.active svg {
+        fill: currentColor;
+        transform: scale(1.06);
+    }
+
+    .favorite-toggle-btn.pop::after {
+        content: "";
+        position: absolute;
+        inset: -6px;
+        border-radius: 16px;
+        border: 2px solid rgba(234, 179, 8, 0.45);
+        animation: favPulse .45s ease-out;
+    }
+
+    @keyframes favPulse {
+        from { transform: scale(.8); opacity: .9; }
+        to { transform: scale(1.2); opacity: 0; }
+    }
+
+    /* Keep card size stable when a page has a single project */
+    .user-projects-grid .user-project-card {
+        width: min(100%, 540px);
+        justify-self: start;
+    }
+
+    @media (max-width: 560px) {
+        .skill-trigger {
+            width: 44px;
+            height: 44px;
+        }
+
+        .skill-panel {
+            width: calc(100vw - 16px);
+        }
+
+        .notif-trigger {
+            width: 62px;
+            height: 52px;
+        }
+
+        .notif-panel {
+            width: calc(100vw - 16px);
+        }
+
+        .cv-match-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 <section class="user-projects-page">
     <div class="container">
 
@@ -13,7 +758,86 @@
                 <p>Explorez les projets, trouvez ceux qui vous inspirent et rejoignez une collaboration qui vous correspond.</p>
             </div>
 
-            <div class="catalog-hero-right single-action">
+            <div class="catalog-hero-right hero-actions">
+                <div class="notif-wrap">
+                    <button type="button" id="notifTrigger" class="notif-trigger" aria-label="Notifications projets">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5"></path>
+                            <path d="M9 17a3 3 0 0 0 6 0"></path>
+                        </svg>
+                        <span id="notifCount" class="notif-dot-count">0</span>
+                    </button>
+                    <div id="notifPanel" class="notif-panel">
+                        <div class="notif-head">
+                            <div class="notif-brand">
+                                <span class="notif-brand-dot"></span>
+                                <strong>Notifications</strong>
+                            </div>
+                            <button type="button" id="notifMarkAll" class="notif-mark-all">Tout lire</button>
+                        </div>
+                        <div class="notif-stats">
+                            <div class="notif-stat">
+                                <span class="notif-stat-label">Non lus</span>
+                                <span class="notif-stat-value" id="notifUnreadStat">0</span>
+                            </div>
+                            <div class="notif-stat">
+                                <span class="notif-stat-label">Ajoutes aujourd'hui</span>
+                                <span class="notif-stat-value" id="notifTodayStat">0</span>
+                            </div>
+                        </div>
+                        <div id="notifList" class="notif-list"></div>
+                    </div>
+                </div>
+                <div class="skill-wrap">
+                    <button type="button" id="skillTrigger" class="skill-trigger" aria-label="Badges candidat">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 3l2.1 4.4L19 8l-3.5 3.3.9 4.7-4.4-2.4-4.4 2.4.9-4.7L5 8l4.9-.6L12 3z"></path>
+                        </svg>
+                    </button>
+                    <div id="skillPanel" class="skill-panel">
+                        <div class="skill-head">
+                            <h3 class="skill-title">Profil badges</h3>
+                            <p class="skill-subtitle">Ton progression candidat en direct.</p>
+                        </div>
+                        <div class="skill-body">
+                            <div class="skill-score-row">
+                                <div class="skill-score-circle" style="--score: {{ badgeProfile.score|default(0) }};">
+                                    <div class="skill-score-inner">{{ badgeProfile.score|default(0) }}</div>
+                                </div>
+                                <div class="skill-score-meta">
+                                    <h4>{{ badgeProfile.levelLabel|default('Niveau debutant') }}</h4>
+                                    <p>{{ badgeProfile.stats.accepted|default(0) }} acceptee(s) · {{ badgeProfile.stats.pending|default(0) }} en attente</p>
+                                </div>
+                            </div>
+
+                            {% set topBadges = (badgeProfile.earnedBadges|default([]))|slice(0, 4) %}
+                            <div class="skill-badges">
+                                {% for badge in topBadges %}
+                                    <article class="skill-badge-item">
+                                        <strong>{{ badge.title }}</strong>
+                                        <span>{{ badge.progress }}</span>
+                                    </article>
+                                {% else %}
+                                    <article class="skill-badge-item" style="grid-column: 1 / -1;">
+                                        <strong>Pas encore de badge</strong>
+                                        <span>Envoie une candidature pour demarrer.</span>
+                                    </article>
+                                {% endfor %}
+                            </div>
+
+                            {% if badgeProfile.nextBadge is defined and badgeProfile.nextBadge %}
+                                <div class="skill-next">Prochain badge: {{ badgeProfile.nextBadge.title }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <a href="{{ path('app_projet_favoris') }}" class="favorite-mini-chip" title="Voir mes projets favoris">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 3l2.8 5.6 6.2.9-4.5 4.4 1 6.1L12 17.2 6.5 20l1-6.1L3 9.5l6.2-.9L12 3z"></path>
+                    </svg>
+                    <span>Favoris</span>
+                    <span id="favoriteMiniCount">{{ (favoriteProjectIds|default([]))|length }}</span>
+                </a>
                 <a href="{{ path('app_mes_demandes') }}" class="catalog-secondary-btn hero-participation-btn">
                     Mes participations
                 </a>
@@ -25,6 +849,25 @@
                 <h2>Explorer les projets</h2>
                 <p>Recherche et filtre en direct.</p>
             </div>
+            <div style="margin-bottom: 12px; display:flex; justify-content:flex-end;">
+                <button type="button" id="scanCvBtn" class="scan-cv-btn">
+                    ✨ Scanner mon CV
+                </button>
+            </div>
+
+            <section id="cvMatchPanel" class="cv-match-panel">
+                <div class="cv-match-head">
+                    <div>
+                        <h3>Projets adaptés à ton CV</h3>
+                        <p>Analyse du CV déjà lié à ton profil.</p>
+                    </div>
+                    <button type="button" id="cvMatchClose" class="cv-match-close">Fermer</button>
+                </div>
+                <div class="cv-match-body">
+                    <div id="cvMatchState" class="cv-match-state info" style="display:none;"></div>
+                    <div id="cvMatchGrid" class="cv-match-grid"></div>
+                </div>
+            </section>
 
             <div class="user-projects-filters">
                 <div class="filter-box filter-box-search">
@@ -65,13 +908,19 @@
         <section id="projectsGrid" class="user-projects-grid">
             {% for projet in projets %}
                 {% set statut = projet.statut|lower %}
+                {% set isFavorite = projet.id in (favoriteProjectIds|default([])) %}
                 <article
                     class="user-project-card"
                     data-id="{{ projet.id }}"
                     data-titre="{{ projet.titre|lower }}"
+                    data-title="{{ projet.titre }}"
                     data-description="{{ (projet.description ?? '')|lower }}"
                     data-createur="{{ projet.createur|lower }}"
                     data-statut="{{ projet.statut|lower }}"
+                    data-created-at="{{ projet.dateCreation ? projet.dateCreation|date('c') : '' }}"
+                    data-price="{{ projet.prix|number_format(0, '.', ' ') }}"
+                    data-is-favorite="{{ isFavorite ? '1' : '0' }}"
+                    data-favorite-toggle-url="{{ path('app_projet_favori_toggle', {id: projet.id}) }}"
                 >
                     <div class="user-project-card-top">
                         <div class="project-owner-line">
@@ -85,13 +934,27 @@
                             </div>
                         </div>
 
-                        <span class="project-status-badge
-                            {% if statut == 'en cours' %}status-green
-                            {% elseif statut == 'en attente' %}status-yellow
-                            {% else %}status-gray{% endif %}
-                        ">
-                            {{ projet.statut }}
-                        </span>
+                        <div class="project-top-right">
+                            <button
+                                type="button"
+                                class="favorite-toggle-btn {{ isFavorite ? 'active' : '' }}"
+                                data-favorite-btn="1"
+                                aria-label="Mettre en favori"
+                                title="Ajouter aux favoris"
+                            >
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M12 3l2.8 5.6 6.2.9-4.5 4.4 1 6.1L12 17.2 6.5 20l1-6.1L3 9.5l6.2-.9L12 3z"></path>
+                                </svg>
+                            </button>
+
+                            <span class="project-status-badge
+                                {% if statut == 'en cours' %}status-green
+                                {% elseif statut == 'en attente' %}status-yellow
+                                {% else %}status-gray{% endif %}
+                            ">
+                                {{ projet.statut }}
+                            </span>
+                        </div>
                     </div>
 
                     <div class="user-project-card-middle">
@@ -117,8 +980,95 @@
             {% endfor %}
         </section>
 
+        {% if pagination is defined and pagination.totalPages > 1 %}
+            <nav class="bundle-pagination" aria-label="Pagination projets utilisateur">
+                {% set queryParams = app.request.query.all %}
+                <a
+                    class="bundle-page-link {{ not pagination.hasPreviousPage ? 'disabled' : '' }}"
+                    href="{{ pagination.hasPreviousPage ? path('app_projet_index', queryParams|merge({page: pagination.currentPage - 1})) : '#' }}"
+                >
+                    Precedent
+                </a>
+
+                <div class="bundle-page-numbers">
+                    {% for p in 1..pagination.totalPages %}
+                        <a
+                            class="bundle-page-link number {{ p == pagination.currentPage ? 'active' : '' }}"
+                            href="{{ path('app_projet_index', queryParams|merge({page: p})) }}"
+                        >
+                            {{ p }}
+                        </a>
+                    {% endfor %}
+                </div>
+
+                <a
+                    class="bundle-page-link {{ not pagination.hasNextPage ? 'disabled' : '' }}"
+                    href="{{ pagination.hasNextPage ? path('app_projet_index', queryParams|merge({page: pagination.currentPage + 1})) : '#' }}"
+                >
+                    Suivant
+                </a>
+            </nav>
+        {% endif %}
+
     </div>
 </section>
+
+<style>
+    .bundle-pagination {
+        margin-top: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .bundle-page-numbers {
+        display: inline-flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .bundle-page-link {
+        text-decoration: none;
+        min-width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        border: 1px solid #cbd9f8;
+        background: #ffffff;
+        color: #1d3f83;
+        font-weight: 800;
+        font-size: 14px;
+        padding: 0 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: .18s ease;
+    }
+
+    .bundle-page-link.number {
+        min-width: 40px;
+        padding: 0;
+    }
+
+    .bundle-page-link:hover {
+        transform: translateY(-1px);
+        border-color: #9db9f0;
+        box-shadow: 0 10px 16px rgba(22, 65, 145, 0.14);
+    }
+
+    .bundle-page-link.active {
+        background: linear-gradient(135deg, #1f4fbc 0%, #10b981 100%);
+        color: #fff;
+        border-color: transparent;
+    }
+
+    .bundle-page-link.disabled {
+        pointer-events: none;
+        opacity: .48;
+    }
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -127,9 +1077,280 @@ document.addEventListener('DOMContentLoaded', function () {
     const resetBtn = document.getElementById('resetFilters');
     const emptyState = document.getElementById('emptyState');
     const cards = Array.from(document.querySelectorAll('.user-project-card'));
+    const notifTrigger = document.getElementById('notifTrigger');
+    const notifPanel = document.getElementById('notifPanel');
+    const notifList = document.getElementById('notifList');
+    const notifCount = document.getElementById('notifCount');
+    const notifMarkAll = document.getElementById('notifMarkAll');
+    const notifUnreadStat = document.getElementById('notifUnreadStat');
+    const notifTodayStat = document.getElementById('notifTodayStat');
+    const skillTrigger = document.getElementById('skillTrigger');
+    const skillPanel = document.getElementById('skillPanel');
+    const scanCvBtn = document.getElementById('scanCvBtn');
+    const cvMatchPanel = document.getElementById('cvMatchPanel');
+    const cvMatchClose = document.getElementById('cvMatchClose');
+    const cvMatchGrid = document.getElementById('cvMatchGrid');
+    const cvMatchState = document.getElementById('cvMatchState');
+    const userStatusNotificationsRaw = {{ (userStatusNotifications|default([]))|json_encode|raw }};
+    const userStatusNotifications = Array.isArray(userStatusNotificationsRaw)
+        ? userStatusNotificationsRaw
+        : Object.values(userStatusNotificationsRaw || {});
+    const userKey = '{{ app.user and app.user.id ? app.user.id : "guest" }}';
+    const seenStorageKey = 'project_notif_seen_' + userKey;
+    const notifVoiceAssetUrl = '{{ asset('assets/audio/voix-notif.mp3') }}';
+    const favoriteMiniCount = document.getElementById('favoriteMiniCount');
+    const favoriteToken = '{{ csrf_token('toggle_favori_projet') }}';
+    const favoriteIds = new Set({{ (favoriteProjectIds|default([]))|json_encode|raw }});
+    let notifVoiceAudio = null;
+    let pendingVoiceNotification = false;
+
+    try {
+        notifVoiceAudio = new Audio(notifVoiceAssetUrl);
+        notifVoiceAudio.preload = 'auto';
+    } catch (e) {
+        notifVoiceAudio = null;
+    }
 
     function normalize(value) {
         return (value || '').toString().toLowerCase().trim();
+    }
+
+    function syncFavoriteMiniCount() {
+        if (favoriteMiniCount) {
+            favoriteMiniCount.textContent = String(favoriteIds.size);
+        }
+    }
+
+    function animateFavoriteButton(button) {
+        button.classList.remove('pop');
+        void button.offsetWidth;
+        button.classList.add('pop');
+        window.setTimeout(() => button.classList.remove('pop'), 460);
+    }
+
+    async function toggleFavorite(card, button) {
+        const projectId = card.dataset.id;
+        if (!projectId) return;
+
+        const endpoint = card.dataset.favoriteToggleUrl || '';
+        if (!endpoint) {
+            button.disabled = false;
+            alert('URL favori introuvable.');
+            return;
+        }
+        button.disabled = true;
+
+        try {
+            const payload = new URLSearchParams();
+            payload.set('_token', favoriteToken);
+
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: payload
+            });
+            const data = await response.json();
+
+            if (!response.ok || !data.ok) {
+                throw new Error(data && data.message ? data.message : 'Action impossible.');
+            }
+
+            const isActive = !!data.isFavorite;
+            const numericId = Number(projectId);
+            if (isActive) {
+                favoriteIds.add(numericId);
+                card.dataset.isFavorite = '1';
+                button.classList.add('active');
+            } else {
+                favoriteIds.delete(numericId);
+                card.dataset.isFavorite = '0';
+                button.classList.remove('active');
+            }
+
+            animateFavoriteButton(button);
+            syncFavoriteMiniCount();
+        } catch (error) {
+            alert(error.message || 'Impossible de mettre a jour les favoris.');
+        } finally {
+            button.disabled = false;
+        }
+    }
+
+    function formatTime(isoDate) {
+        if (!isoDate) {
+            return 'Date non disponible';
+        }
+
+        const d = new Date(isoDate);
+        if (Number.isNaN(d.getTime())) {
+            return 'Date non disponible';
+        }
+
+        return d.toLocaleString('fr-FR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    function getSeenIds() {
+        try {
+            return new Set(JSON.parse(localStorage.getItem(seenStorageKey) || '[]'));
+        } catch (e) {
+            return new Set();
+        }
+    }
+
+    function saveSeenIds(seenSet) {
+        localStorage.setItem(seenStorageKey, JSON.stringify(Array.from(seenSet)));
+    }
+
+    function playVoiceNotification() {
+        if (!notifVoiceAudio) {
+            return;
+        }
+
+        try {
+            notifVoiceAudio.currentTime = 0;
+            const playPromise = notifVoiceAudio.play();
+            if (playPromise && typeof playPromise.then === 'function') {
+                playPromise.then(function () {
+                    pendingVoiceNotification = false;
+                }).catch(function () {
+                    pendingVoiceNotification = true;
+                });
+                return;
+            }
+            pendingVoiceNotification = false;
+        } catch (e) {
+            pendingVoiceNotification = true;
+        }
+    }
+
+    function maybeAnnounceNewNotification(unread) {
+        const unreadList = Array.isArray(unread) ? unread : [];
+        if (unreadList.length > 0) {
+            playVoiceNotification();
+        }
+    }
+
+    function buildNotifications() {
+        const projectNotifications = cards.map(card => {
+            const id = String(card.dataset.id || '');
+            const title = card.dataset.title || 'Projet';
+            const createdAt = card.dataset.createdAt || '';
+            return {
+                id: 'project_' + id,
+                title: 'Nouveau projet - ' + title,
+                kicker: 'Nouveau projet',
+                type: 'project',
+                createdAt,
+                href: '/projets/' + id
+            };
+        });
+
+        const statusNotifications = userStatusNotifications.map(item => ({
+            id: String(item.id || ''),
+            title: String(item.title || 'Notification'),
+            kicker: String(item.kicker || 'Mise a jour'),
+            type: String(item.type || 'project'),
+            createdAt: String(item.createdAt || ''),
+            href: String(item.href || '{{ path('app_mes_demandes') }}')
+        }));
+
+        return projectNotifications
+            .concat(statusNotifications)
+            .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')))
+            .slice(0, 12);
+    }
+
+    function isToday(isoDate) {
+        if (!isoDate) return false;
+        const d = new Date(isoDate);
+        if (Number.isNaN(d.getTime())) return false;
+        const now = new Date();
+        return d.getDate() === now.getDate() &&
+            d.getMonth() === now.getMonth() &&
+            d.getFullYear() === now.getFullYear();
+    }
+
+    function renderNotifications() {
+        if (!notifList) {
+            return;
+        }
+
+        const notifications = buildNotifications();
+        const seen = getSeenIds();
+        const unread = notifications.filter(item => item.id && !seen.has(item.id));
+        const todayCount = notifications.filter(item => isToday(item.createdAt)).length;
+        maybeAnnounceNewNotification(unread);
+
+        notifCount.textContent = String(unread.length);
+        notifCount.style.display = unread.length > 0 ? 'inline-flex' : 'none';
+        if (notifUnreadStat) notifUnreadStat.textContent = String(unread.length);
+        if (notifTodayStat) notifTodayStat.textContent = String(todayCount);
+
+        if (notifications.length === 0) {
+            notifList.innerHTML = '<div class="notif-empty">Aucune notification pour le moment.</div>';
+            return;
+        }
+
+        notifList.innerHTML = notifications.map(item => {
+            const isUnread = item.id && !seen.has(item.id);
+            return `
+                <a class="notif-item type-${item.type || 'project'} ${isUnread ? 'unread' : ''}" href="${item.href}" data-notif-id="${item.id}">
+                    <div class="notif-item-kicker">${isUnread ? (item.kicker || 'Nouveau') : 'Deja vu'}</div>
+                    <div class="notif-item-title">${item.title || 'Notification'}</div>
+                    <div class="notif-item-time">${formatTime(item.createdAt)}</div>
+                </a>
+            `;
+        }).join('');
+
+        notifList.querySelectorAll('.notif-item').forEach(link => {
+            link.addEventListener('click', function () {
+                const id = this.getAttribute('data-notif-id');
+                if (!id) return;
+                const seenNow = getSeenIds();
+                seenNow.add(id);
+                saveSeenIds(seenNow);
+            });
+        });
+    }
+
+    function placeNotifPanel() {
+        if (!notifTrigger || !notifPanel) return;
+        const rect = notifTrigger.getBoundingClientRect();
+        const panelWidth = Math.min(430, window.innerWidth - 24);
+        let left = rect.right - panelWidth;
+        if (left < 12) left = 12;
+        let top = rect.bottom + 10;
+        const estimatedHeight = 460;
+        if (top + estimatedHeight > window.innerHeight - 12) {
+            top = Math.max(12, rect.top - estimatedHeight - 10);
+        }
+
+        notifPanel.style.width = panelWidth + 'px';
+        notifPanel.style.left = left + 'px';
+        notifPanel.style.top = top + 'px';
+    }
+
+    function placeSkillPanel() {
+        if (!skillTrigger || !skillPanel) return;
+        const rect = skillTrigger.getBoundingClientRect();
+        const panelWidth = Math.min(370, window.innerWidth - 24);
+        let left = rect.right - panelWidth;
+        if (left < 12) left = 12;
+        let top = rect.bottom + 10;
+        const estimatedHeight = 340;
+        if (top + estimatedHeight > window.innerHeight - 12) {
+            top = Math.max(12, rect.top - estimatedHeight - 10);
+        }
+
+        skillPanel.style.width = panelWidth + 'px';
+        skillPanel.style.left = left + 'px';
+        skillPanel.style.top = top + 'px';
     }
 
     function applyFilters() {
@@ -164,6 +1385,80 @@ document.addEventListener('DOMContentLoaded', function () {
         emptyState.style.display = visibleCount === 0 ? 'flex' : 'none';
     }
 
+    function setCvState(message, type = 'info') {
+        if (!cvMatchState) return;
+        cvMatchState.className = 'cv-match-state ' + type;
+        cvMatchState.style.display = 'block';
+        cvMatchState.textContent = message;
+    }
+
+    function clearCvState() {
+        if (!cvMatchState) return;
+        cvMatchState.style.display = 'none';
+        cvMatchState.textContent = '';
+    }
+
+    function renderCvRecommendations(items) {
+        if (!cvMatchGrid) return;
+        if (!items || items.length === 0) {
+            cvMatchGrid.innerHTML = `
+                <article class="cv-project-item" style="grid-column:1/-1;">
+                    <h4 class="cv-project-title">Aucun match fort trouvé</h4>
+                    <p class="cv-project-desc">Complète ton CV avec compétences/technos pour obtenir de meilleurs résultats.</p>
+                </article>
+            `;
+            return;
+        }
+
+        cvMatchGrid.innerHTML = items.map(item => `
+            <article class="cv-project-item">
+                <div class="cv-project-top">
+                    <h4 class="cv-project-title">${item.title}</h4>
+                    <span class="cv-project-score">Match ${item.score}%</span>
+                </div>
+                <p class="cv-project-desc">${item.description || ''}</p>
+                <div class="cv-project-tags">
+                    ${(item.highlights || []).slice(0, 4).map(k => `<span class="cv-project-tag">${k}</span>`).join('')}
+                </div>
+                <a class="cv-project-link" href="${item.url}">Voir et participer</a>
+            </article>
+        `).join('');
+    }
+
+    async function runCvScan() {
+        if (!scanCvBtn || !cvMatchPanel) return;
+        scanCvBtn.disabled = true;
+        scanCvBtn.textContent = 'Scan en cours...';
+        cvMatchPanel.classList.add('show');
+        setCvState('Analyse du CV en cours...', 'info');
+        cvMatchGrid.innerHTML = '';
+
+        try {
+            const res = await fetch('{{ path('app_projet_scan_cv') }}', {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await res.json();
+
+            if (!res.ok || !data.ok) {
+                const msg = data && data.message ? data.message : 'Scan impossible pour le moment.';
+                setCvState(msg, 'error');
+                if (data && data.profileUrl) {
+                    cvMatchGrid.innerHTML = `<a class="cv-project-link" href="${data.profileUrl}">Aller au profil</a>`;
+                }
+                return;
+            }
+
+            clearCvState();
+            renderCvRecommendations(data.recommendations || []);
+        } catch (e) {
+            setCvState('Erreur reseau lors du scan. Reessaie dans quelques secondes.', 'error');
+        } finally {
+            scanCvBtn.disabled = false;
+            scanCvBtn.textContent = '✨ Scanner mon CV';
+        }
+    }
+
     searchInput.addEventListener('input', applyFilters);
     statusSelect.addEventListener('change', applyFilters);
 
@@ -173,7 +1468,108 @@ document.addEventListener('DOMContentLoaded', function () {
         applyFilters();
     });
 
+    cards.forEach(card => {
+        const btn = card.querySelector('[data-favorite-btn]');
+        if (!btn) return;
+
+        btn.addEventListener('click', function () {
+            toggleFavorite(card, btn);
+        });
+    });
+
+    if (scanCvBtn) {
+        scanCvBtn.addEventListener('click', runCvScan);
+    }
+
+    if (cvMatchClose && cvMatchPanel) {
+        cvMatchClose.addEventListener('click', function () {
+            cvMatchPanel.classList.remove('show');
+        });
+    }
+
+    if (notifTrigger && notifPanel) {
+        notifTrigger.addEventListener('click', function () {
+            placeNotifPanel();
+            if (skillPanel) {
+                skillPanel.classList.remove('open');
+            }
+            notifPanel.classList.toggle('open');
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!notifPanel.contains(event.target) && !notifTrigger.contains(event.target)) {
+                notifPanel.classList.remove('open');
+            }
+        });
+
+        window.addEventListener('resize', function () {
+            if (notifPanel.classList.contains('open')) {
+                placeNotifPanel();
+            }
+        });
+
+        window.addEventListener('scroll', function () {
+            if (notifPanel.classList.contains('open')) {
+                placeNotifPanel();
+            }
+        }, { passive: true });
+    }
+
+    if (skillTrigger && skillPanel) {
+        skillTrigger.addEventListener('click', function () {
+            placeSkillPanel();
+            if (notifPanel) {
+                notifPanel.classList.remove('open');
+            }
+            skillPanel.classList.toggle('open');
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!skillPanel.contains(event.target) && !skillTrigger.contains(event.target)) {
+                skillPanel.classList.remove('open');
+            }
+        });
+
+        window.addEventListener('resize', function () {
+            if (skillPanel.classList.contains('open')) {
+                placeSkillPanel();
+            }
+        });
+
+        window.addEventListener('scroll', function () {
+            if (skillPanel.classList.contains('open')) {
+                placeSkillPanel();
+            }
+        }, { passive: true });
+    }
+
+    if (notifMarkAll) {
+        notifMarkAll.addEventListener('click', function () {
+            const notifications = buildNotifications();
+            const seen = getSeenIds();
+            notifications.forEach(item => {
+                if (item.id) {
+                    seen.add(item.id);
+                }
+            });
+            saveSeenIds(seen);
+            renderNotifications();
+        });
+    }
+
+    ['click', 'keydown', 'touchstart'].forEach(function (eventName) {
+        document.addEventListener(eventName, function tryReplayVoice() {
+            if (!pendingVoiceNotification) {
+                return;
+            }
+            playVoiceNotification();
+        }, { passive: true });
+    });
+
     applyFilters();
+    renderNotifications();
+    syncFavoriteMiniCount();
 });
 </script>
 {% endblock %}
+

@@ -1,0 +1,501 @@
+{% extends 'base_projet.html.twig' %}
+
+{% block title %}Historique des actions{% endblock %}
+
+{% block body %}
+<style>
+    .history-page {
+        --bg-main: #eaf1ff;
+        --bg-soft: #f7faff;
+        --navy: #0f2867;
+        --blue: #1f45b8;
+        --ink: #0b225d;
+        --muted: #64748b;
+        --card-border: #dbe6fb;
+        --glass: rgba(255, 255, 255, 0.18);
+
+        position: relative;
+        overflow: hidden;
+        background:
+            radial-gradient(520px 260px at 5% 10%, rgba(74, 222, 128, 0.18) 0%, rgba(74, 222, 128, 0) 70%),
+            radial-gradient(580px 280px at 95% 0%, rgba(56, 189, 248, 0.18) 0%, rgba(56, 189, 248, 0) 75%),
+            linear-gradient(180deg, var(--bg-main) 0%, var(--bg-soft) 100%);
+        border-radius: 28px;
+        padding: 18px 0 40px;
+    }
+
+    .history-page::before,
+    .history-page::after {
+        content: "";
+        position: absolute;
+        border-radius: 999px;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .history-page::before {
+        width: 280px;
+        height: 280px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.18) 0%, rgba(59, 130, 246, 0) 72%);
+        top: -100px;
+        right: -60px;
+    }
+
+    .history-page::after {
+        width: 240px;
+        height: 240px;
+        background: radial-gradient(circle, rgba(34, 197, 94, 0.16) 0%, rgba(34, 197, 94, 0) 75%);
+        bottom: -90px;
+        left: -70px;
+    }
+
+    .history-wrap {
+        position: relative;
+        z-index: 1;
+    }
+
+    .history-header {
+        position: relative;
+        overflow: hidden;
+        border-radius: 24px;
+        padding: 22px 24px;
+        margin-bottom: 14px;
+        background: linear-gradient(132deg, #122c78 0%, #2348bb 52%, #2b55c9 100%);
+        color: #fff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 18px;
+        box-shadow: 0 20px 46px rgba(24, 49, 128, 0.24);
+    }
+
+    .history-header::before {
+        content: "";
+        position: absolute;
+        width: 280px;
+        height: 280px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        top: -130px;
+        right: -80px;
+    }
+
+    .history-header::after {
+        content: "";
+        position: absolute;
+        width: 220px;
+        height: 220px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.07);
+        left: -90px;
+        bottom: -120px;
+    }
+
+    .history-head-content,
+    .history-head-cta {
+        position: relative;
+        z-index: 2;
+    }
+
+    .history-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 999px;
+        padding: 6px 12px;
+        margin-bottom: 10px;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        background: var(--glass);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        backdrop-filter: blur(8px);
+    }
+
+    .history-header h1 {
+        margin: 0 0 6px;
+        font-size: clamp(22px, 3vw, 38px);
+        line-height: 1.1;
+        letter-spacing: -0.6px;
+        font-weight: 900;
+    }
+
+    .history-header p {
+        margin: 0;
+        max-width: 680px;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 12px;
+        line-height: 1.45;
+        font-weight: 500;
+    }
+
+    .history-back {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        color: #18316f;
+        background: #f5f8ff;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 12px;
+        padding: 9px 14px;
+        min-width: 156px;
+        font-weight: 900;
+        font-size: 13px;
+        line-height: 1.2;
+        white-space: nowrap;
+        box-shadow: 0 10px 24px rgba(14, 28, 67, 0.2);
+        transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .history-back:hover {
+        text-decoration: none;
+        color: #102a67;
+        background: #ffffff;
+        transform: translateY(-2px);
+        box-shadow: 0 18px 34px rgba(14, 28, 67, 0.28);
+    }
+
+    .history-stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .history-stat-card {
+        border-radius: 12px;
+        padding: 9px 11px;
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid var(--card-border);
+        box-shadow: 0 8px 22px rgba(19, 36, 86, 0.08);
+    }
+
+    .history-stat-card span {
+        display: block;
+        font-size: 10px;
+        color: #35518f;
+        font-weight: 800;
+        margin-bottom: 5px;
+    }
+
+    .history-stat-card strong {
+        display: block;
+        font-size: 16px;
+        line-height: 1;
+        color: var(--ink);
+        font-weight: 900;
+    }
+
+    .history-list {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+        padding-left: 10px;
+    }
+
+    .history-list::before {
+        content: "";
+        position: absolute;
+        left: 28px;
+        top: 4px;
+        bottom: 4px;
+        width: 3px;
+        border-radius: 999px;
+        background: linear-gradient(180deg, #b7cdfb 0%, #cfe0ff 100%);
+    }
+
+    .history-item {
+        position: relative;
+        display: grid;
+        grid-template-columns: 50px 1fr auto;
+        gap: 10px;
+        align-items: center;
+        padding: 11px 13px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.86);
+        border: 1px solid #dfeafe;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 10px 24px rgba(15, 35, 89, 0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        animation: rise-in 0.35s ease both;
+    }
+
+    .history-item:hover {
+        transform: translateY(-3px);
+        border-color: #c8dcff;
+        box-shadow: 0 18px 38px rgba(15, 35, 89, 0.14);
+    }
+
+    .history-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid transparent;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+    }
+
+    .history-icon svg {
+        width: 23px;
+        height: 23px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2.3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .history-icon .icon-fill {
+        fill: currentColor;
+        stroke: none;
+    }
+
+    .icon-add { background: linear-gradient(135deg, #dcfce7 0%, #c4f1d4 100%); color: #0f8a4a; border-color: #baeaca; }
+    .icon-edit { background: linear-gradient(135deg, #e0ebff 0%, #d2e2ff 100%); color: #2152d7; border-color: #c8dafd; }
+    .icon-delete { background: linear-gradient(135deg, #ffe4e8 0%, #ffd6dd 100%); color: #cc223f; border-color: #f4c3cc; }
+    .icon-accept { background: linear-gradient(135deg, #ddf9e6 0%, #c8f2d8 100%); color: #11884a; border-color: #bde8cb; }
+    .icon-refuse { background: linear-gradient(135deg, #ffe6e7 0%, #ffd7d8 100%); color: #c7262b; border-color: #f1c1c4; }
+    .icon-default { background: linear-gradient(135deg, #e8edf7 0%, #dfe6f3 100%); color: #45526f; border-color: #d4dceb; }
+
+    .history-text strong {
+        display: block;
+        margin: 0 0 4px;
+        color: var(--navy);
+        font-size: clamp(14px, 1.2vw, 19px);
+        line-height: 1.28;
+        letter-spacing: -0.1px;
+        font-weight: 900;
+    }
+
+    .history-date {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .history-tag {
+        justify-self: end;
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 9px;
+        font-weight: 900;
+        letter-spacing: 0.45px;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .tag-projet { background: #e8efff; color: #2149b4; }
+    .tag-demande { background: #e8f9f0; color: #147a47; }
+    .tag-autre { background: #eef2f7; color: #475569; }
+
+    .history-empty {
+        text-align: center;
+        border-radius: 18px;
+        border: 1px solid #dfeafe;
+        background: rgba(255, 255, 255, 0.84);
+        padding: 34px 18px;
+        box-shadow: 0 12px 28px rgba(15, 35, 89, 0.08);
+    }
+
+    .history-empty h3 {
+        margin: 0 0 10px;
+        color: #17326f;
+        font-size: 20px;
+        font-weight: 900;
+    }
+
+    .history-empty p {
+        margin: 0;
+        color: #667892;
+        font-size: 14px;
+    }
+
+    @keyframes rise-in {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 1024px) {
+        .history-header {
+            padding: 20px 18px;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .history-back {
+            min-width: unset;
+            width: 100%;
+        }
+
+        .history-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .history-item {
+            grid-template-columns: 48px 1fr;
+            gap: 10px;
+        }
+
+        .history-tag {
+            justify-self: start;
+        }
+    }
+
+    @media (max-width: 680px) {
+        .history-page {
+            border-radius: 18px;
+            padding-top: 12px;
+        }
+
+        .history-list {
+            padding-left: 6px;
+        }
+
+        .history-list::before {
+            left: 20px;
+        }
+
+        .history-item {
+            padding: 10px;
+            border-radius: 16px;
+        }
+
+        .history-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            font-size: 18px;
+        }
+
+        .history-date {
+            font-size: 11px;
+        }
+
+        .history-header h1 {
+            font-size: clamp(20px, 7vw, 28px);
+        }
+
+        .history-back {
+            width: auto;
+            min-width: unset;
+        }
+    }
+</style>
+
+<section class="history-page">
+    <div class="container history-wrap">
+        <div class="history-header">
+            <div class="history-head-content">
+                <span class="history-badge">
+                    Timeline
+                </span>
+                <h1>Historique des actions</h1>
+                <p>Une timeline premium de toutes vos decisions sur les projets et participations.</p>
+            </div>
+            <div class="history-head-cta">
+                <a href="{{ path('app_back_projets') }}" class="history-back">Retour aux projets</a>
+            </div>
+        </div>
+
+        {% set totalLogs = logs|length %}
+        {% set totalProjet = logs|filter(l => l.action starts with 'PROJET_')|length %}
+        {% set totalDemandes = logs|filter(l => l.action starts with 'DEMANDE_')|length %}
+        {% set totalAujourdhui = logs|filter(l => l.createdAt and l.createdAt|date('Y-m-d') == 'now'|date('Y-m-d'))|length %}
+
+        <div class="history-stats">
+            <article class="history-stat-card">
+                <span>Total actions</span>
+                <strong>{{ totalLogs }}</strong>
+            </article>
+            <article class="history-stat-card">
+                <span>Actions projet</span>
+                <strong>{{ totalProjet }}</strong>
+            </article>
+            <article class="history-stat-card">
+                <span>Actions demandes</span>
+                <strong>{{ totalDemandes }}</strong>
+            </article>
+            <article class="history-stat-card">
+                <span>Aujourd'hui</span>
+                <strong>{{ totalAujourdhui }}</strong>
+            </article>
+        </div>
+
+        <div class="history-list">
+            {% for log in logs %}
+                {% set action = log.action|upper %}
+                {% set iconClass = 'icon-default' %}
+                {% set iconType = 'default' %}
+                {% set tagClass = 'tag-autre' %}
+                {% set tagLabel = 'autre' %}
+
+                {% if action == 'PROJET_AJOUTE' %}
+                    {% set iconClass = 'icon-add' %}
+                    {% set iconType = 'add' %}
+                    {% set tagClass = 'tag-projet' %}
+                    {% set tagLabel = 'Projet' %}
+                {% elseif action == 'PROJET_MODIFIE' %}
+                    {% set iconClass = 'icon-edit' %}
+                    {% set iconType = 'edit' %}
+                    {% set tagClass = 'tag-projet' %}
+                    {% set tagLabel = 'Projet' %}
+                {% elseif action == 'PROJET_SUPPRIME' %}
+                    {% set iconClass = 'icon-delete' %}
+                    {% set iconType = 'delete' %}
+                    {% set tagClass = 'tag-projet' %}
+                    {% set tagLabel = 'Projet' %}
+                {% elseif action == 'DEMANDE_ACCEPTEE' %}
+                    {% set iconClass = 'icon-accept' %}
+                    {% set iconType = 'accept' %}
+                    {% set tagClass = 'tag-demande' %}
+                    {% set tagLabel = 'Participation' %}
+                {% elseif action == 'DEMANDE_REFUSEE' %}
+                    {% set iconClass = 'icon-refuse' %}
+                    {% set iconType = 'refuse' %}
+                    {% set tagClass = 'tag-demande' %}
+                    {% set tagLabel = 'Participation' %}
+                {% endif %}
+
+                <article class="history-item">
+                    <div class="history-icon {{ iconClass }}">
+                        {% if iconType == 'add' %}
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                        {% elseif iconType == 'edit' %}
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M12 6l4 4"/></svg>
+                        {% elseif iconType == 'delete' %}
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14"/><path d="M9 7V5h6v2"/><path d="M8 7l1 12h6l1-12"/><path d="M10 11v5M14 11v5"/></svg>
+                        {% elseif iconType == 'accept' %}
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>
+                        {% elseif iconType == 'refuse' %}
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                        {% else %}
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><circle class="icon-fill" cx="12" cy="16.5" r="1.2"/></svg>
+                        {% endif %}
+                    </div>
+                    <div class="history-text">
+                        <strong>{{ log.details }}</strong>
+                        <div class="history-date">{{ log.createdAt ? log.createdAt|date('d/m/Y \\a\\ H:i') : '' }}</div>
+                    </div>
+                    <div class="history-tag {{ tagClass }}">{{ tagLabel }}</div>
+                </article>
+            {% else %}
+                <div class="history-empty">
+                    <h3>Aucune action pour le moment</h3>
+                    <p>Ton historique apparaitra ici apres les actions sur les projets et demandes.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

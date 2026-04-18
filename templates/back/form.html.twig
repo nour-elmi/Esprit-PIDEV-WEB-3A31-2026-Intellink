@@ -1,12 +1,25 @@
-{% extends 'base_projet.html.twig' %}
+﻿{% extends 'base_projet.html.twig' %}
 
 {% block title %}{{ title }}{% endblock %}
 
 {% block body %}
-<section class="page-hero">
+<div class="add-project-page">
+<section class="page-hero add-project-hero">
     <div class="container">
         <div class="hero-content">
-            <div class="hero-icon">{{ is_edit ? '✏️' : '🚀' }}</div>
+            <div class="hero-icon" aria-hidden="true">
+                {% if is_edit %}
+                    <svg viewBox="0 0 24 24">
+                        <path d="M4 20h4l10-10-4-4L4 16v4z"></path>
+                        <path d="m12 6 4 4"></path>
+                    </svg>
+                {% else %}
+                    <svg viewBox="0 0 24 24">
+                        <path d="M5 13c5.5 0 8-2.3 10-7 1.8 3.8 2.6 6.9 2.1 9.1-.6 2.7-2.8 4.9-5.5 5.5C9.4 21.1 6.3 20.3 2.5 18.5 7.2 16.5 9.5 14 9.5 8.5"></path>
+                        <path d="m13 11 2 2"></path>
+                    </svg>
+                {% endif %}
+            </div>
             <h1>{{ title }}</h1>
             <p>{{ subtitle|default('Remplissez les informations du projet.') }}</p>
         </div>
@@ -15,7 +28,12 @@
 
 <div class="main-content">
     <div class="container">
-        <a href="{{ path('app_back_projets') }}" class="back-link">← Retour aux projets</a>
+        <a href="{{ path('app_back_projets') }}" class="back-link add-back-link">
+            <span class="add-back-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"></path></svg>
+            </span>
+            Retour aux projets
+        </a>
 
         {% for message in app.flashes('success') %}
             <div class="alert alert-success">{{ message }}</div>
@@ -26,7 +44,9 @@
         {% endfor %}
 
         <div class="form-wrapper-custom">
-            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'project-form'}}) }}
+
+            <div id="front-validation-box" class="alert alert-danger" style="display:none; border-radius:16px; margin-bottom:20px;"></div>
 
             <div class="form-grid">
                 <div class="form-group-custom form-col-full">
@@ -34,10 +54,15 @@
                     {{ form_widget(form.titre, {
                         'attr': {
                             'class': 'form-control-custom',
-                            'placeholder': 'Ex: Plateforme de collaboration digitale'
+                            'placeholder': 'Ex: Plateforme de collaboration digitale',
+                            'minlength': 3,
+                            'maxlength': 200
                         }
                     }) }}
-                    {{ form_errors(form.titre) }}
+                    <div id="titre-error" class="field-error-red" style="display:none;"></div>
+                    <div class="field-error-red">
+                        {{ form_errors(form.titre) }}
+                    </div>
                 </div>
 
                 <div class="form-group-custom">
@@ -45,10 +70,15 @@
                     {{ form_widget(form.prix, {
                         'attr': {
                             'class': 'form-control-custom',
-                            'placeholder': '0.00'
+                            'placeholder': '0.00',
+                            'min': '0',
+                            'step': '0.01'
                         }
                     }) }}
-                    {{ form_errors(form.prix) }}
+                    <div id="prix-error" class="field-error-red" style="display:none;"></div>
+                    <div class="field-error-red">
+                        {{ form_errors(form.prix) }}
+                    </div>
                 </div>
 
                 <div class="form-group-custom">
@@ -58,19 +88,44 @@
                             'class': 'form-control-custom'
                         }
                     }) }}
-                    {{ form_errors(form.statut) }}
+                    <div id="statut-error" class="field-error-red" style="display:none;"></div>
+                    <div class="field-error-red">
+                        {{ form_errors(form.statut) }}
+                    </div>
                 </div>
 
                 <div class="form-group-custom form-col-full">
                     {{ form_label(form.description) }}
+                    <div class="description-ai-wrapper">
                     {{ form_widget(form.description, {
                         'attr': {
                             'class': 'form-control-custom',
                             'rows': 6,
-                            'placeholder': 'Décrivez les objectifs, les fonctionnalités, les besoins de l’équipe et les résultats attendus...'
+                            'placeholder': 'Decrivez les objectifs, les fonctionnalites, les besoins de l equipe et les resultats attendus...',
+                            'minlength': 10,
+                            'maxlength': 2000
                         }
                     }) }}
-                    {{ form_errors(form.description) }}
+                        <button
+                            type="button"
+                            id="ai-generate-btn"
+                            class="btn-ai-inline"
+                            data-url="{{ path('app_back_projet_ai_description') }}"
+                            title="Generer une description automatiquement"
+                            aria-label="Generer une description automatiquement"
+                        >
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M12 3l1.9 4.2L18 9.1l-4.1 1.9L12 15l-1.9-4L6 9.1l4.1-1.9L12 3z"></path>
+                                <path d="M5 15l1.2 2.6L9 18.8l-2.8 1.2L5 22.6l-1.2-2.6L1 18.8l2.8-1.2L5 15z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="ai-feedback" class="ai-feedback" style="display:none;"></div>
+                    <small class="text-muted d-block mt-2">Minimum 10 caracteres.</small>
+                    <div id="description-error" class="field-error-red" style="display:none;"></div>
+                    <div class="field-error-red">
+                        {{ form_errors(form.description) }}
+                    </div>
                 </div>
             </div>
 
@@ -87,4 +142,437 @@
         </div>
     </div>
 </div>
+</div>
+
+<style>
+    .add-project-page {
+        --add-ink: #122e6d;
+        --add-line: #d6e2ff;
+        --add-surface: #f5f9ff;
+    }
+
+    .add-project-hero {
+        border-radius: 32px;
+        overflow: hidden;
+        margin-bottom: 28px;
+        background:
+            radial-gradient(360px 170px at 92% 12%, rgba(255,255,255,.12), rgba(255,255,255,0)),
+            radial-gradient(260px 140px at 0% 100%, rgba(255,255,255,.1), rgba(255,255,255,0)),
+            linear-gradient(132deg, #152f86 0%, #1f4cae 62%, #0ea5a8 100%);
+        box-shadow: 0 26px 48px rgba(17, 42, 109, 0.26);
+    }
+
+    .add-project-hero .hero-content { padding: 34px 6px 36px; }
+
+    .add-project-hero .hero-icon {
+        width: 68px; height: 68px; border-radius: 20px;
+        background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.24);
+        display: inline-flex; align-items: center; justify-content: center;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); margin-bottom: 14px;
+    }
+
+    .add-project-hero .hero-icon svg {
+        width: 30px; height: 30px; stroke: #fff; stroke-width: 1.8; fill: none;
+        stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    .add-project-hero h1 { font-size: clamp(40px, 5vw, 58px); line-height: 1.02; margin: 0 0 10px; }
+    .add-project-hero p { max-width: 760px; font-size: 18px; color: rgba(255,255,255,.92); margin: 0; }
+
+    .add-back-link {
+        display: inline-flex; align-items: center; gap: 9px; border-radius: 12px;
+        padding: 8px 14px 8px 10px; background: linear-gradient(135deg, #eff5ff 0%, #e8f3ff 100%);
+        border: 1px solid #d3e1ff; color: var(--add-ink); font-weight: 800; text-decoration: none;
+        box-shadow: 0 10px 18px rgba(19, 53, 123, 0.08);
+    }
+    .add-back-link:hover { transform: translateY(-1px); color: #0f2b66; }
+    .add-back-icon { width: 26px; height: 26px; border-radius: 999px; background: #fff; border: 1px solid #d5e4ff; display: inline-flex; align-items: center; justify-content: center; }
+    .add-back-icon svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2.2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+    .form-wrapper-custom {
+        border-radius: 24px; border: 1px solid var(--add-line);
+        background: radial-gradient(200px 120px at 100% 0%, rgba(57,119,255,.07), rgba(57,119,255,0)), linear-gradient(180deg, #ffffff 0%, var(--add-surface) 100%);
+        box-shadow: 0 20px 36px rgba(17, 47, 109, 0.13); padding: 30px;
+    }
+
+    .form-group-custom label { color: var(--add-ink); font-size: 17px; font-weight: 900; margin-bottom: 10px; }
+    .form-control-custom {
+        border: 1px solid #c8d8f4; border-radius: 18px; background: #fbfdff; min-height: 62px;
+        font-size: 17px; color: #17366f; box-shadow: 0 8px 14px rgba(15, 49, 122, 0.05);
+    }
+    textarea.form-control-custom { min-height: 170px; line-height: 1.6; }
+    .form-control-custom:focus { border-color: #6e9af1; box-shadow: 0 0 0 0.22rem rgba(79, 118, 214, 0.15), 0 12px 24px rgba(36, 78, 175, 0.1); background: #ffffff; }
+
+    .btn-success-custom {
+        border: 0; border-radius: 14px; min-height: 52px; padding: 10px 22px;
+        background: linear-gradient(135deg, #1c52cf 0%, #0ea5a8 100%); box-shadow: 0 14px 24px rgba(22, 72, 179, 0.24);
+        font-size: 16px; font-weight: 900; letter-spacing: .2px;
+    }
+    .btn-success-custom:hover { transform: translateY(-1px); box-shadow: 0 18px 30px rgba(22, 72, 179, 0.3); }
+
+    .btn-secondary-custom { border-radius: 14px; min-height: 52px; padding: 10px 22px; border: 1px solid #cad8f8; background: #fff; color: #17386f; font-weight: 800; }
+    .btn-secondary-custom:hover { background: #f5f8ff; color: #12326a; }
+    .is-invalid-custom {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.18rem rgba(220, 53, 69, 0.12) !important;
+        background: #fff8f8 !important;
+    }
+
+    #front-validation-box {
+        line-height: 1.7;
+    }
+
+    .field-error-red,
+    .field-error-red ul,
+    .field-error-red li {
+        color: #dc3545 !important;
+        font-weight: 600;
+        margin-top: 8px;
+    }
+
+    .field-error-red ul {
+        margin-bottom: 0;
+        padding-left: 18px;
+    }
+
+    .field-row-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .description-ai-wrapper {
+        position: relative;
+    }
+
+    .description-ai-wrapper textarea {
+        padding-bottom: 62px !important;
+    }
+
+    .btn-ai-inline {
+        border: 0;
+        width: 46px;
+        height: 46px;
+        position: absolute;
+        right: 14px;
+        bottom: 14px;
+        border-radius: 14px;
+        color: #ffffff;
+        background: linear-gradient(135deg, #1d4ed8 0%, #17b26a 100%);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 12px 24px rgba(16, 85, 173, 0.28);
+        transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+        z-index: 2;
+    }
+
+    .btn-ai-inline:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 28px rgba(16, 85, 173, 0.34);
+    }
+
+    .btn-ai-inline:disabled {
+        opacity: 0.68;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-ai-inline svg {
+        width: 22px;
+        height: 22px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .ai-feedback {
+        margin-top: 8px;
+        border-radius: 12px;
+        padding: 10px 12px;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .ai-feedback.ok {
+        background: #e9fff4;
+        border: 1px solid #b6f0d1;
+        color: #0f7a4a;
+    }
+
+    .ai-feedback.warn {
+        background: #edf4ff;
+        border: 1px solid #c8dafc;
+        color: #1f4db8;
+    }
+
+    .ai-feedback.err {
+        background: #fff1f1;
+        border: 1px solid #f1c9c9;
+        color: #b42318;
+    }
+
+    @media (max-width: 991px) {
+        .add-project-hero .hero-content {
+            padding: 24px 0 26px;
+        }
+
+        .add-project-hero h1 {
+            font-size: 40px;
+        }
+
+        .add-project-hero p {
+            font-size: 16px;
+        }
+
+        .form-wrapper-custom {
+            padding: 20px;
+            border-radius: 20px;
+        }
+
+        .form-control-custom {
+            min-height: 56px;
+            font-size: 16px;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('project-form');
+    if (!form) return;
+
+    const titre = document.getElementById('{{ form.titre.vars.id }}');
+    const prix = document.getElementById('{{ form.prix.vars.id }}');
+    const statut = document.getElementById('{{ form.statut.vars.id }}');
+    const description = document.getElementById('{{ form.description.vars.id }}');
+    const aiBtn = document.getElementById('ai-generate-btn');
+    const aiFeedback = document.getElementById('ai-feedback');
+
+    const titreError = document.getElementById('titre-error');
+    const prixError = document.getElementById('prix-error');
+    const statutError = document.getElementById('statut-error');
+    const descriptionError = document.getElementById('description-error');
+    const globalBox = document.getElementById('front-validation-box');
+
+    function resetField(field, errorBox) {
+        if (field) field.classList.remove('is-invalid-custom');
+        if (errorBox) {
+            errorBox.style.display = 'none';
+            errorBox.textContent = '';
+        }
+    }
+
+    function setFieldError(field, errorBox, message) {
+        if (field) field.classList.add('is-invalid-custom');
+        if (errorBox) {
+            errorBox.textContent = message;
+            errorBox.style.display = 'block';
+        }
+    }
+
+    function resetAllErrors() {
+        globalBox.style.display = 'none';
+        globalBox.innerHTML = '';
+        resetField(titre, titreError);
+        resetField(prix, prixError);
+        resetField(statut, statutError);
+        resetField(description, descriptionError);
+    }
+
+    function showAiFeedback(type, message) {
+        if (!aiFeedback) return;
+        aiFeedback.className = 'ai-feedback';
+        aiFeedback.classList.add(type);
+        aiFeedback.textContent = message;
+        aiFeedback.style.display = 'block';
+    }
+
+    function localDescriptionFromTitle(title) {
+        const t = String(title || '').trim();
+        if (!t) return '';
+
+        const templates = [
+            `Le projet "${t}" propose une solution moderne et pratique pour repondre a un besoin concret, avec des objectifs clairs et une execution structuree.`,
+            `"${t}" vise a creer une experience fiable et utile, en combinant innovation, collaboration d equipe et impact mesurable.`,
+            `Avec "${t}", l objectif est de livrer un produit performant et evolutif qui simplifie les usages et apporte une vraie valeur.`,
+            `Le projet "${t}" met l accent sur la qualite, la rapidite d execution et une approche orientee resultats pour les utilisateurs.`
+        ];
+
+        const index = Math.abs(t.length) % templates.length;
+        let result = templates[index];
+        if (result.length > 220) result = result.slice(0, 217) + '...';
+        return result;
+    }
+
+    function validateTitre(value) {
+        const trimmed = String(value).trim();
+        if (!trimmed) return 'Le titre est obligatoire.';
+        if (trimmed.length < 3) return 'Le titre doit contenir au moins 3 caracteres.';
+        if (trimmed.length > 200) return 'Le titre ne doit pas depasser 200 caracteres.';
+        if (trimmed.includes('<') || trimmed.includes('>')) return 'Le titre contient des caracteres non autorises.';
+        return null;
+    }
+
+    function validatePrix(value) {
+        const trimmed = String(value).trim();
+        if (!trimmed) return 'Le prix est obligatoire.';
+        const numericValue = Number(trimmed.replace(',', '.'));
+        if (Number.isNaN(numericValue)) return 'Le prix doit etre un nombre valide.';
+        if (numericValue < 0) return 'Le prix doit etre positif ou nul.';
+        return null;
+    }
+
+    function validateStatut(value) {
+        if (!value || !String(value).trim()) return 'Veuillez choisir un statut.';
+        return null;
+    }
+
+    function validateDescription(value) {
+        const trimmed = String(value).trim();
+        if (!trimmed) return 'La description est obligatoire.';
+        if (trimmed.length < 10) return 'La description doit contenir au moins 10 caracteres.';
+        if (trimmed.length > 2000) return 'La description ne doit pas depasser 2000 caracteres.';
+        return null;
+    }
+
+    if (aiBtn) {
+        aiBtn.addEventListener('click', async function () {
+            const titreValue = (titre.value || '').trim();
+            if (titreValue.length < 3) {
+                showAiFeedback('err', 'Saisissez d abord un titre valide (minimum 3 caracteres).');
+                titre.focus();
+                return;
+            }
+
+            const originalLabel = aiBtn.innerHTML;
+            const routeUrl = aiBtn.dataset.url || '';
+            aiBtn.disabled = true;
+            aiBtn.innerHTML = `
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 3l1.9 4.2L18 9.1l-4.1 1.9L12 15l-1.9-4L6 9.1l4.1-1.9L12 3z"></path>
+                    <path d="M5 15l1.2 2.6L9 18.8l-2.8 1.2L5 22.6l-1.2-2.6L1 18.8l2.8-1.2L5 15z"></path>
+                </svg>
+            `;
+            showAiFeedback('warn', 'Generation en cours...');
+
+            try {
+                const response = await fetch(routeUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title: titreValue })
+                });
+
+                const raw = await response.text();
+                let data = null;
+                try {
+                    data = JSON.parse(raw);
+                } catch (e) {
+                    data = null;
+                }
+
+                if (response.ok && data && data.ok && data.description) {
+                    description.value = data.description;
+                    description.classList.remove('is-invalid-custom');
+                    descriptionError.style.display = 'none';
+                    descriptionError.textContent = '';
+                    showAiFeedback(data.source === 'ai' ? 'ok' : 'warn', data.source === 'ai'
+                        ? ('Description generee par IA (' + (data.provider || 'ia') + ').')
+                        : ('IA distante non disponible, mode local serveur actif.' + (data.reason ? ' Detail: ' + data.reason : '')));
+                } else {
+                    description.value = localDescriptionFromTitle(titreValue);
+                    description.classList.remove('is-invalid-custom');
+                    descriptionError.style.display = 'none';
+                    descriptionError.textContent = '';
+                    showAiFeedback('warn', 'Generation locale activee (serveur indisponible).' + (data && data.reason ? ' Detail: ' + data.reason : ''));
+                }
+            } catch (error) {
+                description.value = localDescriptionFromTitle(titreValue);
+                description.classList.remove('is-invalid-custom');
+                descriptionError.style.display = 'none';
+                descriptionError.textContent = '';
+                showAiFeedback('warn', 'Generation locale activee (erreur reseau).');
+            } finally {
+                aiBtn.disabled = false;
+                aiBtn.innerHTML = originalLabel;
+            }
+        });
+    }
+
+    form.addEventListener('submit', function (e) {
+        resetAllErrors();
+        const errors = [];
+
+        const titreMessage = validateTitre(titre.value);
+        if (titreMessage) {
+            errors.push(titreMessage);
+            setFieldError(titre, titreError, titreMessage);
+        }
+
+        const prixMessage = validatePrix(prix.value);
+        if (prixMessage) {
+            errors.push(prixMessage);
+            setFieldError(prix, prixError, prixMessage);
+        }
+
+        const statutMessage = validateStatut(statut.value);
+        if (statutMessage) {
+            errors.push(statutMessage);
+            setFieldError(statut, statutError, statutMessage);
+        }
+
+        const descriptionMessage = validateDescription(description.value);
+        if (descriptionMessage) {
+            errors.push(descriptionMessage);
+            setFieldError(description, descriptionError, descriptionMessage);
+        }
+
+        if (errors.length > 0) {
+            e.preventDefault();
+            globalBox.innerHTML = '<strong>Veuillez corriger les champs suivants :</strong><br>' + errors.join('<br>');
+            globalBox.style.display = 'block';
+            const firstInvalid = form.querySelector('.is-invalid-custom');
+            if (firstInvalid) {
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstInvalid.focus();
+            }
+        }
+    });
+
+    [titre, prix, statut, description].forEach(function (field) {
+        if (!field) return;
+
+        field.addEventListener('input', function () {
+            field.classList.remove('is-invalid-custom');
+            globalBox.style.display = 'none';
+
+            if (field === titre) {
+                titreError.style.display = 'none';
+                titreError.textContent = '';
+            } else if (field === prix) {
+                prixError.style.display = 'none';
+                prixError.textContent = '';
+            } else if (field === description) {
+                descriptionError.style.display = 'none';
+                descriptionError.textContent = '';
+            }
+        });
+
+        field.addEventListener('change', function () {
+            field.classList.remove('is-invalid-custom');
+            globalBox.style.display = 'none';
+
+            if (field === statut) {
+                statutError.style.display = 'none';
+                statutError.textContent = '';
+            }
+        });
+    });
+});
+</script>
 {% endblock %}
+
+

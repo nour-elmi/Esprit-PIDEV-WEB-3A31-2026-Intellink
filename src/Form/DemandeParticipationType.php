@@ -13,6 +13,10 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class DemandeParticipationType extends AbstractType
 {
@@ -52,10 +56,25 @@ class DemandeParticipationType extends AbstractType
                 'multiple' => false,
                 'mapped' => false,
                 'required' => true,
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Veuillez choisir un rôle souhaité.',
+                    ]),
+                    new Callback(function ($value, ExecutionContextInterface $context) {
+                        $form = $context->getRoot();
+                        $autreRole = trim((string) $form->get('autreRole')->getData());
+
+                        if ($value === '__autre__' && $autreRole === '') {
+                            $context->buildViolation('Veuillez préciser votre rôle.')
+                                ->addViolation();
+                        }
+                    }),
+                ],
                 'choice_attr' => function ($choice, string $key, mixed $value): array {
                     return [
                         'class' => 'choice-input',
                         'data-choice-value' => $value,
+                        'required' => 'required',
                     ];
                 },
                 'label_attr' => [
@@ -78,10 +97,25 @@ class DemandeParticipationType extends AbstractType
                 'multiple' => false,
                 'mapped' => false,
                 'required' => true,
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Veuillez choisir une disponibilité.',
+                    ]),
+                    new Callback(function ($value, ExecutionContextInterface $context) {
+                        $form = $context->getRoot();
+                        $autreDisponibilite = trim((string) $form->get('autreDisponibilite')->getData());
+
+                        if ($value === '__autre__' && $autreDisponibilite === '') {
+                            $context->buildViolation('Veuillez préciser votre disponibilité.')
+                                ->addViolation();
+                        }
+                    }),
+                ],
                 'choice_attr' => function ($choice, string $key, mixed $value): array {
                     return [
                         'class' => 'choice-input',
                         'data-choice-value' => $value,
+                        'required' => 'required',
                     ];
                 },
                 'label_attr' => [
@@ -100,6 +134,7 @@ class DemandeParticipationType extends AbstractType
             ->add('portfolio', UrlType::class, [
                 'label' => 'Lien portfolio',
                 'required' => false,
+                'empty_data' => '',
                 'attr' => [
                     'class' => 'form-control-custom',
                     'placeholder' => 'https://mon-portfolio.com',
@@ -107,10 +142,22 @@ class DemandeParticipationType extends AbstractType
             ])
             ->add('motivation', TextareaType::class, [
                 'label' => 'Motivation',
+                'required' => true,
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Veuillez renseigner votre motivation.',
+                    ]),
+                    new Length([
+                        'min' => 10,
+                        'minMessage' => 'La motivation doit contenir au moins {{ limit }} caractères.',
+                    ]),
+                ],
                 'attr' => [
                     'class' => 'form-control-custom',
                     'rows' => 6,
                     'placeholder' => 'Expliquez brièvement votre motivation pour rejoindre ce projet...',
+                    'required' => 'required',
+                    'minlength' => 10,
                 ],
             ])
             ->add('save', SubmitType::class, [
@@ -118,8 +165,7 @@ class DemandeParticipationType extends AbstractType
                 'attr' => [
                     'class' => 'btn-success-custom',
                 ],
-            ])
-        ;
+            ]);
 
         $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event): void {
             $demande = $event->getData();

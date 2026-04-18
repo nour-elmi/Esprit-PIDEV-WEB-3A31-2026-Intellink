@@ -2,6 +2,315 @@
 
 {% block title %}Gestion des Projets{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .admin-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-export-btn {
+            border: 0;
+            border-radius: 14px;
+            min-height: 44px;
+            padding: 0 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: #fff;
+            font-weight: 800;
+            background: linear-gradient(135deg, #0f766e 0%, #0d9488 55%, #14b8a6 100%);
+            box-shadow: 0 14px 24px rgba(13, 148, 136, 0.3);
+            transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+        }
+
+        .admin-export-btn:hover {
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 20px 30px rgba(13, 148, 136, 0.36);
+            filter: saturate(1.05);
+        }
+
+        .admin-stats-trigger {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            border: 0;
+            color: #fff;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 60%, #0ea5e9 100%);
+            box-shadow: 0 14px 26px rgba(37, 99, 235, 0.3);
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+
+        .admin-stats-trigger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 30px rgba(37, 99, 235, 0.35);
+        }
+
+        .admin-stats-trigger i {
+            font-size: 18px;
+        }
+
+        .stats-modal .modal-dialog {
+            max-width: min(1180px, calc(100vw - 20px));
+        }
+
+        .stats-modal .modal-content {
+            border: 0;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 30px 80px rgba(15, 23, 42, 0.35);
+        }
+
+        .stats-modal .modal-header {
+            background: linear-gradient(135deg, #0f2d75 0%, #1e3a8a 60%, #2563eb 100%);
+            color: #fff;
+            border-bottom: 0;
+            padding: 16px 20px;
+        }
+
+        .stats-modal .btn-close {
+            filter: invert(1);
+        }
+
+        .stats-modal-body {
+            padding: 16px;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
+        }
+
+        .stats-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .stats-kpi-card {
+            border-radius: 16px;
+            background: #fff;
+            border: 1px solid #d9e5fc;
+            padding: 10px 11px;
+            box-shadow: 0 10px 22px rgba(22, 45, 95, 0.08);
+        }
+
+        .stats-kpi-card span {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .35px;
+            color: #6682b0;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stats-kpi-card strong {
+            font-size: 24px;
+            line-height: 1;
+            color: #15316f;
+            font-weight: 900;
+        }
+
+        .stats-grid-2 {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .stats-panel {
+            border-radius: 18px;
+            border: 1px solid #d8e5fc;
+            background: #fff;
+            padding: 12px;
+            box-shadow: 0 10px 24px rgba(22, 45, 95, 0.08);
+        }
+
+        .stats-panel h6 {
+            margin: 0 0 10px;
+            font-size: 14px;
+            font-weight: 900;
+            color: #183577;
+        }
+
+        .status-donut-wrap {
+            display: grid;
+            grid-template-columns: 170px 1fr;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .status-donut {
+            --enCours: 0;
+            --enAttente: 0;
+            --termine: 0;
+            --autre: 0;
+            width: 158px;
+            height: 158px;
+            border-radius: 999px;
+            background:
+                conic-gradient(
+                    #3b82f6 0 calc(var(--enCours) * 1%),
+                    #f59e0b calc(var(--enCours) * 1%) calc((var(--enCours) + var(--enAttente)) * 1%),
+                    #22c55e calc((var(--enCours) + var(--enAttente)) * 1%) calc((var(--enCours) + var(--enAttente) + var(--termine)) * 1%),
+                    #94a3b8 calc((var(--enCours) + var(--enAttente) + var(--termine)) * 1%) 100%
+                );
+            display: grid;
+            place-items: center;
+            margin: 0 auto;
+        }
+
+        .status-donut-inner {
+            width: 112px;
+            height: 112px;
+            border-radius: 999px;
+            background: #fff;
+            display: grid;
+            place-items: center;
+            text-align: center;
+            color: #163273;
+            font-weight: 900;
+            font-size: 24px;
+            line-height: 1;
+        }
+
+        .status-donut-inner small {
+            display: block;
+            margin-top: 3px;
+            font-size: 11px;
+            color: #6984b0;
+            font-weight: 700;
+            letter-spacing: .2px;
+        }
+
+        .status-legend {
+            display: grid;
+            gap: 6px;
+        }
+
+        .status-legend-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #e0e9fc;
+            border-radius: 10px;
+            padding: 7px 9px;
+            font-size: 12px;
+            color: #35527e;
+            font-weight: 700;
+        }
+
+        .status-legend-item em {
+            width: 9px;
+            height: 9px;
+            border-radius: 999px;
+            margin-right: 6px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .status-legend-item .left {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .mini-bars {
+            display: grid;
+            gap: 8px;
+        }
+
+        .mini-bar-row {
+            display: grid;
+            grid-template-columns: 95px 1fr 42px;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #304d7d;
+            font-weight: 700;
+        }
+
+        .mini-bar-track {
+            height: 9px;
+            border-radius: 999px;
+            background: #e2e8f6;
+            overflow: hidden;
+        }
+
+        .mini-bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #2563eb 0%, #38bdf8 100%);
+        }
+
+        .stats-grid-bottom {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr 1fr;
+            gap: 12px;
+        }
+
+        .trend-chart {
+            width: 100%;
+            height: 170px;
+            border-radius: 12px;
+            background: linear-gradient(180deg, #f5f9ff 0%, #eef4ff 100%);
+            border: 1px solid #d9e5fc;
+            padding: 6px;
+        }
+
+        .trend-xlabels {
+            margin-top: 8px;
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 3px;
+            font-size: 10px;
+            color: #6d84ab;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .top-list {
+            display: grid;
+            gap: 7px;
+        }
+
+        .top-row {
+            border-radius: 10px;
+            border: 1px solid #e0e9fc;
+            background: #fff;
+            padding: 7px 9px;
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            align-items: center;
+            font-size: 12px;
+            color: #2e4c7c;
+            font-weight: 700;
+        }
+
+        .top-row strong {
+            color: #163273;
+        }
+
+        @media (max-width: 1100px) {
+            .stats-kpi-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .stats-grid-2,
+            .stats-grid-bottom {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
 <div class="card admin-projects-card">
     <div class="card-header">
@@ -10,7 +319,27 @@
                 <h4 class="card-title mb-1">Gestion des projets</h4>
                 <p class="admin-projects-subtitle mb-0">Suivi, consultation et suppression des projets</p>
             </div>
-            <span class="admin-projects-counter">{{ projetsAvecStats|length }} projet(s)</span>
+            <div class="admin-header-actions">
+                <a
+                    href="{{ path('admin_projets_export_csv') }}"
+                    class="admin-export-btn"
+                    title="Exporter les projets en CSV"
+                >
+                    <i class="fas fa-file-csv"></i>
+                    <span>Exporter CSV</span>
+                </a>
+                <button
+                    type="button"
+                    class="admin-stats-trigger"
+                    data-bs-toggle="modal"
+                    data-bs-target="#adminStatsModal"
+                    aria-label="Voir les statistiques"
+                    title="Statistiques avancées"
+                >
+                    <i class="fas fa-chart-pie"></i>
+                </button>
+                <span class="admin-projects-counter">{{ projetsAvecStats|length }} projet(s)</span>
+            </div>
         </div>
     </div>
 
@@ -91,6 +420,72 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade stats-modal" id="adminStatsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title mb-1">Dashboard Statistiques Projets</h5>
+                    <small>Vue analytics complète de l’activité projets et participations.</small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="stats-modal-body">
+                <div class="stats-kpi-grid">
+                    <article class="stats-kpi-card"><span>Total projets</span><strong>{{ adminStats.totalProjects }}</strong></article>
+                    <article class="stats-kpi-card"><span>Total participations</span><strong>{{ adminStats.totalParticipations }}</strong></article>
+                    <article class="stats-kpi-card"><span>Moy. / projet</span><strong>{{ adminStats.averageParticipations }}</strong></article>
+                    <article class="stats-kpi-card"><span>Budget total</span><strong>{{ adminStats.totalBudget|number_format(0, '.', ' ') }}</strong></article>
+                    <article class="stats-kpi-card"><span>Budget moyen</span><strong>{{ adminStats.averageBudget|number_format(0, '.', ' ') }}</strong></article>
+                    <article class="stats-kpi-card"><span>Taux actifs</span><strong>{{ adminStats.activeRate }}%</strong></article>
+                </div>
+
+                <div class="stats-grid-2">
+                    <section class="stats-panel">
+                        <h6>Répartition des statuts projets</h6>
+                        <div class="status-donut-wrap">
+                            <div
+                                id="projectStatusDonut"
+                                class="status-donut"
+                                style="--enCours:0;--enAttente:0;--termine:0;--autre:0;"
+                            >
+                                <div class="status-donut-inner">
+                                    {{ adminStats.totalProjects }}
+                                    <small>projets</small>
+                                </div>
+                            </div>
+                            <div class="status-legend" id="projectStatusLegend"></div>
+                        </div>
+                    </section>
+
+                    <section class="stats-panel">
+                        <h6>État des participations</h6>
+                        <div class="mini-bars" id="participationStateBars"></div>
+                    </section>
+                </div>
+
+                <div class="stats-grid-bottom">
+                    <section class="stats-panel">
+                        <h6>Évolution des créations (6 derniers mois)</h6>
+                        <svg id="projectTrendChart" class="trend-chart" viewBox="0 0 640 200" preserveAspectRatio="none"></svg>
+                        <div class="trend-xlabels" id="projectTrendLabels"></div>
+                    </section>
+
+                    <section class="stats-panel">
+                        <h6>Top créateurs</h6>
+                        <div class="top-list" id="topCreatorsList"></div>
+                    </section>
+
+                    <section class="stats-panel">
+                        <h6>Top projets (participants)</h6>
+                        <div class="top-list" id="topProjectsList"></div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block javascripts %}
@@ -109,6 +504,142 @@
                 emptyTable: "Aucune donnée disponible"
             }
         });
+
+        const stats = {{ adminStats|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }};
+
+        function safeMax(values) {
+            const max = Math.max(...values, 0);
+            return max <= 0 ? 1 : max;
+        }
+
+        function renderStatusDonut() {
+            const statusCounts = stats.statusCounts || {};
+            const enCours = Number(statusCounts['En cours'] || 0);
+            const enAttente = Number(statusCounts['En attente'] || 0);
+            const termine = Number(statusCounts['Terminé'] || 0);
+            const autre = Number(statusCounts['Autre'] || 0);
+            const total = enCours + enAttente + termine + autre || 1;
+
+            const donut = document.getElementById('projectStatusDonut');
+            const legend = document.getElementById('projectStatusLegend');
+            if (!donut || !legend) return;
+
+            donut.style.setProperty('--enCours', ((enCours / total) * 100).toFixed(2));
+            donut.style.setProperty('--enAttente', ((enAttente / total) * 100).toFixed(2));
+            donut.style.setProperty('--termine', ((termine / total) * 100).toFixed(2));
+            donut.style.setProperty('--autre', ((autre / total) * 100).toFixed(2));
+
+            const rows = [
+                { label: 'En cours', color: '#3b82f6', value: enCours },
+                { label: 'En attente', color: '#f59e0b', value: enAttente },
+                { label: 'Terminé', color: '#22c55e', value: termine },
+                { label: 'Autre', color: '#94a3b8', value: autre }
+            ];
+
+            legend.innerHTML = rows.map(item => `
+                <div class="status-legend-item">
+                    <span class="left"><em style="background:${item.color};"></em>${item.label}</span>
+                    <strong>${item.value}</strong>
+                </div>
+            `).join('');
+        }
+
+        function renderParticipationBars() {
+            const states = stats.participationStateCounts || {};
+            const rows = [
+                { label: 'EN_ATTENTE', value: Number(states.EN_ATTENTE || 0) },
+                { label: 'ACCEPTEE', value: Number(states.ACCEPTEE || 0) },
+                { label: 'REFUSEE', value: Number(states.REFUSEE || 0) },
+                { label: 'AUTRE', value: Number(states.AUTRE || 0) }
+            ];
+            const max = safeMax(rows.map(r => r.value));
+            const root = document.getElementById('participationStateBars');
+            if (!root) return;
+
+            root.innerHTML = rows.map(row => `
+                <div class="mini-bar-row">
+                    <span>${row.label}</span>
+                    <div class="mini-bar-track">
+                        <div class="mini-bar-fill" style="width:${((row.value / max) * 100).toFixed(2)}%;"></div>
+                    </div>
+                    <strong>${row.value}</strong>
+                </div>
+            `).join('');
+        }
+
+        function renderTrendChart() {
+            const labels = Array.isArray(stats.monthlyLabels) ? stats.monthlyLabels : [];
+            const values = Array.isArray(stats.monthlyProjectCounts) ? stats.monthlyProjectCounts.map(Number) : [];
+            const svg = document.getElementById('projectTrendChart');
+            const labelsEl = document.getElementById('projectTrendLabels');
+            if (!svg || !labelsEl) return;
+
+            labelsEl.innerHTML = labels.map(l => `<span>${l}</span>`).join('');
+
+            const width = 640;
+            const height = 200;
+            const paddingX = 28;
+            const paddingY = 22;
+            const chartW = width - paddingX * 2;
+            const chartH = height - paddingY * 2;
+            const maxVal = safeMax(values);
+            const points = values.map((v, i) => {
+                const x = paddingX + (chartW * (values.length <= 1 ? 0 : i / (values.length - 1)));
+                const y = paddingY + (chartH - (v / maxVal) * chartH);
+                return { x, y, v };
+            });
+
+            const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+            const areaPath = `${linePath} L ${paddingX + chartW} ${paddingY + chartH} L ${paddingX} ${paddingY + chartH} Z`;
+            const circles = points.map(p => `<circle cx="${p.x}" cy="${p.y}" r="4.4" fill="#1d4ed8" stroke="#fff" stroke-width="2"/>`).join('');
+            const guides = [0, 0.25, 0.5, 0.75, 1].map(step => {
+                const y = paddingY + chartH * step;
+                return `<line x1="${paddingX}" y1="${y}" x2="${paddingX + chartW}" y2="${y}" stroke="#dbe7fb" stroke-width="1"/>`;
+            }).join('');
+
+            svg.innerHTML = `
+                <defs>
+                    <linearGradient id="areaBlue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.35"/>
+                        <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.04"/>
+                    </linearGradient>
+                </defs>
+                ${guides}
+                <path d="${areaPath}" fill="url(#areaBlue)"></path>
+                <path d="${linePath}" fill="none" stroke="#2563eb" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"></path>
+                ${circles}
+            `;
+        }
+
+        function renderTopLists() {
+            const creators = Array.isArray(stats.topCreators) ? stats.topCreators : [];
+            const projects = Array.isArray(stats.topProjects) ? stats.topProjects : [];
+            const creatorsEl = document.getElementById('topCreatorsList');
+            const projectsEl = document.getElementById('topProjectsList');
+            if (!creatorsEl || !projectsEl) return;
+
+            creatorsEl.innerHTML = creators.length
+                ? creators.map((c, i) => `<div class="top-row"><span>#${i + 1} ${c.name}</span><strong>${c.count}</strong></div>`).join('')
+                : '<div class="top-row"><span>Aucun créateur</span><strong>0</strong></div>';
+
+            projectsEl.innerHTML = projects.length
+                ? projects.map((p, i) => `<div class="top-row"><span>#${i + 1} ${p.title}</span><strong>${p.participants}</strong></div>`).join('')
+                : '<div class="top-row"><span>Aucun projet</span><strong>0</strong></div>';
+        }
+
+        function renderAllStats() {
+            renderStatusDonut();
+            renderParticipationBars();
+            renderTrendChart();
+            renderTopLists();
+        }
+
+        const modal = document.getElementById('adminStatsModal');
+        if (modal) {
+            modal.addEventListener('shown.bs.modal', renderAllStats);
+        }
+
+        renderAllStats();
     });
 </script>
 {% endblock %}
