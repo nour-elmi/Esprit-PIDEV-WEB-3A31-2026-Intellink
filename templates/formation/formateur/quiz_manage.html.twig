@@ -1,0 +1,341 @@
+{% extends 'formation/base.html.twig' %}
+
+{% block title %}{{ isCreation ? 'Ajouter un quiz' : 'Modifier le quiz' }} - {{ formation.titre }}{% endblock %}
+{% block role_badge_class %}badge-formateur{% endblock %}
+{% block role_label %}Formateur{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+.quiz-auto-gen-wrap {
+    border: 1px solid #dbe7fb;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #f8fbff 0%, #f3f8ff 100%);
+    padding: 16px;
+}
+
+.quiz-auto-gen-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.quiz-auto-gen-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1d4ed8;
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.quiz-auto-gen-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: #0f766e;
+    background: #ecfeff;
+    border: 1px solid #a5f3fc;
+    border-radius: 999px;
+    padding: 4px 10px;
+}
+
+.quiz-auto-help {
+    color: #64748b;
+    display: block;
+    margin-top: 7px;
+    font-size: 12px;
+}
+
+.quiz-auto-btn {
+    width: 100%;
+    min-height: 44px;
+    white-space: nowrap;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-content">
+            <a href="{{ path('app_formation_show', {id: formation.idFormation}) }}" class="back-link" style="color: rgba(255,255,255,0.7);">
+                <i class="lni lni-arrow-left"></i> Retour a la formation
+            </a>
+            <h1>{{ isCreation ? 'Ajouter un quiz' : 'Modifier le quiz' }}</h1>
+            <p style="color: rgba(255,255,255,0.85); margin-top: 8px;">{{ formation.titre }}</p>
+        </div>
+    </div>
+</section>
+
+<div class="main-content">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="formation-form-wrapper quiz-manage-shell">
+
+                    <div class="quiz-manage-topbar">
+                        <div class="quiz-top-item">
+                            <span class="quiz-top-label">Mode</span>
+                            <strong>{{ isCreation ? 'Creation' : 'Edition' }}</strong>
+                        </div>
+                        <div class="quiz-top-item">
+                            <span class="quiz-top-label">Formation</span>
+                            <strong>{{ formation.titre }}</strong>
+                        </div>
+                        <div class="quiz-top-item">
+                            <span class="quiz-top-label">Questions</span>
+                            <strong id="qBadge">0</strong>
+                        </div>
+                    </div>
+
+                    {% if errors is not empty %}
+                        <div class="quiz-error-box">
+                            <strong>Corrigez les champs suivants :</strong>
+                            <ul>
+                                {% for message in errors %}
+                                    <li>{{ message }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    {% for message in app.flashes('success') %}
+                        <div class="alert-custom alert-success-custom" style="margin-bottom:14px;">
+                            <i class="lni lni-checkmark-circle"></i> {{ message }}
+                        </div>
+                    {% endfor %}
+
+                    <form method="post" novalidate>
+                        <div class="quiz-section-card">
+                            <div class="quiz-section-head">
+                                <span class="quiz-section-label"><i class="lni lni-cog"></i> Parametres generaux</span>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Duree (minutes)</label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        name="duree"
+                                        id="dureeInput"
+                                        value="{{ old.duree|default(10) }}"
+                                        class="form-control-custom"
+                                        required
+                                    >
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Nombre de questions</label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        max="50"
+                                        name="nombreQuestions"
+                                        id="nbQuestionsInput"
+                                        value="{{ old.nombreQuestions|default(1) }}"
+                                        class="form-control-custom"
+                                        required
+                                    >
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="quiz-section-card">
+                            <div class="quiz-section-head">
+                                <span class="quiz-section-label"><i class="lni lni-magic-wand"></i> Generation automatique</span>
+                            </div>
+                            <div class="quiz-auto-gen-wrap">
+                                <div class="quiz-auto-gen-head">
+                                    <p class="quiz-auto-gen-title">
+                                        <i class="lni lni-bolt"></i> Assistant de generation
+                                    </p>
+                                    <span class="quiz-auto-gen-badge">Vrai / Faux</span>
+                                </div>
+
+                                <div class="row g-3 align-items-end">
+                                    <div class="col-md-8">
+                                        <label class="form-label">Source du contenu</label>
+                                        <select name="quiz_source" class="form-control-custom">
+                                            <option value="description" {{ old.quizSource|default('description') == 'description' ? 'selected' : '' }}>
+                                                Description de la formation
+                                            </option>
+                                            <option value="youtube"
+                                                    {{ old.quizSource|default('description') == 'youtube' ? 'selected' : '' }}
+                                                    {{ isYoutubeVideo ? '' : 'disabled' }}>
+                                                Transcription YouTube {{ isYoutubeVideo ? '' : '(video non YouTube)' }}
+                                            </option>
+                                        </select>
+                                        <small class="quiz-auto-help">
+                                            Le systeme cree des questions automatiquement a partir de la source selectionnee.
+                                        </small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="submit" name="auto_generate" value="1" class="btn-primary-custom quiz-auto-btn">
+                                            <i class="lni lni-bolt"></i> Generer les questions
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="quiz-section-card">
+                            <div class="quiz-section-head">
+                                <span class="quiz-section-label"><i class="lni lni-pencil-alt"></i> Questions Vrai / Faux</span>
+                            </div>
+
+                            <div id="questionsContainer" class="quiz-questions-list"></div>
+                            <button type="button" class="btn-quiz-add" onclick="addQuestion()">
+                                <i class="lni lni-plus"></i> Ajouter une question
+                            </button>
+                        </div>
+
+                        <div class="quiz-actions-row">
+                            <button type="submit" class="btn-primary-custom">
+                                <i class="lni lni-save"></i>
+                                {{ isCreation ? 'Enregistrer le quiz' : 'Mettre a jour le quiz' }}
+                            </button>
+                            <a href="{{ path('app_formation_show', {id: formation.idFormation}) }}" class="btn-secondary-custom">
+                                <i class="lni lni-close"></i> Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const nbQuestionsInput = document.getElementById('nbQuestionsInput');
+    const questionsContainer = document.getElementById('questionsContainer');
+    const initialQuestions = {{ questionsData|json_encode|raw }};
+    let qIndex = 0;
+
+    function escHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function selectVF(idx, value) {
+        const card = document.getElementById('q-' + idx);
+        if (!card) return;
+
+        const hidden = card.querySelector('input[type="hidden"][name="questions_reponse[]"]');
+        if (hidden) {
+            hidden.value = value;
+        }
+
+        const btnV = card.querySelector('.vf-opt[data-val="vrai"]');
+        const btnF = card.querySelector('.vf-opt[data-val="faux"]');
+
+        if (btnV) btnV.classList.toggle('sel-v', value === 'vrai');
+        if (btnF) btnF.classList.toggle('sel-f', value === 'faux');
+    }
+
+    function removeQuestion(idx) {
+        const el = document.getElementById('q-' + idx);
+        if (el) el.remove();
+        renumberQuestions();
+        updateBadge();
+        nbQuestionsInput.value = questionsContainer.children.length || 1;
+
+        if (questionsContainer.children.length === 0) {
+            addQuestion('', 'vrai');
+            nbQuestionsInput.value = 1;
+        }
+    }
+
+    function renumberQuestions() {
+        document.querySelectorAll('.quiz-q-num').forEach(function (el, i) {
+            el.textContent = 'Question ' + (i + 1);
+        });
+    }
+
+    function updateBadge() {
+        const n = questionsContainer.children.length;
+        document.getElementById('qBadge').textContent = n + (n > 1 ? ' questions' : ' question');
+    }
+
+    function addQuestion(enonce, reponse) {
+        const safeEnonce = enonce !== undefined ? enonce : '';
+        const safeReponse = reponse === 'faux' ? 'faux' : 'vrai';
+
+        const idx = qIndex++;
+        const block = document.createElement('div');
+        block.className = 'quiz-q-block';
+        block.id = 'q-' + idx;
+
+        block.innerHTML =
+            '<div class="quiz-q-header">' +
+                '<span class="quiz-q-num">Question ' + (questionsContainer.children.length + 1) + '</span>' +
+                '<button type="button" class="btn-del-question" onclick="removeQuestion(' + idx + ')"><i class="lni lni-trash"></i> Supprimer</button>' +
+            '</div>' +
+            '<div class="row g-3">' +
+                '<div class="col-md-8">' +
+                    '<label class="form-label">Enonce</label>' +
+                    '<textarea name="questions_enonce[]" rows="2" class="form-control-custom" placeholder="Saisissez la question..." required>' + escHtml(safeEnonce) + '</textarea>' +
+                '</div>' +
+                '<div class="col-md-4">' +
+                    '<label class="form-label">Reponse correcte</label>' +
+                    '<input type="hidden" name="questions_reponse[]" value="' + safeReponse + '">' +
+                    '<div class="vf-group">' +
+                        '<button type="button" class="vf-opt ' + (safeReponse === 'vrai' ? 'sel-v' : '') + '" data-val="vrai" onclick="selectVF(' + idx + ',\'vrai\')">Vrai</button>' +
+                        '<button type="button" class="vf-opt ' + (safeReponse === 'faux' ? 'sel-f' : '') + '" data-val="faux" onclick="selectVF(' + idx + ',\'faux\')">Faux</button>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+
+        questionsContainer.appendChild(block);
+        renumberQuestions();
+        updateBadge();
+    }
+
+    function collectCurrentValues() {
+        const values = [];
+        const cards = questionsContainer.querySelectorAll('.quiz-q-block');
+
+        cards.forEach(function (card) {
+            const enonce = card.querySelector('textarea[name="questions_enonce[]"]');
+            const hidden = card.querySelector('input[type="hidden"][name="questions_reponse[]"]');
+
+            values.push({
+                enonce: enonce ? enonce.value : '',
+                reponse: hidden ? hidden.value : 'vrai'
+            });
+        });
+
+        return values;
+    }
+
+    function renderQuestions(count) {
+        const safeCount = Number.isFinite(count) ? Math.max(1, Math.min(50, count)) : 1;
+        const currentValues = collectCurrentValues();
+
+        questionsContainer.innerHTML = '';
+        qIndex = 0;
+
+        for (let i = 0; i < safeCount; i += 1) {
+            const source = currentValues[i] || initialQuestions[i] || { enonce: '', reponse: 'vrai' };
+            addQuestion(source.enonce, source.reponse);
+        }
+    }
+
+    nbQuestionsInput.addEventListener('input', function () {
+        const count = parseInt(this.value, 10);
+        renderQuestions(Number.isNaN(count) ? 1 : count);
+    });
+
+    if (initialQuestions.length > 0) {
+        initialQuestions.forEach(function (q) {
+            addQuestion(q.enonce, q.reponse);
+        });
+        nbQuestionsInput.value = initialQuestions.length;
+    } else {
+        renderQuestions(parseInt(nbQuestionsInput.value, 10) || 1);
+    }
+</script>
+{% endblock %}

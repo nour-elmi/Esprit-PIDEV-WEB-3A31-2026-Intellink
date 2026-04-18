@@ -13,6 +13,10 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class DemandeParticipationType extends AbstractType
 {
@@ -27,7 +31,7 @@ class DemandeParticipationType extends AbstractType
         'Community manager' => 'Community manager',
         'Rédacteur' => 'Rédacteur',
         'Testeur QA' => 'Testeur QA',
-        'Autre' => '__autre__',
+        'Autre' => '_autre_',
     ];
 
     private const DISPONIBILITES = [
@@ -39,7 +43,7 @@ class DemandeParticipationType extends AbstractType
         'Week-end uniquement' => 'Week-end uniquement',
         'Flexible' => 'Flexible',
         'Soirs uniquement' => 'Soirs uniquement',
-        'Autre' => '__autre__',
+        'Autre' => '_autre_',
     ];
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -52,10 +56,25 @@ class DemandeParticipationType extends AbstractType
                 'multiple' => false,
                 'mapped' => false,
                 'required' => true,
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Veuillez choisir un rôle souhaité.',
+                    ]),
+                    new Callback(function ($value, ExecutionContextInterface $context) {
+                        $form = $context->getRoot();
+                        $autreRole = trim((string) $form->get('autreRole')->getData());
+
+                        if ($value === '_autre_' && $autreRole === '') {
+                            $context->buildViolation('Veuillez préciser votre rôle.')
+                                ->addViolation();
+                        }
+                    }),
+                ],
                 'choice_attr' => function ($choice, string $key, mixed $value): array {
                     return [
                         'class' => 'choice-input',
                         'data-choice-value' => $value,
+                        'required' => 'required',
                     ];
                 },
                 'label_attr' => [
@@ -78,10 +97,25 @@ class DemandeParticipationType extends AbstractType
                 'multiple' => false,
                 'mapped' => false,
                 'required' => true,
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Veuillez choisir une disponibilité.',
+                    ]),
+                    new Callback(function ($value, ExecutionContextInterface $context) {
+                        $form = $context->getRoot();
+                        $autreDisponibilite = trim((string) $form->get('autreDisponibilite')->getData());
+
+                        if ($value === '_autre_' && $autreDisponibilite === '') {
+                            $context->buildViolation('Veuillez préciser votre disponibilité.')
+                                ->addViolation();
+                        }
+                    }),
+                ],
                 'choice_attr' => function ($choice, string $key, mixed $value): array {
                     return [
                         'class' => 'choice-input',
                         'data-choice-value' => $value,
+                        'required' => 'required',
                     ];
                 },
                 'label_attr' => [
@@ -100,6 +134,7 @@ class DemandeParticipationType extends AbstractType
             ->add('portfolio', UrlType::class, [
                 'label' => 'Lien portfolio',
                 'required' => false,
+                'empty_data' => '',
                 'attr' => [
                     'class' => 'form-control-custom',
                     'placeholder' => 'https://mon-portfolio.com',
@@ -107,10 +142,22 @@ class DemandeParticipationType extends AbstractType
             ])
             ->add('motivation', TextareaType::class, [
                 'label' => 'Motivation',
+                'required' => true,
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Veuillez renseigner votre motivation.',
+                    ]),
+                    new Length([
+                        'min' => 10,
+                        'minMessage' => 'La motivation doit contenir au moins {{ limit }} caractères.',
+                    ]),
+                ],
                 'attr' => [
                     'class' => 'form-control-custom',
                     'rows' => 6,
                     'placeholder' => 'Expliquez brièvement votre motivation pour rejoindre ce projet...',
+                    'required' => 'required',
+                    'minlength' => 10,
                 ],
             ])
             ->add('save', SubmitType::class, [
@@ -118,8 +165,7 @@ class DemandeParticipationType extends AbstractType
                 'attr' => [
                     'class' => 'btn-success-custom',
                 ],
-            ])
-        ;
+            ]);
 
         $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event): void {
             $demande = $event->getData();
@@ -136,7 +182,7 @@ class DemandeParticipationType extends AbstractType
                 if ($this->isPredefinedRole($role)) {
                     $form->get('roleSouhaite')->setData($role);
                 } else {
-                    $form->get('roleSouhaite')->setData('__autre__');
+                    $form->get('roleSouhaite')->setData('_autre_');
                     $form->get('autreRole')->setData($role);
                 }
             }
@@ -145,7 +191,7 @@ class DemandeParticipationType extends AbstractType
                 if ($this->isPredefinedDisponibilite($disponibilite)) {
                     $form->get('disponibilite')->setData($disponibilite);
                 } else {
-                    $form->get('disponibilite')->setData('__autre__');
+                    $form->get('disponibilite')->setData('_autre_');
                     $form->get('autreDisponibilite')->setData($disponibilite);
                 }
             }
@@ -158,7 +204,7 @@ class DemandeParticipationType extends AbstractType
             return false;
         }
 
-        return in_array($value, array_values(self::ROLES), true) && $value !== '__autre__';
+        return in_array($value, array_values(self::ROLES), true) && $value !== '_autre_';
     }
 
     private function isPredefinedDisponibilite(?string $value): bool
@@ -167,7 +213,7 @@ class DemandeParticipationType extends AbstractType
             return false;
         }
 
-        return in_array($value, array_values(self::DISPONIBILITES), true) && $value !== '__autre__';
+        return in_array($value, array_values(self::DISPONIBILITES), true) && $value !== '_autre_';
     }
 
     public function configureOptions(OptionsResolver $resolver): void

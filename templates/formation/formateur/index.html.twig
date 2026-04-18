@@ -5,6 +5,43 @@
 {% block role_label %}Formateur{% endblock %}
 
 {% block body %}
+<style>
+.pagination-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 26px;
+    flex-wrap: wrap;
+}
+
+.pagination-link {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid #dbe7fb;
+    border-radius: 999px;
+    background: #fff;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pagination-link:hover {
+    border-color: #93c5fd;
+    color: #1d4ed8;
+}
+
+.pagination-link.active {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #1d4ed8;
+}
+</style>
 
 <section class="page-hero">
     <div class="container">
@@ -37,7 +74,7 @@
                     <i class="lni lni-graduation"></i>
                 </div>
                 <div>
-                    <div class="stat-number">{{ formations|length }}</div>
+                    <div class="stat-number">{{ totalFormations }}</div>
                     <div class="stat-label">Formations au total</div>
                 </div>
             </div>
@@ -46,11 +83,7 @@
                     <i class="lni lni-users"></i>
                 </div>
                 <div>
-                    <div class="stat-number">
-                        {% set total = 0 %}
-                        {% for f in formations %}{% set total = total + f.participations|length %}{% endfor %}
-                        {{ total }}
-                    </div>
+                    <div class="stat-number">{{ totalInscriptions }}</div>
                     <div class="stat-label">Inscriptions totales</div>
                 </div>
             </div>
@@ -59,7 +92,7 @@
                     <i class="lni lni-play"></i>
                 </div>
                 <div>
-                    <div class="stat-number">{{ formations|length }}</div>
+                    <div class="stat-number">{{ totalFormations }}</div>
                     <div class="stat-label">Formations actives</div>
                 </div>
             </div>
@@ -194,6 +227,30 @@
             </div>
 
             <!-- Empty state après filtre -->
+            {% set paginationData = formations.getPaginationData %}
+            {% if paginationData.pageCount >= 1 %}
+                <nav class="pagination-wrap" aria-label="Pagination formations formateur">
+                    {% if paginationData.previous is defined %}
+                        <a class="pagination-link"
+                           href="{{ path('app_formation_index', app.request.query.all|merge({'page': paginationData.previous})) }}">
+                            <i class="lni lni-chevron-left"></i>
+                        </a>
+                    {% endif %}
+                    {% for page in paginationData.pagesInRange %}
+                        <a class="pagination-link {{ page == paginationData.current ? 'active' : '' }}"
+                           href="{{ path('app_formation_index', app.request.query.all|merge({'page': page})) }}">
+                            {{ page }}
+                        </a>
+                    {% endfor %}
+                    {% if paginationData.next is defined %}
+                        <a class="pagination-link"
+                           href="{{ path('app_formation_index', app.request.query.all|merge({'page': paginationData.next})) }}">
+                            <i class="lni lni-chevron-right"></i>
+                        </a>
+                    {% endif %}
+                </nav>
+            {% endif %}
+
             <div id="noResults" style="display:none;">
                 <div class="formation-table-wrapper">
                     <div class="empty-state">

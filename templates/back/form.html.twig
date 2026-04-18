@@ -26,7 +26,9 @@
         {% endfor %}
 
         <div class="form-wrapper-custom">
-            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'project-form'}}) }}
+
+            <div id="front-validation-box" class="alert alert-danger" style="display:none; border-radius:16px; margin-bottom:20px;"></div>
 
             <div class="form-grid">
                 <div class="form-group-custom form-col-full">
@@ -34,10 +36,15 @@
                     {{ form_widget(form.titre, {
                         'attr': {
                             'class': 'form-control-custom',
-                            'placeholder': 'Ex: Plateforme de collaboration digitale'
+                            'placeholder': 'Ex: Plateforme de collaboration digitale',
+                            'minlength': 3,
+                            'maxlength': 200
                         }
                     }) }}
-                    {{ form_errors(form.titre) }}
+                    <div id="titre-error" class="field-error-red" style="display:none;"></div>
+                    <div class="field-error-red">
+                        {{ form_errors(form.titre) }}
+                    </div>
                 </div>
 
                 <div class="form-group-custom">
@@ -45,10 +52,15 @@
                     {{ form_widget(form.prix, {
                         'attr': {
                             'class': 'form-control-custom',
-                            'placeholder': '0.00'
+                            'placeholder': '0.00',
+                            'min': '0',
+                            'step': '0.01'
                         }
                     }) }}
-                    {{ form_errors(form.prix) }}
+                    <div id="prix-error" class="field-error-red" style="display:none;"></div>
+                    <div class="field-error-red">
+                        {{ form_errors(form.prix) }}
+                    </div>
                 </div>
 
                 <div class="form-group-custom">
@@ -58,7 +70,10 @@
                             'class': 'form-control-custom'
                         }
                     }) }}
-                    {{ form_errors(form.statut) }}
+                    <div id="statut-error" class="field-error-red" style="display:none;"></div>
+                    <div class="field-error-red">
+                        {{ form_errors(form.statut) }}
+                    </div>
                 </div>
 
                 <div class="form-group-custom form-col-full">
@@ -67,10 +82,16 @@
                         'attr': {
                             'class': 'form-control-custom',
                             'rows': 6,
-                            'placeholder': 'Décrivez les objectifs, les fonctionnalités, les besoins de l’équipe et les résultats attendus...'
+                            'placeholder': 'Décrivez les objectifs, les fonctionnalités, les besoins de l’équipe et les résultats attendus...',
+                            'minlength': 10,
+                            'maxlength': 2000
                         }
                     }) }}
-                    {{ form_errors(form.description) }}
+                    <small class="text-muted d-block mt-2">Minimum 10 caractères.</small>
+                    <div id="description-error" class="field-error-red" style="display:none;"></div>
+                    <div class="field-error-red">
+                        {{ form_errors(form.description) }}
+                    </div>
                 </div>
             </div>
 
@@ -87,4 +108,220 @@
         </div>
     </div>
 </div>
+
+<style>
+    .is-invalid-custom {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.18rem rgba(220, 53, 69, 0.12) !important;
+        background: #fff8f8 !important;
+    }
+
+    #front-validation-box {
+        line-height: 1.7;
+    }
+
+    .field-error-red,
+    .field-error-red ul,
+    .field-error-red li {
+        color: #dc3545 !important;
+        font-weight: 600;
+        margin-top: 8px;
+    }
+
+    .field-error-red ul {
+        margin-bottom: 0;
+        padding-left: 18px;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('project-form');
+    if (!form) {
+        return;
+    }
+
+    const titre = document.getElementById('{{ form.titre.vars.id }}');
+    const prix = document.getElementById('{{ form.prix.vars.id }}');
+    const statut = document.getElementById('{{ form.statut.vars.id }}');
+    const description = document.getElementById('{{ form.description.vars.id }}');
+
+    const titreError = document.getElementById('titre-error');
+    const prixError = document.getElementById('prix-error');
+    const statutError = document.getElementById('statut-error');
+    const descriptionError = document.getElementById('description-error');
+    const globalBox = document.getElementById('front-validation-box');
+
+    function resetField(field, errorBox) {
+        if (field) {
+            field.classList.remove('is-invalid-custom');
+        }
+        if (errorBox) {
+            errorBox.style.display = 'none';
+            errorBox.textContent = '';
+        }
+    }
+
+    function setFieldError(field, errorBox, message) {
+        if (field) {
+            field.classList.add('is-invalid-custom');
+        }
+        if (errorBox) {
+            errorBox.textContent = message;
+            errorBox.style.display = 'block';
+        }
+    }
+
+    function resetAllErrors() {
+        globalBox.style.display = 'none';
+        globalBox.innerHTML = '';
+
+        resetField(titre, titreError);
+        resetField(prix, prixError);
+        resetField(statut, statutError);
+        resetField(description, descriptionError);
+    }
+
+    function validateTitre(value) {
+        const raw = String(value);
+        const trimmed = raw.trim();
+
+        if (!trimmed) {
+            return 'Le titre est obligatoire.';
+        }
+
+        if (trimmed.length < 3) {
+            return 'Le titre doit contenir au moins 3 caractères.';
+        }
+
+        if (trimmed.length > 200) {
+            return 'Le titre ne doit pas dépasser 200 caractères.';
+        }
+
+        const regex = /^[\p{L}\p{N}\s\-\_\.\,\(\)'"]+$/u;
+        if (!regex.test(trimmed)) {
+            return 'Le titre contient des caractères non autorisés.';
+        }
+
+        return null;
+    }
+
+    function validatePrix(value) {
+        const trimmed = String(value).trim();
+
+        if (!trimmed) {
+            return 'Le prix est obligatoire.';
+        }
+
+        const numericValue = Number(trimmed.replace(',', '.'));
+        if (Number.isNaN(numericValue)) {
+            return 'Le prix doit être un nombre valide.';
+        }
+
+        if (numericValue < 0) {
+            return 'Le prix doit être positif ou nul.';
+        }
+
+        return null;
+    }
+
+    function validateStatut(value) {
+        if (!value || !String(value).trim()) {
+            return 'Veuillez choisir un statut.';
+        }
+        return null;
+    }
+
+    function validateDescription(value) {
+        const trimmed = String(value).trim();
+
+        if (!trimmed) {
+            return 'La description est obligatoire.';
+        }
+
+        if (trimmed.length < 10) {
+            return 'La description doit contenir au moins 10 caractères.';
+        }
+
+        if (trimmed.length > 2000) {
+            return 'La description ne doit pas dépasser 2000 caractères.';
+        }
+
+        return null;
+    }
+
+    form.addEventListener('submit', function (e) {
+        resetAllErrors();
+
+        const errors = [];
+
+        const titreMessage = validateTitre(titre.value);
+        if (titreMessage) {
+            errors.push(titreMessage);
+            setFieldError(titre, titreError, titreMessage);
+        }
+
+        const prixMessage = validatePrix(prix.value);
+        if (prixMessage) {
+            errors.push(prixMessage);
+            setFieldError(prix, prixError, prixMessage);
+        }
+
+        const statutMessage = validateStatut(statut.value);
+        if (statutMessage) {
+            errors.push(statutMessage);
+            setFieldError(statut, statutError, statutMessage);
+        }
+
+        const descriptionMessage = validateDescription(description.value);
+        if (descriptionMessage) {
+            errors.push(descriptionMessage);
+            setFieldError(description, descriptionError, descriptionMessage);
+        }
+
+        if (errors.length > 0) {
+            e.preventDefault();
+
+            globalBox.innerHTML = '<strong>Veuillez corriger les champs suivants :</strong><br>' + errors.join('<br>');
+            globalBox.style.display = 'block';
+
+            const firstInvalid = form.querySelector('.is-invalid-custom');
+            if (firstInvalid) {
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstInvalid.focus();
+            }
+        }
+    });
+
+    [titre, prix, statut, description].forEach(function (field) {
+        if (!field) return;
+
+        field.addEventListener('input', function () {
+            field.classList.remove('is-invalid-custom');
+            globalBox.style.display = 'none';
+
+            if (field === titre) {
+                titreError.style.display = 'none';
+                titreError.textContent = '';
+            } else if (field === prix) {
+                prixError.style.display = 'none';
+                prixError.textContent = '';
+            } else if (field === description) {
+                descriptionError.style.display = 'none';
+                descriptionError.textContent = '';
+            }
+        });
+
+        field.addEventListener('change', function () {
+            field.classList.remove('is-invalid-custom');
+            globalBox.style.display = 'none';
+
+            if (field === statut) {
+                statutError.style.display = 'none';
+                statutError.textContent = '';
+            }
+        });
+    });
+});
+</script>
 {% endblock %}
