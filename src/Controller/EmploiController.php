@@ -15,6 +15,7 @@ use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Gemini\Client;
 use App\Service\AdzunaService;
+use App\Service\MarketIntelligenceService;
 
 
 final class EmploiController extends AbstractController
@@ -219,7 +220,19 @@ final class EmploiController extends AbstractController
 
         return new JsonResponse([
             'average' => $average,
-            'currency' => 'EUR' // Adzuna FR est souvent en EUR, tu pourras convertir en DT si besoin
+            'currency' => 'EUR' 
         ]);
+    }
+
+    #[Route('/api/gap-analysis/{id}', name: 'api_gap_analysis', methods: ['GET'])]
+    public function getGapAnalysis(Emploi $emploi, MarketIntelligenceService $marketService): JsonResponse
+    {
+        $analysis = $marketService->analyzeGap($emploi);
+        
+        // Construction du message HTML pour le tooltip
+        $html = "<b>Salaire Marché:</b> " . ($analysis['market_avg'] !== 'N/A' ? round($analysis['market_avg']/12) . "€/m" : "Inconnu") . "<br>";
+        $html .= "<b>Compétences Candidats:</b> " . (empty($analysis['top_skills']) ? "Aucune" : implode(', ', $analysis['top_skills']));
+
+        return new JsonResponse(['html' => $html]);
     }
 }
