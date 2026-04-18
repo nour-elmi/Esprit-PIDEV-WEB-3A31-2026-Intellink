@@ -14,7 +14,7 @@ use App\Form\EmploiType;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Gemini\Client;
-
+use App\Service\AdzunaService;
 
 
 final class EmploiController extends AbstractController
@@ -200,5 +200,26 @@ final class EmploiController extends AbstractController
         } catch (\Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], 500);
         }
+    }
+
+    #[Route('/api/market-salary', name: 'api_market_salary', methods: ['GET'])]
+    public function getMarketSalary(Request $request, AdzunaService $adzunaService): JsonResponse
+    {
+        $jobTitle = $request->query->get('titre');
+        
+        if (!$jobTitle) {
+            return new JsonResponse(['error' => 'Titre manquant'], 400);
+        }
+
+        $data = $adzunaService->getSalaryStats($jobTitle);
+        
+        // On extrait la moyenne (Adzuna renvoie souvent un tableau de dates/valeurs)
+        // On simplifie pour renvoyer la dernière valeur connue
+        $average = !empty($data['month']) ? end($data['month']) : null;
+
+        return new JsonResponse([
+            'average' => $average,
+            'currency' => 'EUR' // Adzuna FR est souvent en EUR, tu pourras convertir en DT si besoin
+        ]);
     }
 }

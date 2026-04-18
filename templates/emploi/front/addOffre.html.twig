@@ -276,5 +276,44 @@ if (descriptionField) {
 
     descriptionField.addEventListener('input', updateSuggestion);
 }
+
+// 1. Sélectionne tes éléments
+const salaryField = document.querySelector('input[name*="salaire"]');
+const titreInput = document.querySelector('input[name*="titre"]');
+
+// 2. Crée le conteneur pour l'info bulle
+const salaryHint = document.createElement('div');
+salaryHint.id = 'salary-market-hint';
+salaryHint.style = "font-size: 0.85rem; margin-top: 5px; color: #2F80ED; font-weight: 500; display:none;";
+if (salaryField) {
+    salaryField.parentNode.appendChild(salaryHint);
+}
+
+// 3. Logique de récupération
+if (titreInput) {
+    titreInput.addEventListener('blur', function() {
+        const title = this.value;
+        if (title.length < 3) return;
+
+        salaryHint.innerHTML = "<span>🔍 Analyse du marché...</span>";
+        salaryHint.style.display = 'block';
+
+        fetch(`{{ path('api_market_salary') }}?titre=${encodeURIComponent(title)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.average) {
+                    // Note: Adzuna donne souvent l'annuel, on divise par 12 pour le mensuel
+                    const monthly = Math.round(data.average / 12);
+                    salaryHint.innerHTML = `✨ Moyenne du marché : ~${monthly} € / mois (Source: Adzuna)`;
+                } else {
+                    salaryHint.style.display = 'none';
+                }
+            })
+            .catch(() => {
+                salaryHint.style.display = 'none';
+            });
+    });
+}
+
 </script>
 {% endblock %}
