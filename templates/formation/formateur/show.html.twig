@@ -100,22 +100,51 @@
         <div class="actions-card-show">
             <div class="actions-card-header">
                 <i class="lni lni-cog"></i>
-                <span>Actions</span>
+                <div class="actions-card-header-text">
+                    <span>Actions</span>
+                    <small class="actions-card-subtitle">Gestion rapide de cette formation</small>
+                </div>
             </div>
             <div class="actions-card-body">
-                <a href="{{ path('app_formation_edit', {id: formation.idFormation}) }}"
-                   class="btn-warning-custom">
-                    <i class="lni lni-pencil"></i> Modifier la formation
+                <a href="{{ path('app_formation_edit', {id: formation.idFormation}) }}" class="action-btn-show action-btn-edit">
+                    <span class="action-btn-icon"><i class="lni lni-pencil"></i></span>
+                    <span class="action-btn-content">
+                        <strong>Modifier</strong>
+                        <small>Mettre a jour les informations</small>
+                    </span>
                 </a>
+
+                <a href="{{ path('app_formation_quiz_manage', {id: formation.idFormation}) }}" class="action-btn-show action-btn-quiz">
+                    <span class="action-btn-icon"><i class="lni lni-pencil-alt"></i></span>
+                    <span class="action-btn-content">
+                        <strong>
+                            {% if quiz %}
+                                Voir / modifier le quiz
+                            {% else %}
+                                Ajouter un quiz
+                            {% endif %}
+                        </strong>
+                        <small>
+                            {% if quiz %}
+                                Quiz deja cree pour cette formation
+                            {% else %}
+                                Aucun quiz pour le moment
+                            {% endif %}
+                        </small>
+                    </span>
+                </a>
+
                 <a href="{{ path('app_formation_delete', {id: formation.idFormation}) }}"
-                   class="btn-danger-custom"
+                   class="action-btn-show action-btn-delete"
                    onclick="return confirm('Supprimer cette formation ?')">
-                    <i class="lni lni-trash"></i> Supprimer la formation
+                    <span class="action-btn-icon"><i class="lni lni-trash"></i></span>
+                    <span class="action-btn-content">
+                        <strong>Supprimer</strong>
+                        <small>Action definitive</small>
+                    </span>
                 </a>
-                <a href="{{ path('app_formation_index') }}"
-                   class="btn-secondary-custom">
-                    <i class="lni lni-arrow-left"></i> Retour à la liste
-                </a>
+
+                
             </div>
         </div>
 
