@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Contrat a signer</title>
+</head>
+<body style="font-family: Arial, sans-serif; color: #111827; line-height: 1.5;">
+    <h2>Votre demande est acceptee</h2>
+
+    <p>Bonjour {{ userNom }},</p>
+
+    <p>
+        Bonne nouvelle: votre demande de participation au projet
+        <strong>{{ projet.titre }}</strong> a ete acceptee par {{ chefNom }}.
+    </p>
+
+    <p>
+        Pour finaliser la procedure, vous devez signer le contrat.
+    </p>
+
+    <ul>
+        <li><strong>Projet:</strong> {{ projet.titre }}</li>
+        <li><strong>Chef de projet:</strong> {{ chefNom }}</li>
+        <li><strong>Statut actuel:</strong> {{ contrat.statut ?: 'ENVOYE_AU_USER' }}</li>
+        <li><strong>Date limite:</strong> {{ contrat.expiresAt ? contrat.expiresAt|date('d/m/Y') : 'Non definie' }}</li>
+    </ul>
+
+    {% if contractUrl %}
+        <p>
+            <a href="{{ contractUrl }}" style="display:inline-block; background:#1d4ed8; color:#fff; text-decoration:none; padding:10px 16px; border-radius:8px; font-weight:700;">
+                Signer mon contrat
+            </a>
+        </p>
+        <p style="font-size: 13px; color: #6b7280;">
+            Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur:<br>
+            <span>{{ contractUrl }}</span>
+        </p>
+    {% else %}
+        <p>Connectez-vous a votre espace utilisateur, section "Mes demandes", pour signer le contrat.</p>
+    {% endif %}
+</body>
+</html>
+

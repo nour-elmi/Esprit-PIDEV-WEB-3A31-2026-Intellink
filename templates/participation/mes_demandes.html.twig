@@ -150,6 +150,7 @@
         color: #fff;
     }
 
+
     .participations-card {
         border: 0;
         border-radius: 28px;
@@ -196,13 +197,24 @@
         padding: 26px 28px 30px 28px;
     }
 
+    .participations-content-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 350px;
+        gap: 18px;
+        align-items: start;
+    }
+
     .table-responsive {
         overflow-x: auto;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: #f8fbff;
+        padding: 8px 8px 2px;
     }
 
     .custom-table {
         width: 100%;
-        min-width: 1050px;
+        min-width: 640px;
         border-collapse: separate;
         border-spacing: 0 16px;
     }
@@ -252,8 +264,7 @@
         font-size: 17px;
     }
 
-    .role-box,
-    .dispo-box {
+    .role-box {
         display: inline-flex;
         align-items: center;
         min-height: 46px;
@@ -342,6 +353,191 @@
         color: #1d4ed8;
     }
 
+    .btn-contract {
+        background: linear-gradient(135deg, #e8f0ff, #dbeafe);
+        color: #1d4ed8;
+    }
+
+    .btn-contract:hover {
+        transform: translateY(-2px);
+        color: #1e40af;
+    }
+
+    .calendar-panel {
+        border-radius: 22px;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+        overflow: hidden;
+        position: sticky;
+        top: 18px;
+    }
+
+    .calendar-head {
+        padding: 16px 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+    }
+
+    .calendar-title {
+        margin: 0;
+        font-size: 18px;
+        color: #1e3a8a;
+        font-weight: 900;
+    }
+
+    .calendar-subtitle {
+        margin: 4px 0 0;
+        font-size: 12px;
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .calendar-nav {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .calendar-month {
+        min-width: 130px;
+        text-align: center;
+        font-size: 14px;
+        font-weight: 900;
+        color: #0f172a;
+    }
+
+    .calendar-nav-btn {
+        border: 0;
+        width: 30px;
+        height: 30px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #eff6ff, #dbeafe);
+        color: #1d4ed8;
+        font-size: 16px;
+        font-weight: 900;
+        cursor: pointer;
+    }
+
+    .calendar-body {
+        padding: 12px 12px 12px;
+    }
+
+    .calendar-weekdays,
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    .calendar-weekday {
+        text-align: center;
+        font-size: 12px;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        font-weight: 800;
+    }
+
+    .calendar-day {
+        border: 1px solid #e2e8f0;
+        background: #fff;
+        border-radius: 10px;
+        min-height: 44px;
+        padding: 5px 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        cursor: pointer;
+        transition: .18s ease;
+    }
+
+    .calendar-day:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 16px rgba(15, 23, 42, 0.1);
+    }
+
+    .calendar-day.empty {
+        background: transparent;
+        border-color: transparent;
+        cursor: default;
+        box-shadow: none;
+    }
+
+    .calendar-day-number {
+        font-size: 13px;
+        font-weight: 800;
+        color: #1f2937;
+    }
+
+    .calendar-day-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 999px;
+        background: #60a5fa;
+    }
+
+    .calendar-day-count {
+        font-size: 10px;
+        font-weight: 800;
+        color: #2563eb;
+    }
+
+    .calendar-day-holiday {
+        margin-top: 2px;
+        font-size: 9px;
+        font-weight: 900;
+        color: #dc2626;
+        line-height: 1;
+        text-transform: uppercase;
+    }
+
+    .calendar-day.active {
+        border-color: #2563eb;
+        background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
+    }
+
+    .calendar-day.today {
+        box-shadow: inset 0 0 0 2px rgba(37, 99, 235, 0.2);
+    }
+
+    .calendar-filter {
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .calendar-filter-badge {
+        display: none;
+        border-radius: 999px;
+        padding: 6px 10px;
+        background: linear-gradient(135deg, #1d4ed8, #2563eb);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .calendar-clear-btn {
+        border: 0;
+        border-radius: 8px;
+        background: #e2e8f0;
+        color: #0f172a;
+        font-size: 11px;
+        font-weight: 800;
+        padding: 6px 10px;
+        cursor: pointer;
+        display: none;
+    }
+
     .empty-state {
         text-align: center;
         padding: 34px 18px;
@@ -380,7 +576,25 @@
         .participations-card-title {
             font-size: 22px;
         }
+
+        .calendar-month {
+            min-width: 140px;
+        }
+
+        .participations-content-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .calendar-panel {
+            position: static;
+            order: -1;
+        }
+
+        .table-responsive {
+            padding: 6px 6px 0;
+        }
     }
+
 </style>
 
 <div class="participations-page">
@@ -413,6 +627,7 @@
                     </div>
                 </div>
             </div>
+
         </section>
 
         <section class="participations-card">
@@ -422,80 +637,304 @@
                     <div class="participations-card-subtitle">Consultez, modifiez ou supprimez vos demandes.</div>
                 </div>
 
-                <div class="participations-counter">
+                <div class="participations-counter" id="participationsResultCount">
                     {{ demandes|length }} résultat(s)
                 </div>
             </div>
 
             <div class="participations-card-body">
-                <div class="table-responsive">
-                    <table class="custom-table">
-                        <thead>
-                            <tr>
-                                <th>Projet</th>
-                                <th>Rôle</th>
-                                <th>Disponibilité</th>
-                                <th>État</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for participation in demandes %}
+                <div class="participations-content-layout">
+                    <div class="table-responsive">
+                        <table class="custom-table">
+                            <thead>
                                 <tr>
-                                    <td>
-                                        <span class="project-badge">{{ participation.projet.titre }}</span>
-                                    </td>
+                                    <th>Projet</th>
+                                    <th>État</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for participation in demandes %}
+                                    {% set contrat = contratsParDemande[participation.id] ?? null %}
+                                    <tr
+                                        class="participation-row"
+                                        data-date="{{ participation.dateCreation ? participation.dateCreation|date('Y-m-d') : '' }}"
+                                        data-status="{{ participation.etat|upper }}"
+                                    >
+                                        <td>
+                                            <span class="project-badge">{{ participation.projet.titre }}</span>
+                                        </td>
 
-                                    <td>
-                                        <div class="role-box">{{ participation.roleSouhaite }}</div>
-                                    </td>
-
-                                    <td>
-                                        <div class="dispo-box">{{ participation.disponibilite }}</div>
-                                    </td>
-
-                                    <td>
-                                        {% if participation.etat == 'EN_ATTENTE' %}
-                                            <span class="status-pill status-pending">En attente</span>
-                                        {% elseif participation.etat == 'ACCEPTEE' %}
-                                            <span class="status-pill status-accepted">Acceptée</span>
-                                        {% elseif participation.etat == 'REFUSEE' %}
-                                            <span class="status-pill status-refused">Refusée</span>
-                                        {% else %}
-                                            <span class="status-pill status-pending">{{ participation.etat }}</span>
-                                        {% endif %}
-                                    </td>
-
-                                    <td>
-                                        <div class="action-group">
+                                        <td>
                                             {% if participation.etat == 'EN_ATTENTE' %}
-                                                <a href="{{ path('app_participation_edit', {'id': participation.id}) }}" class="custom-btn btn-edit">
-                                                    Modifier
-                                                </a>
-
-                                                <a href="{{ path('app_participation_delete', {'id': participation.id}) }}" class="custom-btn btn-delete" onclick="return confirm('Supprimer cette participation ?');">
-                                                    Supprimer
-                                                </a>
+                                                <span class="status-pill status-pending">En attente</span>
+                                            {% elseif participation.etat == 'ACCEPTEE' %}
+                                                <span class="status-pill status-accepted">Acceptée</span>
+                                            {% elseif participation.etat == 'REFUSEE' %}
+                                                <span class="status-pill status-refused">Refusée</span>
+                                            {% else %}
+                                                <span class="status-pill status-pending">{{ participation.etat }}</span>
                                             {% endif %}
+                                        </td>
 
-                                            <a href="{{ path('app_projet_show', {'id': participation.projet.id}) }}" class="custom-btn btn-view">
-                                                Voir projet
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% else %}
-                                <tr>
-                                    <td colspan="5">
-                                        <div class="empty-state">Aucune participation trouvée.</div>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                                        <td>
+                                            <div class="role-box">
+                                                {{ participation.dateCreation ? participation.dateCreation|date('d/m/Y') : 'Date inconnue' }}
+                                            </div>
+                                        </td>
+
+                                        <td>
+                                            <div class="action-group">
+                                                {% if participation.etat == 'EN_ATTENTE' %}
+                                                    <a href="{{ path('app_participation_edit', {'id': participation.id}) }}" class="custom-btn btn-edit">
+                                                        Modifier
+                                                    </a>
+
+                                                    <a href="{{ path('app_participation_delete', {'id': participation.id}) }}" class="custom-btn btn-delete" onclick="return confirm('Supprimer cette participation ?');">
+                                                        Supprimer
+                                                    </a>
+                                                {% endif %}
+
+                                                <a href="{{ path('app_projet_show', {'id': participation.projet.id}) }}" class="custom-btn btn-view">
+                                                    Voir projet
+                                                </a>
+
+                                                {% if participation.etat == 'ACCEPTEE' and contrat %}
+                                                    <a href="{{ path('app_participation_contrat_show', {'id': participation.id}) }}" class="custom-btn btn-contract">
+                                                        {% if contrat.statut == 'ENVOYE_AU_USER' %}
+                                                            Signer contrat
+                                                        {% else %}
+                                                            Contrat signe
+                                                        {% endif %}
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4">
+                                            <div class="empty-state">Aucune participation trouvée.</div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <section class="calendar-panel">
+                        <div class="calendar-head">
+                            <div>
+                                <h3 class="calendar-title">Calendrier</h3>
+                                <p class="calendar-subtitle">Filtre rapide par date.</p>
+                            </div>
+
+                            <div class="calendar-nav">
+                                <button type="button" id="calendarPrev" class="calendar-nav-btn" aria-label="Mois précédent">‹</button>
+                                <div id="calendarMonthLabel" class="calendar-month"></div>
+                                <button type="button" id="calendarNext" class="calendar-nav-btn" aria-label="Mois suivant">›</button>
+                            </div>
+                        </div>
+
+                        <div class="calendar-body">
+                            <div class="calendar-weekdays">
+                                <div class="calendar-weekday">Lun</div>
+                                <div class="calendar-weekday">Mar</div>
+                                <div class="calendar-weekday">Mer</div>
+                                <div class="calendar-weekday">Jeu</div>
+                                <div class="calendar-weekday">Ven</div>
+                                <div class="calendar-weekday">Sam</div>
+                                <div class="calendar-weekday">Dim</div>
+                            </div>
+                            <div id="calendarGrid" class="calendar-grid"></div>
+
+                            <div class="calendar-filter">
+                                <div id="calendarFilterBadge" class="calendar-filter-badge"></div>
+                                <button type="button" id="calendarClearFilter" class="calendar-clear-btn">Tout voir</button>
+                            </div>
+                        </div>
+                    </section>
                 </div>
             </div>
         </section>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const rows = Array.from(document.querySelectorAll('.participation-row'));
+    const calendarGrid = document.getElementById('calendarGrid');
+    const calendarMonthLabel = document.getElementById('calendarMonthLabel');
+    const calendarPrev = document.getElementById('calendarPrev');
+    const calendarNext = document.getElementById('calendarNext');
+    const calendarFilterBadge = document.getElementById('calendarFilterBadge');
+    const calendarClearFilter = document.getElementById('calendarClearFilter');
+    const counter = document.getElementById('participationsResultCount');
+    const calendarApiUrl = '{{ path('app_api_v1_participations_calendar') }}';
+
+    if (!calendarGrid) {
+        return;
+    }
+
+    const formatFr = new Intl.DateTimeFormat('fr-FR', {
+        month: 'long',
+        year: 'numeric',
+    });
+
+    let selectedDate = null;
+    const now = new Date();
+    let currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    let apiCountsByDate = {};
+    let apiHolidaysByDate = {};
+
+    function countByDate(dateKey) {
+        if (Object.keys(apiCountsByDate).length > 0) {
+            return Number(apiCountsByDate[dateKey] || 0);
+        }
+        return rows.filter(row => row.dataset.date === dateKey).length;
+    }
+
+    function updateVisibleCount() {
+        const visible = rows.filter(row => row.style.display !== 'none').length;
+        if (counter) {
+            counter.textContent = visible + ' résultat(s)';
+        }
+    }
+
+    function applyDateFilter() {
+        rows.forEach(row => {
+            const rowDate = row.dataset.date || '';
+            row.style.display = !selectedDate || rowDate === selectedDate ? '' : 'none';
+        });
+
+        if (selectedDate) {
+            const date = new Date(selectedDate + 'T00:00:00');
+            const label = date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+            calendarFilterBadge.textContent = 'Filtre actif: ' + label;
+            calendarFilterBadge.style.display = 'inline-flex';
+            calendarClearFilter.style.display = 'inline-flex';
+        } else {
+            calendarFilterBadge.style.display = 'none';
+            calendarClearFilter.style.display = 'none';
+        }
+
+        updateVisibleCount();
+    }
+
+    function createDayCell(dayDate, monthIndex) {
+        const dayKey = dayDate.toISOString().slice(0, 10);
+        const count = countByDate(dayKey);
+        const holidayNames = Array.isArray(apiHolidaysByDate[dayKey]) ? apiHolidaysByDate[dayKey] : [];
+        const isCurrentMonth = dayDate.getMonth() === monthIndex;
+        const isToday = dayDate.toDateString() === now.toDateString();
+        const isActive = selectedDate === dayKey;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'calendar-day' + (isCurrentMonth ? '' : ' empty') + (isToday && isCurrentMonth ? ' today' : '') + (isActive ? ' active' : '');
+
+        if (!isCurrentMonth) {
+            btn.innerHTML = '<span class="calendar-day-number"></span>';
+            btn.disabled = true;
+            return btn;
+        }
+
+        btn.innerHTML = `
+            <span class="calendar-day-number">${dayDate.getDate()}</span>
+            ${count > 0 ? '<span class="calendar-day-dot"></span><span class="calendar-day-count">' + count + '</span>' : ''}
+            ${holidayNames.length > 0 ? '<span class="calendar-day-holiday" title="' + holidayNames.join(', ') + '">ferie</span>' : ''}
+        `;
+
+        btn.addEventListener('click', function () {
+            selectedDate = selectedDate === dayKey ? null : dayKey;
+            renderCalendar();
+            applyDateFilter();
+        });
+
+        return btn;
+    }
+
+    function renderCalendar() {
+        const year = currentMonth.getFullYear();
+        const month = currentMonth.getMonth();
+        calendarMonthLabel.textContent = formatFr.format(currentMonth);
+
+        const firstDay = new Date(year, month, 1);
+        const startDay = (firstDay.getDay() + 6) % 7;
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+        calendarGrid.innerHTML = '';
+
+        for (let i = 0; i < startDay; i++) {
+            const d = new Date(year, month - 1, daysInPrevMonth - startDay + i + 1);
+            calendarGrid.appendChild(createDayCell(d, month));
+        }
+
+        for (let d = 1; d <= daysInMonth; d++) {
+            calendarGrid.appendChild(createDayCell(new Date(year, month, d), month));
+        }
+
+        const totalCells = calendarGrid.children.length;
+        const remaining = (7 - (totalCells % 7)) % 7;
+        for (let i = 1; i <= remaining; i++) {
+            const d = new Date(year, month + 1, i);
+            calendarGrid.appendChild(createDayCell(d, month));
+        }
+    }
+
+    calendarPrev.addEventListener('click', function () {
+        currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+        loadCalendarApi();
+    });
+
+    calendarNext.addEventListener('click', function () {
+        currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
+        loadCalendarApi();
+    });
+
+    calendarClearFilter.addEventListener('click', function () {
+        selectedDate = null;
+        renderCalendar();
+        applyDateFilter();
+    });
+
+    async function loadCalendarApi() {
+        try {
+            const month = currentMonth.getMonth() + 1;
+            const year = currentMonth.getFullYear();
+            const apiUrl = new URL(calendarApiUrl, window.location.origin);
+            apiUrl.searchParams.set('month', String(month));
+            apiUrl.searchParams.set('year', String(year));
+
+            const response = await fetch(apiUrl.toString(), {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'same-origin',
+            });
+            if (!response.ok) {
+                throw new Error('API calendar HTTP ' + response.status);
+            }
+            const payload = await response.json();
+            if (payload && payload.ok && payload.counts && typeof payload.counts === 'object') {
+                apiCountsByDate = payload.counts;
+            }
+            if (payload && payload.ok && payload.holidaysByDate && typeof payload.holidaysByDate === 'object') {
+                apiHolidaysByDate = payload.holidaysByDate;
+            } else {
+                apiHolidaysByDate = {};
+            }
+        } catch (error) {
+            apiCountsByDate = {};
+            apiHolidaysByDate = {};
+            console.warn('Calendar API fallback local:', error);
+        } finally {
+            renderCalendar();
+            applyDateFilter();
+        }
+    }
+
+    loadCalendarApi();
+});
+</script>
 {% endblock %}

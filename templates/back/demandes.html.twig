@@ -88,6 +88,152 @@
         border: 1px solid #f3c4c4;
     }
 
+    .comparison-panel {
+        background: #fff;
+        border-radius: 20px;
+        border: 1px solid #dfebfb;
+        box-shadow: 0 10px 26px rgba(16, 36, 82, 0.08);
+        padding: 16px;
+        margin-bottom: 14px;
+    }
+
+    .comparison-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .comparison-title {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 900;
+        color: #112a69;
+    }
+
+    .comparison-sub {
+        margin: 3px 0 0;
+        font-size: 13px;
+        color: #6a7f9f;
+        font-weight: 700;
+    }
+
+    .comparison-top-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 8px 14px;
+        background: linear-gradient(135deg, #1f5eff 0%, #1dbf9f 100%);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 900;
+        white-space: nowrap;
+    }
+
+    .comparison-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 1fr;
+        gap: 12px;
+    }
+
+    .comparison-card {
+        border-radius: 14px;
+        background: #f6f9ff;
+        border: 1px solid #dce9fb;
+        padding: 12px;
+    }
+
+    .comparison-card h4 {
+        margin: 0 0 8px;
+        font-size: 15px;
+        color: #17326f;
+        font-weight: 900;
+    }
+
+    .top-candidate-name {
+        font-size: 20px;
+        font-weight: 900;
+        color: #0f2a66;
+        margin-bottom: 4px;
+    }
+
+    .top-candidate-meta {
+        color: #5f7393;
+        font-size: 13px;
+        margin-bottom: 8px;
+        word-break: break-word;
+    }
+
+    .top-candidate-metrics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .metric-chip {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 7px 10px;
+        font-size: 12px;
+        font-weight: 900;
+        background: #eaf1ff;
+        color: #17326f;
+    }
+
+    .metric-chip.main {
+        background: #e8fff7;
+        color: #0f7a4a;
+    }
+
+    .comparison-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .comparison-row {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 8px;
+        align-items: center;
+        padding: 8px 10px;
+        border-radius: 12px;
+        background: #fff;
+        border: 1px solid #e2ecfc;
+        font-size: 12px;
+    }
+
+    .comparison-rank {
+        width: 24px;
+        height: 24px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        background: #eaf1ff;
+        color: #17326f;
+    }
+
+    .comparison-name {
+        color: #14306c;
+        font-weight: 800;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .comparison-score {
+        color: #0f7a4a;
+        font-weight: 900;
+    }
+
     .demandes-list {
         display: flex;
         flex-direction: column;
@@ -184,6 +330,21 @@
         color: #5d6f89;
     }
 
+    .mini-badge.pref {
+        background: #fff6d8;
+        color: #8a5b00;
+    }
+
+    .mini-badge.badge-level {
+        background: #e8f0ff;
+        color: #1d3f9c;
+    }
+
+    .mini-badge.signed {
+        background: #e9fff2;
+        color: #157347;
+    }
+
     .mini-link {
         display: inline-flex;
         align-items: center;
@@ -270,6 +431,38 @@
         border: 1px solid #f3c3c3;
     }
 
+    .btn-mini.contract {
+        background: #e8f0ff;
+        color: #1d4ed8;
+        border: 1px solid #bfd3ff;
+    }
+
+    .score-trigger {
+        border: 0;
+        cursor: pointer;
+        min-width: 128px;
+        justify-content: center;
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.15);
+    }
+
+    .score-excellent {
+        color: #0f6d3e;
+        background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+        border: 1px solid #9ce0b4;
+    }
+
+    .score-moyen {
+        color: #9a6700;
+        background: linear-gradient(135deg, #fff7dc, #ffe9b5);
+        border: 1px solid #f4d58d;
+    }
+
+    .score-risque {
+        color: #b42318;
+        background: linear-gradient(135deg, #ffe4e6, #fecdd3);
+        border: 1px solid #f7b1bb;
+    }
+
     .motivation-box {
         grid-column: 1 / -1;
         margin-top: -2px;
@@ -313,6 +506,195 @@
         display: inline-flex;
     }
 
+    .score-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(8, 18, 44, 0.66);
+        backdrop-filter: blur(3px);
+        z-index: 12000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+    }
+
+    .score-modal {
+        width: min(980px, 100%);
+        max-height: 88vh;
+        overflow-y: auto;
+        border-radius: 24px;
+        background: linear-gradient(180deg, #f7faff 0%, #eef3ff 100%);
+        border: 1px solid #dce7fb;
+        box-shadow: 0 30px 70px rgba(7, 25, 73, 0.38);
+    }
+
+    .score-modal-header {
+        background: linear-gradient(135deg, #0d1f5f 0%, #1d3f9c 100%);
+        color: #fff;
+        border-radius: 24px 24px 0 0;
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .score-modal-header h3 {
+        margin: 0;
+        font-size: 30px;
+        font-weight: 900;
+    }
+
+    .score-close {
+        border: 0;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.15);
+        color: #fff;
+        font-size: 22px;
+        line-height: 1;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .score-modal-body {
+        padding: 20px;
+    }
+
+    .score-top {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 20px;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .score-candidat {
+        font-size: 32px;
+        font-weight: 900;
+        color: #0f2a66;
+        margin-bottom: 6px;
+    }
+
+    .score-sub {
+        color: #617798;
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .score-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 9px 14px;
+        font-size: 13px;
+        font-weight: 900;
+        letter-spacing: 0.4px;
+    }
+
+    .score-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr 1.2fr;
+        gap: 14px;
+        margin-top: 12px;
+    }
+
+    .score-card {
+        background: rgba(255, 255, 255, 0.88);
+        border: 1px solid #d8e4fb;
+        border-radius: 18px;
+        padding: 16px;
+        box-shadow: 0 10px 24px rgba(17, 42, 98, 0.08);
+    }
+
+    .score-card h4 {
+        margin: 0 0 10px;
+        color: #0f2a66;
+        font-size: 20px;
+        font-weight: 900;
+    }
+
+    .score-list {
+        margin: 0;
+        padding-left: 18px;
+        color: #2f4768;
+        font-size: 15px;
+        line-height: 1.7;
+    }
+
+    .score-ring-wrap {
+        text-align: center;
+    }
+
+    .score-ring-title {
+        margin-bottom: 12px;
+        font-size: 20px;
+        color: #0f2a66;
+        font-weight: 900;
+    }
+
+    .score-ring {
+        width: 170px;
+        height: 170px;
+        margin: 0 auto;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        transition: background 0.25s ease;
+    }
+
+    .score-ring-inner {
+        width: 128px;
+        height: 128px;
+        border-radius: 50%;
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-shadow: inset 0 0 0 1px #e2e8f8;
+    }
+
+    .score-value {
+        font-size: 52px;
+        font-weight: 900;
+        line-height: 1;
+        color: #0f2a66;
+    }
+
+    .score-denom {
+        color: #6b7f9f;
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    .score-breakdown-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        border-bottom: 1px dashed #d8e4fb;
+        padding: 8px 0;
+        color: #2f4768;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .score-breakdown-item:last-child {
+        border-bottom: 0;
+    }
+
+    .score-reco {
+        margin-top: 14px;
+        border-radius: 12px;
+        background: #f5f8ff;
+        border: 1px solid #d9e6ff;
+        color: #1e3a8a;
+        padding: 11px 12px;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
     @media (max-width: 1100px) {
         .demande-compact {
             grid-template-columns: 1fr;
@@ -321,6 +703,14 @@
 
         .compact-right {
             justify-content: flex-start;
+        }
+
+        .score-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .comparison-grid {
+            grid-template-columns: 1fr;
         }
     }
 
@@ -373,12 +763,57 @@
             <div class="demandes-alert danger">{{ message }}</div>
         {% endfor %}
 
+        {% if demandeComparaison.top %}
+            {% set topCandidate = demandeComparaison.top %}
+            <div class="comparison-panel">
+                <div class="comparison-head">
+                    <div>
+                        <h3 class="comparison-title">Comparaison intelligente des demandes</h3>
+                        <p class="comparison-sub">Priorite basee sur IA + niveau badge + contrats deja signes.</p>
+                    </div>
+                    <span class="comparison-top-pill">Top recommande</span>
+                </div>
+
+                <div class="comparison-grid">
+                    <div class="comparison-card">
+                        <h4>Candidat prioritaire</h4>
+                        <div class="top-candidate-name">{{ topCandidate.candidateName }}</div>
+                        <div class="top-candidate-meta">{{ topCandidate.candidateEmail ?: 'Email non disponible' }}</div>
+                        <div class="top-candidate-metrics">
+                            <span class="metric-chip main">Preference {{ topCandidate.preferenceScore }}/100</span>
+                            <span class="metric-chip">IA {{ topCandidate.iaScore }}/100</span>
+                            <span class="metric-chip">{{ topCandidate.badgeLevel }}</span>
+                            <span class="metric-chip">{{ topCandidate.signedContracts }} contrat(s) signe(s)</span>
+                        </div>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>Classement rapide</h4>
+                        <ul class="comparison-list">
+                            {% for row in demandeComparaison.ranking %}
+                                <li class="comparison-row">
+                                    <span class="comparison-rank">{{ loop.index }}</span>
+                                    <span class="comparison-name">{{ row.candidateName }}</span>
+                                    <span class="comparison-score">{{ row.preferenceScore }}/100</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
         <div class="demandes-list">
             {% for d in demandes %}
                 {% set etat = d.etat|upper %}
                 {% set user = utilisateursParId[d.userId] ?? null %}
+                {% set contrat = contratsParDemande[d.id] ?? null %}
+                {% set badgeData = badgesParUserId[d.userId] ?? null %}
+                {% set compareData = demandeComparaison.byDemande[d.id] ?? null %}
+                {% set signedCount = signedContractsByUserId[d.userId] ?? 0 %}
 
                 <article class="demande-compact">
+                    {% set scoreData = scoresParDemande[d.id] ?? null %}
 
                     <div class="compact-left">
                         <div class="compact-avatar">
@@ -402,14 +837,58 @@
                             🕒 {{ d.disponibilite ?: 'Disponibilité non renseignée' }}
                         </span>
 
+                        {% if compareData %}
+                            <span class="mini-badge pref">Preference {{ compareData.preferenceScore }}/100</span>
+                        {% endif %}
+
+                        <span class="mini-badge badge-level">
+                            Badge: {{ badgeData.levelLabel|default('Niveau debutant') }}
+                        </span>
+
+                        <span class="mini-badge signed">
+                            Contrats signes: {{ signedCount }}
+                        </span>
+
                         {% if d.portfolio %}
                             <a href="{{ d.portfolio }}" target="_blank" class="mini-link">
                                 🌐 Portfolio
                             </a>
                         {% endif %}
+
+                        {% if etat == 'ACCEPTEE' and contrat %}
+                            <a href="{{ path('app_back_contrat_show', {id: contrat.id}) }}" class="btn-mini contract">
+                                {% if contrat.statut == 'SIGNE' or contrat.userSignedAt %}
+                                    Contrat signe
+                                {% else %}
+                                    Voir contrat
+                                {% endif %}
+                            </a>
+                        {% endif %}
                     </div>
 
                     <div class="compact-right">
+                        <button
+                            type="button"
+                            class="btn-mini score-trigger score-{{ scoreData.level|default('moyen') }}"
+                            data-score="{{ scoreData.score|default(0) }}"
+                            data-level="{{ scoreData.level|default('moyen') }}"
+                            data-level-label="{{ scoreData.levelLabel|default('A CONSIDERER') }}"
+                            data-recommendation="{{ scoreData.recommendation|default('Profil a verifier.')|e('html_attr') }}"
+                            data-candidat="{{ user ? user.nom : 'Candidat' }}"
+                            data-role="{{ d.roleSouhaite ?: 'Non renseigne' }}"
+                            data-disponibilite="{{ d.disponibilite ?: 'Non renseignee' }}"
+                            data-portfolio="{{ d.portfolio ?: 'Non fourni' }}"
+                            data-motivation="{{ d.motivation ?: 'Aucune motivation fournie.' }}"
+                            data-highlights="{{ (scoreData.highlights|default([]))|join('||')|e('html_attr') }}"
+                            data-br-role="{{ scoreData.breakdown.role|default(0) }}"
+                            data-br-dispo="{{ scoreData.breakdown.disponibilite|default(0) }}"
+                            data-br-portfolio="{{ scoreData.breakdown.portfolio|default(0) }}"
+                            data-br-motivation="{{ scoreData.breakdown.motivation|default(0) }}"
+                            data-br-profil="{{ scoreData.breakdown.profil|default(0) }}"
+                        >
+                            IA {{ scoreData.score|default(0) }} / 100
+                        </button>
+
                         <span class="status-pill
                             {% if etat == 'ACCEPTEE' %}ok
                             {% elseif etat == 'REFUSEE' %}no
@@ -458,4 +937,141 @@
 
     </div>
 </section>
+<div id="scoreModalBackdrop" class="score-modal-backdrop">
+    <div class="score-modal" role="dialog" aria-modal="true" aria-labelledby="scoreModalTitle">
+        <div class="score-modal-header">
+            <h3 id="scoreModalTitle">Details IA</h3>
+            <button type="button" class="score-close" id="scoreCloseBtn">×</button>
+        </div>
+        <div class="score-modal-body">
+            <div class="score-top">
+                <div>
+                    <div class="score-candidat" id="scoreCandidate">Candidat</div>
+                    <div class="score-sub" id="scoreRole">Role</div>
+                </div>
+                <span id="scoreLevelChip" class="score-chip">A CONSIDERER</span>
+            </div>
+
+            <div class="score-grid">
+                <div class="score-card">
+                    <h4>Resume rapide</h4>
+                    <ul class="score-list" id="scoreHighlights"></ul>
+                    <div class="score-reco" id="scoreRecommendation"></div>
+                </div>
+
+                <div class="score-card score-ring-wrap">
+                    <div class="score-ring-title">Score IA</div>
+                    <div class="score-ring" id="aiScoreRing">
+                        <div class="score-ring-inner">
+                            <div class="score-value" id="scoreValue">0</div>
+                            <div class="score-denom">/100</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="score-card">
+                    <h4>Breakdown</h4>
+                    <div class="score-breakdown-item"><span>Role</span><strong id="brRole">0</strong></div>
+                    <div class="score-breakdown-item"><span>Disponibilite</span><strong id="brDispo">0</strong></div>
+                    <div class="score-breakdown-item"><span>Portfolio</span><strong id="brPortfolio">0</strong></div>
+                    <div class="score-breakdown-item"><span>Motivation</span><strong id="brMotivation">0</strong></div>
+                    <div class="score-breakdown-item"><span>Profil</span><strong id="brProfil">0</strong></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const triggers = document.querySelectorAll('.score-trigger');
+    const backdrop = document.getElementById('scoreModalBackdrop');
+    const closeBtn = document.getElementById('scoreCloseBtn');
+    const candidate = document.getElementById('scoreCandidate');
+    const role = document.getElementById('scoreRole');
+    const levelChip = document.getElementById('scoreLevelChip');
+    const recommendation = document.getElementById('scoreRecommendation');
+    const highlights = document.getElementById('scoreHighlights');
+    const ring = document.getElementById('aiScoreRing');
+    const scoreValue = document.getElementById('scoreValue');
+    const brRole = document.getElementById('brRole');
+    const brDispo = document.getElementById('brDispo');
+    const brPortfolio = document.getElementById('brPortfolio');
+    const brMotivation = document.getElementById('brMotivation');
+    const brProfil = document.getElementById('brProfil');
+
+    function levelColor(level) {
+        if (level === 'excellent') return '#12b76a';
+        if (level === 'risque') return '#ef4444';
+        return '#f59e0b';
+    }
+
+    function levelChipStyle(level) {
+        if (level === 'excellent') return ['#dcfce7', '#0f7a4a'];
+        if (level === 'risque') return ['#fee2e2', '#b42318'];
+        return ['#fff7dc', '#9a6700'];
+    }
+
+    function openModal(btn) {
+        const score = Number(btn.dataset.score || 0);
+        const level = btn.dataset.level || 'moyen';
+        const levelLabel = btn.dataset.levelLabel || 'A CONSIDERER';
+        const scoreDeg = Math.max(0, Math.min(100, score)) * 3.6;
+        const color = levelColor(level);
+        const chipStyle = levelChipStyle(level);
+        const listItems = (btn.dataset.highlights || '').split('||').filter(Boolean);
+
+        candidate.textContent = btn.dataset.candidat || 'Candidat';
+        role.textContent = 'Role: ' + (btn.dataset.role || 'Non renseigne');
+        recommendation.textContent = btn.dataset.recommendation || 'Aucune recommandation.';
+        levelChip.textContent = levelLabel;
+        levelChip.style.background = chipStyle[0];
+        levelChip.style.color = chipStyle[1];
+
+        ring.style.background = 'conic-gradient(' + color + ' ' + scoreDeg + 'deg, #e8edf7 ' + scoreDeg + 'deg 360deg)';
+        scoreValue.textContent = String(score);
+        scoreValue.style.color = color;
+
+        brRole.textContent = '+' + (btn.dataset.brRole || '0');
+        brDispo.textContent = '+' + (btn.dataset.brDispo || '0');
+        brPortfolio.textContent = '+' + (btn.dataset.brPortfolio || '0');
+        brMotivation.textContent = '+' + (btn.dataset.brMotivation || '0');
+        brProfil.textContent = '+' + (btn.dataset.brProfil || '0');
+
+        highlights.innerHTML = '';
+        if (listItems.length === 0) {
+            const li = document.createElement('li');
+            li.textContent = 'Aucun detail disponible.';
+            highlights.appendChild(li);
+        } else {
+            listItems.forEach(function (item) {
+                const li = document.createElement('li');
+                li.textContent = item;
+                highlights.appendChild(li);
+            });
+        }
+
+        backdrop.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        backdrop.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    triggers.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            openModal(btn);
+        });
+    });
+
+    closeBtn.addEventListener('click', closeModal);
+    backdrop.addEventListener('click', function (event) {
+        if (event.target === backdrop) closeModal();
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && backdrop.style.display === 'flex') closeModal();
+    });
+});
+</script>
 {% endblock %}

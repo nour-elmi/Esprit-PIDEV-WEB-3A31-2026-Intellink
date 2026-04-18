@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Nouvelle demande de participation</title>
+</head>
+<body style="font-family: Arial, sans-serif; color: #111827; line-height: 1.5;">
+    <h2>Nouvelle demande de participation</h2>
+
+    <p>Bonjour {{ chefNom }},</p>
+
+    <p>
+        Un utilisateur vient de demander a participer a votre projet
+        <strong>{{ projet.titre }}</strong>.
+    </p>
+
+    <ul>
+        <li><strong>Nom candidat:</strong> {{ demandeur.nom ?: 'Non renseigne' }}</li>
+        <li><strong>Email candidat:</strong> {{ demandeur.email ?: 'Non renseigne' }}</li>
+        <li><strong>Role souhaite:</strong> {{ demande.roleSouhaite ?: 'Non renseigne' }}</li>
+        <li><strong>Disponibilite:</strong> {{ demande.disponibilite ?: 'Non renseignee' }}</li>
+    </ul>
+
+    <p>
+        Ouvrez votre espace chef de projet pour traiter la demande.
+    </p>
+</body>
+</html>
