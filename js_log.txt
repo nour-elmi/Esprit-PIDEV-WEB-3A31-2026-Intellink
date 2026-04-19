@@ -1,0 +1,706 @@
+﻿   1 | 
+   2 |             // ðŸ”´ VARIABLES GLOBALES POUR LE CHAT
+   3 |             let activeConversationId = null;
+   4 |             let currentUserId = {{ app.user ? app.user.id : 'null' }};
+   5 |             let pusher = null;
+   6 |             let activeChannel = null;
+   7 |             let typingTimer;
+   8 |             let isSending = false;
+   9 |             const TYPING_TIMEOUT = 2000;
+  10 |             let globalUnread = 0;
+  11 | 
+  12 |             // Fonction pour animer le badge +99
+  13 |             function updateBadge() {
+  14 |     const badge = document.getElementById('notifBadge');
+  15 |     if (!badge) return;
+  16 |     
+  17 |     // Logique mixte : Messages non lus + Reclamations non lues
+  18 |     const unreadRecsEl = document.getElementById('totalNotifCount');
+  19 |     const recsCount = unreadRecsEl ? parseInt(unreadRecsEl.innerText || 0) : 0;
+  20 |     const msgNotifItem = document.getElementById('messagerieNotifItem');
+  21 |     const txtGlobalUnread = document.getElementById('txtGlobalUnread');
+  22 |     
+  23 |     if (globalUnread > 0 && msgNotifItem && txtGlobalUnread) {
+  24 |         msgNotifItem.classList.remove('hidden');
+  25 |         txtGlobalUnread.innerText = globalUnread;
+  26 |     } else if (msgNotifItem) {
+  27 |         msgNotifItem.classList.add('hidden');
+  28 |     }
+  29 |     
+  30 |     const total = globalUnread + recsCount;
+  31 |     
+  32 |     if (total <= 0) {
+  33 |         badge.classList.add('hidden');
+  34 |     } else {
+  35 |         badge.classList.remove('hidden');
+  36 |         badge.innerText = total > 99 ? '+99' : total;
+  37 |                 }
+  38 |             }
+  39 | 
+  40 |             // RÃ©cupÃ©rer le total au chargement de la page
+  41 |             setTimeout(() => {
+  42 |                 const initSpan = document.getElementById('initTotalUnread');
+  43 |                 if (initSpan) { globalUnread = parseInt(initSpan.innerText) || 0; updateBadge(); }
+  44 |             }, 500);
+  45 | 
+  46 |             // Initialisation de Pusher
+  47 |             if (currentUserId) {
+  48 |                 pusher = new Pusher('185d0f65ec9745830a72', {
+  49 |                     cluster: 'eu'
+  50 |                 });
+  51 | 
+  52 |                 // ðŸ”´ LE CANAL GLOBAL DES NOTIFICATIONS (Pour le Badge Navbar)
+  53 |                 const globalChannel = pusher.subscribe('user-channel-' + currentUserId);
+  54 |                 globalChannel.bind('notification', function(data) {
+  55 |                     const isChatPanelOpen = document.getElementById('chatWidgetPanel').classList.contains('is-active');
+  56 |                     const isViewingThisChat = (activeConversationId === data.conversation_id) && !document.getElementById('viewDiscussion').classList.contains('view-hidden-right');
+  57 | 
+  58 |                     // Si on n'est pas DÉJÀ en train de lire cette conversation
+  59 |                     if (!(isChatPanelOpen && isViewingThisChat)) {
+  60 |                         globalUnread++;
+  61 |                         updateBadge();
+  62 |                         const convItem = document.getElementById('conv-item-' + data.conversation_id);
+  63 |                         if (convItem) {
+  64 |                             convItem.classList.add('unread-bold');
+  65 |                             let cur = parseInt(convItem.getAttribute('data-unread')) || 0;
+  66 |                             convItem.setAttribute('data-unread', cur + 1);
+  67 |                         }
+  68 |                     }
+  69 |                 });
+  70 | 
+  71 |                 globalChannel.bind('unfriend-event', function(data) {
+  72 |                     const removedUserId = (data.removerId == currentUserId) ? data.removedId : data.removerId;
+  73 |                     
+  74 |                     // Remove from Contact List
+  75 |                     const convItem = document.getElementById('conv-item-' + data.conversationId);
+  76 |                     if (convItem) convItem.remove();
+  77 | 
+  78 |                     // Search by data-user-id fallback for Conv Item and Suggestions
+  79 |                     const allConvItems = document.querySelectorAll('.imessage-contact[data-user-id="'+removedUserId+'"]');
+  80 |                     allConvItems.forEach(item => item.remove());
+  81 | 
+  82 |                     const allSuggestionItems = document.querySelectorAll('.suggestion-item[data-user-id="'+removedUserId+'"]');
+  83 |                     allSuggestionItems.forEach(item => item.remove());
+  84 | 
+  85 |                     // If currently viewing this chat, close it
+  86 |                     if (activeConversationId == data.conversationId) {
+  87 |                         const viewMain = document.getElementById('viewMain');
+  88 |                         const viewDiscussion = document.getElementById('viewDiscussion');
+  89 |                         if (viewMain && viewDiscussion) {
+  90 |                             viewMain.classList.remove('view-hidden-left');
+  91 |                             viewDiscussion.classList.add('view-hidden-right');
+  92 |                         }
+  93 |                         activeConversationId = null;
+  94 |                     }
+  95 |                 });
+  96 | 
+  97 |                 globalChannel.bind('friend-accepted-event', function(data) {
+  98 |                     // Cacher la suggestion ou la demande en attente
+  99 |                     const allSuggestionItems = document.querySelectorAll('.suggestion-item[data-user-id="'+data.friendId+'"]');
+ 100 |                     allSuggestionItems.forEach(item => item.remove());
+ 101 | 
+ 102 |                     const demandeBlock = document.getElementById('demande-' + data.requestId);
+ 103 |                     if (demandeBlock) demandeBlock.remove();
+ 104 | 
+ 105 |                     // CrÃ©er la balise imessage-contact pour l'ajouter en haut de la liste de discussions
+ 106 |                     const listContacts = document.querySelector('.imessage-contact-list');
+ 107 |                     if (listContacts) {
+ 108 |                         // Check if it already exists to prevent duplicate (in case of double event or UI re-render)
+ 109 |                         if (!document.getElementById('conv-item-' + data.conversationId)) {
+ 110 |                             const strName = data.friendName.replace(/'/g, "\\'");
+ 111 |                             const strAvatar = data.friendImage.replace(/'/g, "\\'");
+ 112 |                             
+ 113 |                             const newContactHtml = `
+ 114 |                                 <div class="imessage-contact" 
+ 115 |                                     id="conv-item-${data.conversationId}" 
+ 116 |                                     data-user-id="${data.friendId}"
+ 117 |                                     data-unread="0"
+ 118 |                                     data-status="En ligne"
+ 119 |                                     data-status-color="#10B981"
+ 120 |                                     onclick="window.slideIntoDiscussion('${strName}', '${strAvatar}', '${data.conversationId}'); return false;">
+ 121 |                                     
+ 122 |                                     <div style="position: relative; margin-right: 12px; height: 45px;">
+ 123 |                                         <img src="${data.friendImage}" class="avatar" style="margin-right: 0;" alt="PDP" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=User&background=f1f5f9&color=000'">
+ 124 |                                         <div style="position: absolute; bottom: 0px; right: 2px; width: 13px; height: 13px; background: #10B981; border-radius: 50%; border: 2px solid white;"></div>
+ 125 |                                     </div>
+ 126 |                                     
+ 127 |                                     <div class="contact-content">
+ 128 |                                         <div class="contact-top">
+ 129 |                                             <span class="name">${data.friendName}</span>
+ 130 |                                             <span class="time" style="font-size: 11px; color: #10B981; font-weight: 600;">Maintenant amis !</span>
+ 131 |                                         </div>
+ 132 |                                         <div class="contact-bottom">
+ 133 |                                             <span class="last-msg">Dites bonjour...</span>
+ 134 |                                         </div>
+ 135 |                                     </div>
+ 136 |                                 </div>
+ 137 |                             `;
+ 138 |                             
+ 139 |                             // Insérer juste après les titres ou au début
+ 140 |                             listContacts.insertAdjacentHTML('afterbegin', newContactHtml);
+ 141 |                         }
+ 142 |                     }
+ 143 |                 });
+ 144 | 
+ 145 |                 container.insertAdjacentHTML('afterbegin', newFrHtml);
+ 146 |                     }
+ 147 | 
+ 148 |                     const pendingSection = document.getElementById('pendingRequestsSection');
+ 149 |                     const pendingContainer = document.getElementById('pendingRequestsContainer');
+ 150 |                     if (pendingSection && pendingContainer) {
+ 151 |                         pendingSection.style.display = 'block';
+ 152 |                         
+ 153 |                         if (!document.getElementById('demande-' + data.requestId)) {
+ 154 |                             const newPendingHtml = `
+ 155 |                                 <div class="imessage-contact" id="demande-${data.requestId}" style="cursor: default; padding: 10px 20px;">
+ 156 |                                     <img src="${data.requesterImage}" class="avatar" alt="PDP" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=User&background=f1f5f9&color=000'">
+ 157 |                                     <div class="contact-content" style="display: flex; justify-content: space-between; align-items: center; border-bottom: none; padding-bottom: 0;">
+ 158 |                                         <div class="contact-top" style="flex-direction: column; align-items: flex-start;">
+ 159 |                                             <span class="name" style="font-size: 15px; margin-bottom: 2px;">${data.requesterName}</span>
+ 160 |                                             <span class="last-msg" style="font-size: 12px; color: #8E8E93;">Veut se connecter</span>
+ 161 |                                         </div>
+ 162 |                                         <button onclick="accepterDemande(${data.requestId}, this)" style="background: var(--intel-blue); color: white; border: none; padding: 6px 14px; border-radius: 15px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s;">
+ 163 |                                             Accepter
+ 164 |                                         </button>
+ 165 |                                     </div>
+ 166 |                                 </div>
+ 167 |                             `;
+ 168 |                             pendingContainer.insertAdjacentHTML('afterbegin', newPendingHtml);
+ 169 |                         }
+ 170 |                     }
+ 171 |                 });
+ 172 | 
+ 173 |                 globalChannel.bind('reclamation-treated', function(data) {
+ 174 |                     const badge = document.getElementById('notifBadge');
+ 175 |                     const totalCountCountSpan = document.getElementById('totalNotifCount');
+ 176 |                     const container = document.getElementById('dynamicNotificationsContainer');
+ 177 |                     const emptyMsg = document.getElementById('emptyNotifMsg');
+ 178 |                     
+ 179 |                     if (badge) {
+ 180 |                         badge.classList.remove('hidden');
+ 181 |                         badge.innerText = parseInt(badge.innerText || 0) + 1;
+ 182 |                     }
+ 183 |                     if (totalCountCountSpan) {
+ 184 |                         totalCountCountSpan.innerText = parseInt(totalCountCountSpan.innerText || 0) + 1;
+ 185 |                     }
+ 186 |                     if (emptyMsg) emptyMsg.classList.add('hidden');
+ 187 |                     
+ 188 |                     if (container) {
+ 189 |                         const newRecHtml = `
+ 190 |                             <div class="notif-item reclamation-notif" id="rec-notif-${data.reclamationId}" onclick="markRecAsRead(${data.reclamationId}, '/reclamation/${data.reclamationId}')">
+ 191 |                                 <div class="icon-circle" style="background:#dcfce7; color:#059669;"><i class="lni lni-checkmark-circle"></i></div>
+ 192 |                                 <div class="content">
+ 193 |                                     <h4>Réclamation Traitée</h4>
+ 194 |                                     <p>${data.message}</p>
+ 195 |                                 </div>
+ 196 |                             </div>
+ 197 |                         `;
+ 198 |                         container.insertAdjacentHTML('afterbegin', newRecHtml);
+ 199 |                     }
+ 200 |                 });
+ 201 |             }
+ 202 | 
+ 203 |             // LA TECHNIQUE DE DÉLÉGATION (Navigation dans le widget)
+ 204 |             document.addEventListener('click', function(e) {
+ 205 |                 const chatPanel = document.getElementById('chatWidgetPanel');
+ 206 |                 if (!chatPanel) return; 
+ 207 | 
+ 208 |                 // Les boutons d'ouverture (navbar et IA) ainsi que retour/fermer 
+ 209 |                 // sont maintenant gÃ©rÃ©s nativement par leurs attributs onclick="...".
+ 210 |                 // Cela Ã©vite les doublons d'ouverture/fermeture !
+ 211 | 
+ 212 |                 const sendBtn = e.target.closest('#sendBtn');
+ 213 |                 if (sendBtn) { envoyerMessage(); return; }
+ 214 | 
+ 215 |                 const contactItem = e.target.closest('.imessage-contact');
+ 216 |                 if (contactItem) {
+ 217 |                     const convId = contactItem.getAttribute('data-conversation-id');
+ 218 |                     if (convId) {
+ 219 |                         const name = contactItem.getAttribute('data-name');
+ 220 |                         const avatar = contactItem.getAttribute('data-avatar');
+ 221 |                         window.slideIntoDiscussion(name, avatar, convId);
+ 222 |                     }
+ 223 |                     return;
+ 224 |                 }
+ 225 |             });
+ 226 | 
+ 227 |             // ðŸ”´ 1. OUVRIR UNE DISCUSSION (Avec historique, Pusher, et IA)
+ 228 |             window.slideIntoDiscussion = function(name, avatarUrl, conversationId) {
+ 229 |                 activeConversationId = conversationId;
+ 230 | 
+ 231 |                 let lastActivityStr = '';
+ 232 |                 let statusColor = '';
+ 233 | 
+ 234 |                 // Enlever le gras et mettre Ã  jour le badge quand on ouvre !
+ 235 |                 const convItem = document.getElementById('conv-item-' + conversationId);
+ 236 |                 if (convItem) {
+ 237 |                     lastActivityStr = convItem.getAttribute('data-status') || '';
+ 238 |                     statusColor = convItem.getAttribute('data-status-color') || '';
+ 239 | 
+ 240 |                     let unread = parseInt(convItem.getAttribute('data-unread')) || 0;
+ 241 |                     if (unread > 0) {
+ 242 |                         globalUnread = Math.max(0, globalUnread - unread);
+ 243 |                         convItem.setAttribute('data-unread', '0');
+ 244 |                         convItem.classList.remove('unread-bold');
+ 245 |                         updateBadge();
+ 246 |                         fetch('/api/message/read/' + conversationId, { method: 'POST' });
+ 247 |                     }
+ 248 |                 }
+ 249 | 
+ 250 |                 document.getElementById('activeName').innerText = name;
+ 251 |                 
+ 252 |                 const activeStatusStrSpan = document.getElementById('activeStatusStr');
+ 253 |                 if (activeStatusStrSpan) {
+ 254 |                     if (avatarUrl === 'ai-logo') {
+ 255 |                         activeStatusStrSpan.innerText = 'Toujours en ligne';
+ 256 |                         activeStatusStrSpan.style.color = '#10B981';
+ 257 |                     } else if (lastActivityStr) {
+ 258 |                         activeStatusStrSpan.innerText = lastActivityStr;
+ 259 |                         activeStatusStrSpan.style.color = statusColor;
+ 260 |                     } else {
+ 261 |                         activeStatusStrSpan.innerText = '';
+ 262 |                     }
+ 263 |                 }
+ 264 |                 
+ 265 |                 // GESTION DU LOGO (Avatar normal ou Animation SVG pour l'IA)
+ 266 |                 const activeAvatarImg = document.getElementById('activeAvatar');
+ 267 |                 const activeAvatarAi = document.getElementById('activeAvatarAi');
+ 268 |                 
+ 269 |                 if (avatarUrl === 'ai-logo') {
+ 270 |                     activeAvatarImg.style.display = 'none';
+ 271 |                     activeAvatarAi.style.display = 'flex';
+ 272 |                 } else {
+ 273 |                     activeAvatarImg.style.display = 'block';
+ 274 |                     activeAvatarAi.style.display = 'none';
+ 275 |                     activeAvatarImg.src = avatarUrl;
+ 276 |                 }
+ 277 | 
+ 278 |                 document.getElementById('viewContacts').classList.remove('view-active');
+ 279 |                 document.getElementById('viewContacts').classList.add('view-hidden-left');
+ 280 |                 document.getElementById('viewDiscussion').classList.remove('view-hidden-right');
+ 281 |                 document.getElementById('viewDiscussion').classList.add('view-active');
+ 282 |                 
+ 283 |                 const chatBody = document.getElementById('chatBody');
+ 284 |                 
+ 285 |                 // ðŸ¤– SI ON OUVRE LE CHAT DE L'IA
+ 286 |                 if (conversationId === 'ai') {
+ 287 |                     chatBody.innerHTML = '<div class="date-stamp">Aujourd\'hui</div>';
+ 288 |                     // Emoji retirÃ©
+ 289 |                     ajouterBulleAuChat("Bonjour ! Je suis IntelLink-AI. Comment puis-je vous aider Ã  propulser votre carriÃ¨re aujourd'hui ?", 'received');
+ 290 |                     return; // On s'arrÃªte lÃ  (pas d'historique ni de Pusher pour l'IA)
+ 291 |                 }
+ 292 | 
+ 293 |                 chatBody.innerHTML = '<div style="text-align: center; margin-top: 20px; color: #8E8E93;"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>'; 
+ 294 |                 
+ 295 |                 // ðŸŸ¢ FETCH DE L'HISTORIQUE (Pour les vrais utilisateurs) ðŸŸ¢
+ 296 |                 fetch('/api/message/history/' + conversationId)
+ 297 |                     .then(response => response.json())
+ 298 |                     .then(messages => {
+ 299 |                         chatBody.innerHTML = ''; 
+ 300 | 
+ 301 |                         if (messages.error) {
+ 302 |                             chatBody.innerHTML = `<div class="date-stamp">${messages.error}</div>`;
+ 303 |                             return;
+ 304 |                         }
+ 305 | 
+ 306 |                         if (messages.length === 0) {
+ 307 |                             chatBody.innerHTML = '<div class="date-stamp">DÃ©but de la conversation</div>';
+ 308 |                         } else {
+ 309 |                             messages.forEach(msg => {
+ 310 |                                 const type = (msg.expediteur_id === currentUserId) ? 'sent' : 'received';
+ 311 |                                 ajouterBulleAuChat(msg.contenu, type, msg.heure, msg.attachment);
+ 312 |                             });
+ 313 |                             marquerMessagesCommeLus();
+ 314 |                         }
+ 315 |                     })
+ 316 |                     .catch(error => {
+ 317 |                         console.error("Erreur d'historique:", error);
+ 318 |                         chatBody.innerHTML = '<div class="date-stamp" style="color:red;">Erreur de connexion</div>';
+ 319 |                     });
+ 320 |                 
+ 321 |                 // Fetch shared files
+ 322 |                 const sharedFilesPanel = document.getElementById('sharedFilesPanel');
+ 323 |                 const sharedFilesList = document.getElementById('sharedFilesList');
+ 324 | 
+ 325 |                 if (conversationId !== 'ai') {
+ 326 |                     fetch('/api/messenger/shared-files/' + conversationId)
+ 327 |                         .then(r => r.json())
+ 328 |                         .then(data => {
+ 329 |                             if (data.files && data.files.length > 0) {
+ 330 |                                 sharedFilesPanel.style.display = 'block';
+ 331 |                                 sharedFilesPanel.style.padding = '5px 15px'; // Adjust padding for messenger style
+ 332 |                                 
+ 333 |                                 let htmlContent = `<div onclick="var c=document.getElementById('sharedFilesContainer'); var v=document.getElementById('sharedFilesChevron'); if(c.style.display==='none'){c.style.display='flex';v.style.transform='rotate(180deg)';}else{c.style.display='none';v.style.transform='rotate(0deg)';}" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding: 8px 0; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.02)'" onmouseout="this.style.background='none'">
+ 334 |                                     <strong style="color:#050505;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;">
+ 335 |                                         Contenu multimédia et fichiers
+ 336 |                                     </strong> 
+ 337 |                                     <span style="font-size:13px;color:#65676B;display:flex;align-items:center;gap:8px;">
+ 338 |                                         ${data.files.length} fichiers <i class="fas fa-chevron-down" id="sharedFilesChevron" style="transition: transform 0.3s; transform: rotate(0deg);"></i>
+ 339 |                                     </span>
+ 340 |                                 </div>
+ 341 |                                 <div id="sharedFilesContainer" style="display:none; gap:10px; overflow-x:auto; padding:10px 0; border-top: 1px solid #E4E6EB;">`;
+ 342 |                                 
+ 343 |                                 data.files.forEach(f => {
+ 344 |                                     // Assurer le chemin correct pour les fichiers partagés (erreur 'Not Found')
+ 345 |                                     let fUrl = f.url;
+ 346 |                                     if (!fUrl.startsWith('/') && !fUrl.startsWith('http')) { fUrl = '/uploads/messenger/' + fUrl; }
+ 347 |                                     const isImg = fUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null;
+ 348 |                                     
+ 349 |                                     if (isImg) {
+ 350 |                                         htmlContent += `<a href="${fUrl}" target="_blank" style="flex-shrink:0; border-radius:10px; overflow:hidden; border:1px solid #E4E6EB; display:block; width: 60px; height: 60px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'"><img src="${fUrl}" style="width:100%; height:100%; object-fit:cover; display:block;" /></a>`;
+ 351 |                                     } else {
+ 352 |                                         htmlContent += `<a href="${fUrl}" target="_blank" style="flex-shrink:0; background:#E4E6EB; padding:8px 12px; border-radius:10px; text-decoration:none; color:#050505; font-weight:500; display:inline-flex; flex-direction: column; align-items:center; gap:6px; transition:background 0.2s; width: 60px; height: 60px; justify-content:center;" onmouseover="this.style.background='#D8DADF'" onmouseout="this.style.background='#E4E6EB'"><i class="fas fa-file-alt" style="font-size:20px; color:#555;"></i> <span style="font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width: 100%; text-align: center;">${f.fileName}</span></a>`;
+ 353 |                                     }
+ 354 |                                 });
+ 355 |                                 htmlContent += `</div>`;
+ 356 |                                 
+ 357 |                                 sharedFilesList.innerHTML = htmlContent;
+ 358 |                             } else {
+ 359 |                                 sharedFilesPanel.style.display = 'none';
+ 360 |                             }
+ 361 |                         }).catch(() => sharedFilesPanel.style.display = 'none');
+ 362 |                         
+ 363 |                     // Show unfriend button
+ 364 |                     document.getElementById('unfriendBtn').style.display = 'block';
+ 365 |                 } else {
+ 366 |                     sharedFilesPanel.style.display = 'none';
+ 367 |                     document.getElementById('unfriendBtn').style.display = 'none';
+ 368 |                 }
+ 369 |                 
+ 370 |                 // Connexion au temps rÃ©el Pusher
+ 371 |                 if (pusher && conversationId) {
+ 372 |                     if (activeChannel) { pusher.unsubscribe(activeChannel.name); }
+ 373 |                     activeChannel = pusher.subscribe('chat-conversation-' + conversationId);
+ 374 |                     
+ 375 |                     activeChannel.bind('nouveau-message', function(data) {
+ 376 |                         if (data.expediteur_id !== currentUserId) {
+ 377 |                             removeTypingIndicator(); 
+ 378 |                             ajouterBulleAuChat(data.contenu, 'received', data.heure, data.attachment);
+ 379 |                             marquerMessagesCommeLus();
+ 380 |                             fetch('/api/message/read/' + conversationId, { method: 'POST' });
+ 381 |                         }
+ 382 |                     });
+ 383 | 
+ 384 |                     activeChannel.bind('user-typing', function(data) {
+ 385 |                         if (data.user_id !== currentUserId) {
+ 386 |                             showTypingIndicator();
+ 387 |                         }
+ 388 |                     });
+ 389 | 
+ 390 |                     activeChannel.bind('messages-read', function(data) {
+ 391 |                         if (data.reader_id !== currentUserId) {
+ 392 |                             marquerMessagesCommeLus();
+ 393 |                         }
+ 394 |                     });
+ 395 |                 }
+ 396 |             };
+ 397 | 
+ 398 |             // ðŸ”´ 2. Ã‰COUTER LE CLAVIER (Pour lancer les "...")
+ 399 |             document.addEventListener('input', function(e) {
+ 400 |                 if (e.target.id === 'chatInput') {
+ 401 |                     if (!activeConversationId) return;
+ 402 |                     
+ 403 |                     // On n'envoie pas de "Typing" Ã  Pusher si on parle Ã  l'IA
+ 404 |                     if (activeConversationId !== 'ai') {
+ 405 |                         fetch('/api/message/typing/' + activeConversationId, { method: 'POST' });
+ 406 |                     }
+ 407 |                     
+ 408 |                     clearTimeout(typingTimer);
+ 409 |                     typingTimer = setTimeout(() => {}, TYPING_TIMEOUT);
+ 410 |                 }
+ 411 |             });
+ 412 | 
+ 413 |             document.addEventListener('keypress', function(e) {
+ 414 |                 if (e.target.id === 'chatInput' && e.key === 'Enter') { 
+ 415 |                     e.preventDefault(); 
+ 416 |                     envoyerMessage(); 
+ 417 |                 }
+ 418 |             });
+ 419 | 
+ 420 |             window.handleChatFileSelect = function(input) {
+ 421 |                 if (input.files && input.files[0]) {
+ 422 |                     window.selectedChatFile = input.files[0];
+ 423 |                     document.getElementById('fileNameDisplay').innerText = window.selectedChatFile.name;
+ 424 |                     document.getElementById('filePreview').style.display = 'flex';
+ 425 |                 }
+ 426 |             }
+ 427 | 
+ 428 |             window.clearFileSelection = function() {
+ 429 |                 window.selectedChatFile = null;
+ 430 |                 document.getElementById('chatFileInput').value = '';
+ 431 |                 document.getElementById('filePreview').style.display = 'none';
+ 432 |             }
+ 433 | 
+ 434 |             window.unfriendActiveUser = function() {
+ 435 |                 if (!activeConversationId || activeConversationId === 'ai') return;
+ 436 |                 if (confirm('Voulez-vous vraiment retirer cette personne de vos amis ?')) {
+ 437 |                     fetch('/api/messenger/unfriend/' + activeConversationId, { method: 'POST' })
+ 438 |                         .then(r => r.json())
+ 439 |                         .then(data => {
+ 440 |                             if (data.success) {
+ 441 |                                 window.location.reload();
+ 442 |                             } else {
+ 443 |                                 alert(data.message || 'Erreur serveur');
+ 444 |                             }
+ 445 |                         });
+ 446 |                 }
+ 447 |             }
+ 448 | 
+ 449 |             // ðŸ”´ 3. ENVOYER UN MESSAGE (Humain ou IA)
+ 450 |             function envoyerMessage() {
+ 451 |                 if (!activeConversationId) return;
+ 452 | 
+ 453 |                 const chatInput = document.getElementById('chatInput');
+ 454 |                 const texte = chatInput.value.trim();
+ 455 |                 if (texte === '' && !window.selectedChatFile) return;
+ 456 |                 
+ 457 |                 const heureActuelle = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+ 458 |                 ajouterBulleAuChat(texte, 'sent', heureActuelle, window.selectedChatFile ? '/uploads/messenger/' + window.selectedChatFile.name : null);
+ 459 |                 chatInput.value = ''; 
+ 460 |                 
+ 461 |                 // ðŸ¤– SI ON PARLE Ã€ L'IA
+ 462 |                 if (activeConversationId === 'ai') {
+ 463 |                     showTypingIndicator(); 
+ 464 |                     
+ 465 |                     fetch('/api/ai/chat', {
+ 466 |                         method: 'POST',
+ 467 |                         body: (function(){ const fd = new FormData(); fd.append('contenu', texte); if(window.selectedChatFile) fd.append('attachment', window.selectedChatFile); return fd; })()
+ 468 |                     })
+ 469 |                     .then(res => res.json())
+ 470 |                     .then(data => {
+ 471 |                         removeTypingIndicator(); 
+ 472 |                         const heureIA = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+ 473 |                         // Emojis retirÃ©s potentiellement dans la rÃ©ponse via backend, sinon on affiche la data.
+ 474 |                         ajouterBulleAuChat(data.reponse, 'received', heureIA);
+ 475 |                     })
+ 476 |                     .catch(err => {
+ 477 |                         removeTypingIndicator();
+ 478 |                         // Emoji retirÃ©
+ 479 |                         ajouterBulleAuChat("Erreur technique. Mes circuits sont actuellement occupÃ©s.", 'received');
+ 480 |                     });
+ 481 |                     
+ 482 |                     return;
+ 483 |                 }
+ 484 | 
+ 485 |                 // ðŸ‘¨â€ðŸ’» SI ON PARLE Ã€ UN HUMAIN (Pusher)
+ 486 |                 fetch('/api/message/send/' + activeConversationId, {
+ 487 |                     method: 'POST',
+ 488 |                     body: (function(){ const fd = new FormData(); fd.append('contenu', texte); if(window.selectedChatFile) fd.append('attachment', window.selectedChatFile); return fd; })()
+ 489 |                 })
+ 490 |                 .then(() => {
+ 491 |                     if (window.selectedChatFile) { clearFileSelection(); }
+ 492 |                 })
+ 493 |                 .catch(error => console.error("Erreur d'envoi:", error));
+ 494 |             }
+ 495 | 
+ 496 |             // ðŸ”´ 4. GÃ‰NÃ‰RATEUR DE BULLES INTELLIGENT
+ 497 |             function ajouterBulleAuChat(texte, type, heure = null, attachmentHtml = null) {
+ 498 |                 const chatBody = document.getElementById('chatBody');
+ 499 |                 const wrapper = document.createElement('div'); 
+ 500 |                 wrapper.className = 'message-wrapper ' + type;
+ 501 |                 
+ 502 |                 const bubble = document.createElement('div'); 
+ 503 |                 bubble.className = 'bubble'; 
+ 504 |                 bubble.innerText = texte;
+ 505 |                 wrapper.appendChild(bubble); 
+ 506 |                 
+ 507 |                 if (attachmentHtml) {
+ 508 |                     let fileUrl = attachmentHtml;
+ 509 |                     if (!fileUrl.startsWith('/') && !fileUrl.startsWith('http')) {
+ 510 |                         fileUrl = '/uploads/messenger/' + fileUrl;
+ 511 |                     }
+ 512 |                     
+ 513 |                     const attachDiv = document.createElement('div');
+ 514 |                     attachDiv.style.marginTop = '8px';
+ 515 |                     
+ 516 |                     if (type === 'received') {
+ 517 |                         attachDiv.innerHTML = `<a href="${fileUrl}" target="_blank" style="color: var(--intel-blue); background: #ffffff; border: 1px solid rgba(0, 122, 255, 0.15); padding: 8px 12px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; font-size: 0.85rem; text-decoration: none; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.2s, background 0.2s;" onmouseover="this.style.background='#f0f4ff'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#ffffff'; this.style.transform='translateY(0)'"><i class="fas fa-file-download" style="font-size: 1.1rem;"></i> <span>Ouvrir la pièce jointe</span></a>`;
+ 518 |                     } else {
+ 519 |                         attachDiv.innerHTML = `<a href="${fileUrl}" target="_blank" style="color: #ffffff; background: rgba(255, 255, 255, 0.2); padding: 8px 12px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; font-size: 0.85rem; text-decoration: none; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'"><i class="fas fa-file-download" style="font-size: 1.1rem;"></i> <span>Ouvrir</span></a>`;
+ 520 |                     }
+ 521 |                     
+ 522 |                     bubble.appendChild(attachDiv);
+ 523 |                 }
+ 524 | 
+ 525 |                 if (type === 'sent') {
+ 526 |                     const info = document.createElement('div');
+ 527 |                     info.className = 'msg-info';
+ 528 |                     info.innerHTML = `${heure || 'Ã€ l\'instant'} <span class="status-text">Distribué</span>`;
+ 529 |                     wrapper.appendChild(info);
+ 530 |                 } else if (type === 'received' && heure) {
+ 531 |                     const info = document.createElement('div');
+ 532 |                     info.className = 'msg-info';
+ 533 |                     info.style.justifyContent = 'flex-start';
+ 534 |                     info.innerHTML = heure;
+ 535 |                     wrapper.appendChild(info);
+ 536 |                 }
+ 537 | 
+ 538 |                 chatBody.appendChild(wrapper);
+ 539 |                 chatBody.scrollTop = chatBody.scrollHeight;
+ 540 |                 
+ 541 |                 return wrapper;
+ 542 |             }
+ 543 | 
+ 544 |             // ðŸ”´ 5. GESTION DE L'ANIMATION DES 3 POINTS
+ 545 |             function showTypingIndicator() {
+ 546 |                 const chatBody = document.getElementById('chatBody');
+ 547 |                 if (document.getElementById('typing-anim')) return; 
+ 548 | 
+ 549 |                 const typingDiv = document.createElement('div');
+ 550 |                 typingDiv.id = 'typing-anim';
+ 551 |                 typingDiv.className = 'typing-indicator';
+ 552 |                 typingDiv.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+ 553 |                 
+ 554 |                 chatBody.appendChild(typingDiv);
+ 555 |                 chatBody.scrollTop = chatBody.scrollHeight;
+ 556 | 
+ 557 |                 clearTimeout(window.hideTypingTimer);
+ 558 |                 window.hideTypingTimer = setTimeout(removeTypingIndicator, 2500);
+ 559 |             }
+ 560 | 
+ 561 |             function removeTypingIndicator() {
+ 562 |                 const typingDiv = document.getElementById('typing-anim');
+ 563 |                 if (typingDiv) {
+ 564 |                     typingDiv.style.opacity = '0';
+ 565 |                     setTimeout(() => typingDiv.remove(), 300);
+ 566 |                 }
+ 567 |             }
+ 568 | 
+ 569 |             // ðŸ”´ 6. SIMULATION DU "VU"
+ 570 |             function marquerMessagesCommeLus() {
+ 571 |                 const statusTexts = document.querySelectorAll('.status-text');
+ 572 |                 statusTexts.forEach(span => {
+ 573 |                     span.innerText = 'Lu';
+ 574 |                     span.style.color = '#34D399'; 
+ 575 |                 });
+ 576 |             }
+ 577 | 
+ 578 |             // ðŸ”´ 7. GESTION DES DEMANDES D'AMIS
+ 579 |             window.envoyerDemande = function(userId, el) {
+ 580 |                 const badge = el.querySelector('.suggestion-add-badge');
+ 581 |                 const icon = badge.querySelector('i');
+ 582 | 
+ 583 |                 badge.style.background = "#ccc";
+ 584 |                 badge.style.borderColor = "#ccc";
+ 585 |                 icon.className = "fas fa-spinner fa-spin";
+ 586 | 
+ 587 |                 fetch('/api/friend-request/send/' + userId, { method: 'POST' })
+ 588 |                 .then(response => response.json())
+ 589 |                 .then(data => {
+ 590 |                     if (data.error) {
+ 591 |                         alert(data.error);
+ 592 |                         badge.style.background = "var(--intel-blue)";
+ 593 |                         badge.style.borderColor = "white";
+ 594 |                         icon.className = "fas fa-plus";
+ 595 |                     } else {
+ 596 |                         badge.style.background = "#10b981";
+ 597 |                         badge.style.borderColor = "white";
+ 598 |                         icon.className = "fas fa-check";
+ 599 |                     }
+ 600 |                 })
+ 601 |                 .catch(error => {
+ 602 |                     console.error("Erreur:", error);
+ 603 |                     badge.style.background = "#ef4444";
+ 604 |                     icon.className = "fas fa-times";
+ 605 |                 });
+ 606 |             };
+ 607 | 
+ 608 |             window.accepterDemande = function(requestId, btnElement) {
+ 609 |                 const originalText = btnElement.innerText;
+ 610 |                 btnElement.innerText = "...";
+ 611 |                 btnElement.style.background = "#ccc";
+ 612 | 
+ 613 |                 fetch('/api/friend-request/accept/' + requestId, {
+ 614 |                     method: 'POST'
+ 615 |                 })
+ 616 |                 .then(response => response.json())
+ 617 |                 .then(data => {
+ 618 |                     if (data.error) {
+ 619 |                         alert(data.error);
+ 620 |                         btnElement.innerText = originalText;
+ 621 |                         btnElement.style.background = "var(--intel-blue)";
+ 622 |                     } else {
+ 623 |                         const demandeDiv = document.getElementById('demande-' + requestId);
+ 624 |                         if(demandeDiv) {
+ 625 |                             demandeDiv.style.transition = "opacity 0.4s ease";
+ 626 |                             demandeDiv.style.opacity = '0';
+ 627 |                             setTimeout(() => {
+ 628 |                                 demandeDiv.remove();
+ 629 |                             }, 400);
+ 630 |                         }
+ 631 |                     }
+ 632 |                 })
+ 633 |                 .catch(error => {
+ 634 |                     console.error("Erreur:", error);
+ 635 |                     btnElement.innerText = "Erreur";
+ 636 |                     btnElement.style.background = "#ef4444";
+ 637 |                 });
+ 638 |             };
+ 639 | 
+ 640 |             // =========================================
+ 641 |             // ðŸ”´ 8. RECHERCHE INSTANTANÃ‰E (Style iMessage)
+ 642 |             // =========================================
+ 643 |             const chatSearchInput = document.getElementById('chatSearchInput');
+ 644 |             if (chatSearchInput) {
+ 645 |                 chatSearchInput.addEventListener('input', function(e) {
+ 646 |                     const query = e.target.value.toLowerCase().trim();
+ 647 | 
+ 648 |                     const contacts = document.querySelectorAll('.imessage-contact-list .imessage-contact');
+ 649 |                     contacts.forEach(contact => {
+ 650 |                         const nameElem = contact.querySelector('.name');
+ 651 |                         if(nameElem) {
+ 652 |                             const name = nameElem.innerText.toLowerCase();
+ 653 |                             contact.style.display = name.includes(query) ? 'flex' : 'none';
+ 654 |                         }
+ 655 |                     });
+ 656 | 
+ 657 |                     const suggestions = document.querySelectorAll('.imessage-suggestions-container .suggestion-item');
+ 658 |                     suggestions.forEach(suggestion => {
+ 659 |                         const nameElem = suggestion.querySelector('.suggestion-name');
+ 660 |                         if(nameElem) {
+ 661 |                             const name = nameElem.innerText.toLowerCase();
+ 662 |                             suggestion.style.display = name.includes(query) ? 'flex' : 'none';
+ 663 |                         }
+ 664 |                     });
+ 665 | 
+ 666 |                     const sectionTitles = document.querySelectorAll('.section-title');
+ 667 |                     sectionTitles.forEach(title => {
+ 668 |                         title.style.display = query.length > 0 ? 'none' : 'block';
+ 669 |                     });
+ 670 |                 });
+ 671 |             }
+ 672 |             // =========================================
+ 673 |             //  9. POLICE D'ETAT TEMPS-REEL (AJAX)
+ 674 |             // =========================================
+ 675 |             setInterval(() => {
+ 676 |                 fetch('/api/notifications/poll')
+ 677 |                     .then(r => {
+ 678 |                         if (r.ok) return r.json();
+ 679 |                         throw new Error('Non authentifiÃ©');
+ 680 |                     })
+ 681 |                     .then(data => {
+ 682 |                         if (data.totalNotifs !== undefined) {
+ 683 |                             const badge = document.getElementById('notifBadge');
+ 684 |                             const totalBadge = document.getElementById('totalNotifCount');
+ 685 |                             
+ 686 |                             if (badge && totalBadge) {
+ 687 |                                 // Add messenger count to the backend total (chat sets globalUnread via its own script)
+ 688 |                                 const globalUnreadSpan = document.getElementById('txtGlobalUnread');
+ 689 |                                 const messengerCount = globalUnreadSpan ? parseInt(globalUnreadSpan.innerText) || 0 : 0;
+ 690 |                                 const grandTotal = data.totalNotifs + messengerCount;
+ 691 | 
+ 692 |                                 totalBadge.innerText = grandTotal;
+ 693 |                                 badge.innerText = grandTotal;
+ 694 | 
+ 695 |                                 if (grandTotal > 0) {
+ 696 |                                     badge.classList.remove('hidden');
+ 697 |                                 } else {
+ 698 |                                     badge.classList.add('hidden');
+ 699 |                                 }
+ 700 |                             }
+ 701 |                         }
+ 702 |                     })
+ 703 |                     .catch(err => console.log('Poll inactif:', err));
+ 704 |             }, 10000); // Check every 10 seconds
+ 705 | 
+ 706 |         

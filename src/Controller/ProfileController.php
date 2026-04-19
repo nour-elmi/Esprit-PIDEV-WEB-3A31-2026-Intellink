@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -14,6 +15,8 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticatorInterface;
+
 class ProfileController extends AbstractController
 {
     // =========================================================================
@@ -39,24 +42,48 @@ class ProfileController extends AbstractController
             $authMethod = $request->request->get('auth_method');
             $avatarUrl = $request->request->get('avatar_url');
 
-            // --- GESTION DES FICHIERS ---
+            // --- GESTION DES FICHIERS (IMAGE & PDF) ---
             $imageFile = $request->files->get('image_profil');
             if ($imageFile) {
                 $newFilename = $slugger->slug(pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME)).'-'.uniqid().'.'.$imageFile->guessExtension();
-                $imageFile->move($this->getParameter('profiles_directory'), $newFilename);
-                $user->setImage($newFilename);
+                try {
+                    $imageFile->move($this->getParameter('profiles_directory'), $newFilename);
+                    $user->setImage($newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('danger', 'Erreur lors de l\'upload de l\'image.');
+                }
             } elseif ($avatarUrl) {
-                $user->setImage($avatarUrl); // Si on a cliqué sur un avatar par défaut
+                $user->setImage($avatarUrl);
             }
 
             $pdfFile = $request->files->get('cv_pdf');
             if ($pdfFile) {
                 $newFilename = $slugger->slug(pathinfo($pdfFile->getClientOriginalName(), PATHINFO_FILENAME)).'-'.uniqid().'.'.$pdfFile->guessExtension();
-                $pdfFile->move($this->getParameter('cv_directory'), $newFilename);
-                $user->setSkills($newFilename);
+                try {
+                    $pdfFile->move($this->getParameter('cv_directory'), $newFilename);
+                    $user->setSkills($newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('danger', 'Erreur lors de l\'upload du CV.');
+                }
             }
 
-            $user->setAuthMethod($authMethod);
+            // --- GESTION DU RECOUVREMENT DE MOT DE PASSE ---
+            $recoveryMethod = $request->request->get('recovery_method');
+            
+            if ($recoveryMethod === 'GOOGLE_AUTHENTICATOR') {
+                if (!$user->isGoogleAuthenticatorEnabled()) {
+                    $user->setPasswordRecoveryMethod('EMAIL');
+                    $this->addFlash('warning', 'Configuration requise : Vous devez lier votre appareil et saisir le code à 6 chiffres avant d\'activer cette méthode.');
+                } else {
+                    $user->setPasswordRecoveryMethod('GOOGLE_AUTHENTICATOR');
+                }
+            } else {
+                $user->setPasswordRecoveryMethod('EMAIL');
+            }
+
+            if ($authMethod) {
+                $user->setAuthMethod($authMethod);
+            }
 
             // --- CHANGEMENT D'EMAIL (LOGIQUE DE VÉRIFICATION OTP) ---
             if ($newEmail !== $user->getEmail()) {
@@ -66,7 +93,6 @@ class ProfileController extends AbstractController
                     return $this->redirectToRoute('app_profile');
                 }
 
-                // On stocke les modifs en session et on envoie le code
                 $codeVerification = sprintf("%06d", mt_rand(1, 999999));
                 $session = $request->getSession();
                 $session->set('pending_profile_update', [
@@ -78,14 +104,17 @@ class ProfileController extends AbstractController
                 $emailMessage = (new Email())
                     ->from('liontn2004@gmail.com')
                     ->to($newEmail)
-                    ->subject('Vérification de votre nouvelle adresse e-mail - Intel_link')
+                    ->subject('Vérification de votre nouvelle adresse e-mail - IntelLink')
                     ->html("<h2>Votre code de sécurité : {$codeVerification}</h2>");
-                $mailer->send($emailMessage);
-
-                return $this->redirectToRoute('app_profile_verify_email');
+                
+                try {
+                    $mailer->send($emailMessage);
+                    return $this->redirectToRoute('app_profile_verify_email');
+                } catch (\Exception $e) {
+                    $this->addFlash('danger', 'Erreur lors de l\'envoi de l\'e-mail de vérification.');
+                }
             }
 
-            // Si l'email n'a pas changé, on sauvegarde directement
             $user->setNom($nom);
             $entityManager->flush();
             $this->addFlash('success', 'Profil mis à jour avec succès !');
@@ -117,7 +146,6 @@ class ProfileController extends AbstractController
             $enteredCode = $request->request->get('code1').$request->request->get('code2').$request->request->get('code3').$request->request->get('code4').$request->request->get('code5').$request->request->get('code6');
 
             if ($enteredCode === $correctCode) {
-                // ✅ LE CODE EST BON : ON MET À JOUR LA BDD
                 $user->setNom($pendingData['nom']);
                 $user->setEmail($pendingData['email']);
                 $entityManager->flush();
@@ -133,7 +161,7 @@ class ProfileController extends AbstractController
         }
 
         return $this->render('frontUser/verify_email.html.twig', [
-            'email' => $pendingData['email'] // On réutilise votre belle vue OTP !
+            'email' => $pendingData['email']
         ]);
     }
 
@@ -145,11 +173,9 @@ class ProfileController extends AbstractController
     {
         $user = $this->getUser();
         if ($user && $this->isCsrfTokenValid('delete-account', $request->request->get('_token'))) {
-            // Déconnecter l'utilisateur
             $request->getSession()->invalidate();
             $security->logout(false);
 
-            // Supprimer de la base
             $entityManager->remove($user);
             $entityManager->flush();
 
@@ -157,13 +183,16 @@ class ProfileController extends AbstractController
         }
         return $this->redirectToRoute('app_profile');
     }
+
+    // =========================================================================
+    //  MODIFIER LE MOT DE PASSE
+    // =========================================================================
     #[Route('/profile/password', name: 'app_profile_password', methods: ['POST'])]
     public function updatePassword(
         Request $request, 
         EntityManagerInterface $em, 
         UserPasswordHasherInterface $passwordHasher
     ): Response {
-        // 1. Récupérer l'utilisateur connecté
         /** @var \App\Entity\Utilisateur $user */
         $user = $this->getUser();
 
@@ -171,38 +200,97 @@ class ProfileController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        // 2. Vérifier la sécurité (CSRF Token)
         if (!$this->isCsrfTokenValid('change_password', $request->request->get('_token'))) {
             $this->addFlash('danger', 'Erreur de sécurité : Token invalide.');
             return $this->redirectToRoute('app_profile');
         }
 
-        // 3. Récupérer les données envoyées par le modal
         $oldPassword = $request->request->get('old_password');
         $newPassword = $request->request->get('new_password');
         $confirmPassword = $request->request->get('confirm_password');
 
-        // 4. Double sécurité : Vérifier si les nouveaux mots de passe correspondent
         if ($newPassword !== $confirmPassword) {
             $this->addFlash('danger', 'Les nouveaux mots de passe ne correspondent pas.');
             return $this->redirectToRoute('app_profile');
         }
 
-        // 5. Vérifier que l'ancien mot de passe saisi est bien le bon
         if (!$passwordHasher->isPasswordValid($user, $oldPassword)) {
             $this->addFlash('danger', 'Identification échouée : L\'ancien mot de passe est incorrect.');
             return $this->redirectToRoute('app_profile');
         }
 
-        // 6. Si tout est bon, on hache le nouveau mot de passe et on sauvegarde
         $hashedPassword = $passwordHasher->hashPassword($user, $newPassword);
         $user->setPassword($hashedPassword);
+        $em->flush();
 
-        $em->flush(); // Exécute la modification dans la base de données
-
-        // 7. On affiche un beau message de succès
-        $this->addFlash('success', '🔐 Le coffre-fort a été refermé. Votre mot de passe a été mis à jour avec succès !');
+        $this->addFlash('success', '🔐 Le coffre-fort a été refermé. Votre mot de passe a été mis à jour !');
         
         return $this->redirectToRoute('app_profile');
+    }
+
+    // =========================================================================
+    //  GÉNÉRER LE QR CODE EN AJAX
+    // =========================================================================
+    #[Route('/profile/2fa/generate-ajax', name: 'app_profile_2fa_generate_ajax', methods: ['POST'])]
+    public function generate2FAAjax(
+        GoogleAuthenticatorInterface $authenticator, 
+        EntityManagerInterface $em
+    ): JsonResponse {
+        /** @var \App\Entity\Utilisateur $user */
+        $user = $this->getUser();
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'Non autorisé'], 403);
+        }
+
+        if (!$user->getGoogleAuthenticatorSecret()) {
+            $secret = $authenticator->generateSecret();
+            $user->setGoogleAuthenticatorSecret($secret);
+            $em->flush();
+        }
+
+        $qrCodeContent = $authenticator->getQRContent($user);
+        $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' . urlencode($qrCodeContent);
+
+        return new JsonResponse([
+            'qrCodeUrl' => $qrCodeUrl,
+            'secret' => $user->getGoogleAuthenticatorSecret()
+        ]);
+    }
+
+   // =========================================================================
+    //  VÉRIFIER LE CODE À 6 CHIFFRES EN AJAX (ACTIVER LE 2FA)
+    // =========================================================================
+    #[Route('/profile/2fa/verify-ajax', name: 'app_profile_2fa_verify_ajax', methods: ['POST'])]
+    public function verify2FAAjax(
+        Request $request,
+        GoogleAuthenticatorInterface $authenticator, 
+        EntityManagerInterface $em
+    ): JsonResponse {
+        /** @var \App\Entity\Utilisateur $user */
+        $user = $this->getUser();
+
+        if (!$user) {
+            return new JsonResponse(['success' => false, 'message' => 'Non autorisé.'], 403);
+        }
+
+        // 1. Lire les données de façon 100% sécurisée
+        $content = $request->getContent();
+        $data = json_decode($content, true);
+
+        // 2. Éviter le plantage si $data est null
+        $code = (is_array($data) && isset($data['code'])) ? (string) $data['code'] : '';
+
+        // 3. Supprimer les espaces éventuels (ex: "866 704" devient "866704")
+        $code = str_replace(' ', '', $code);
+
+        // 4. Vérification
+        if ($authenticator->checkCode($user, $code)) {
+            $user->setIsGoogleAuthenticatorEnabled(true);
+            $em->flush();
+            return new JsonResponse(['success' => true]);
+        }
+
+        return new JsonResponse(['success' => false, 'message' => 'Le code est incorrect ou a expiré.']);
     }
 }
