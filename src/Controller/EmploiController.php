@@ -225,14 +225,38 @@ final class EmploiController extends AbstractController
     }
 
     #[Route('/api/gap-analysis/{id}', name: 'api_gap_analysis', methods: ['GET'])]
-    public function getGapAnalysis(Emploi $emploi, MarketIntelligenceService $marketService): JsonResponse
-    {
-        $analysis = $marketService->analyzeGap($emploi);
-        
-        // Construction du message HTML pour le tooltip
-        $html = "<b>Salaire Marché:</b> " . ($analysis['market_avg'] !== 'N/A' ? round($analysis['market_avg']/12) . "€/m" : "Inconnu") . "<br>";
-        $html .= "<b>Compétences Candidats:</b> " . (empty($analysis['top_skills']) ? "Aucune" : implode(', ', $analysis['top_skills']));
+public function getGapAnalysis(Emploi $emploi, MarketIntelligenceService $marketService): JsonResponse
+{
+    $analysis = $marketService->analyzeGap($emploi);
+    
+    // 1. Nettoyage du titre pour Adzuna (on prend les 2 premiers mots pour plus de précision)
+    $words = explode(' ', $emploi->getTitre());
+    $shortTitle = count($words) > 1 ? $words[0] . ' ' . $words[1] : $words[0];
 
-        return new JsonResponse(['html' => $html]);
+    // 2. Appel à Gemini pour extraire les compétences du marché (Market Intelligence)
+    $prompt = "Pour un poste de '{$shortTitle}', quelles sont les 3 compétences techniques les plus demandées actuellement sur le marché ? 
+               Réponds uniquement par les noms des compétences séparés par des virgules, sans phrases.";
+    
+    $marketSkills = "Non disponible";
+    try {
+        $result = $this->geminiClient->generativeModel(model: 'gemini-1.5-flash')->generateContent($prompt);
+        $marketSkills = $result->text();
+    } catch (\Exception $e) {
+        $marketSkills = "Erreur extraction";
     }
+
+    // 3. Construction du HTML enrichi
+    $salary = ($analysis['market_avg'] !== 'N/A') 
+        ? round($analysis['market_avg'] / 12) . " €/mois" 
+        : "Donnée Adzuna indisponible";
+
+    $html = "<div class='text-start p-1'>";
+    $html .= "<p class='mb-1'><i class='fas fa-coins text-warning me-2'></i><b>Estimation Marché:</b><br><span class='badge bg-light text-dark'>$salary</span></p>";
+    $html .= "<p class='mb-1'><i class='fas fa-chart-bar text-info me-2'></i><b>Tendances Marché:</b><br><small class='text-info'>$marketSkills</small></p>";
+    $html .= "<hr class='my-1'>";
+    $html .= "<p class='mb-0'><i class='fas fa-user-graduate text-success me-2'></i><b>Compétences Candidats:</b><br><small>" . (empty($analysis['top_skills']) ? "Aucun candidat" : implode(', ', $analysis['top_skills'])) . "</small></p>";
+    $html .= "</div>";
+
+    return new JsonResponse(['html' => $html]);
+}
 }

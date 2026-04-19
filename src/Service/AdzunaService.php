@@ -7,7 +7,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 class AdzunaService
 {
     private $httpClient;
-   
+    
 
     public function __construct(HttpClientInterface $httpClient)
     {
