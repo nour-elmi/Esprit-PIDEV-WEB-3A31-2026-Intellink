@@ -2,115 +2,99 @@
 
 namespace App\Entity;
 
+use App\Repository\MessageRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-
-use App\Repository\MessageRepository;
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
-#[ORM\Table(name: 'messages')]
 class Message
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column]
     private ?int $id = null;
+
+    // La conversation à laquelle appartient ce message
+    #[ORM\ManyToOne(targetEntity: Conversation::class, inversedBy: 'messages')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Conversation $conversation = null;
+
+    // L'utilisateur qui a envoyé le message (Expéditeur)
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ?Utilisateur $expediteur = null;
+
+    // Le texte du message
+    #[ORM\Column(type: Types::TEXT)]
+    private ?string $contenu = null;
+
+    // La date et l'heure d'envoi
+    #[ORM\Column]
+    private ?\DateTimeImmutable $createdAt = null;
+
+    public function __construct()
+    {
+        // On initialise la date à l'instant présent dès la création de l'objet
+        $this->createdAt = new \DateTimeImmutable();
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function setId(int $id): self
+    public function getConversation(): ?Conversation
     {
-        $this->id = $id;
+        return $this->conversation;
+    }
+
+    public function setConversation(?Conversation $conversation): static
+    {
+        $this->conversation = $conversation;
         return $this;
     }
 
-    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'messages')]
-    #[ORM\JoinColumn(name: 'id_expediteur', referencedColumnName: 'id')]
-    private ?Utilisateur $utilisateur = null;
-
-    public function getUtilisateur(): ?Utilisateur
+    public function getExpediteur(): ?Utilisateur
     {
-        return $this->utilisateur;
+        return $this->expediteur;
     }
 
-    public function setUtilisateur(?Utilisateur $utilisateur): self
+    public function setExpediteur(?Utilisateur $expediteur): static
     {
-        $this->utilisateur = $utilisateur;
+        $this->expediteur = $expediteur;
         return $this;
     }
-
-    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'messages')]
-    #[ORM\JoinColumn(name: 'id_destinataire', referencedColumnName: 'id')]
-    private ?Utilisateur $destinataire = null;
-
-    public function getDestinataire(): ?Utilisateur
-    {
-        return $this->destinataire;
-    }
-
-    public function setDestinataire(?Utilisateur $destinataire): self
-    {
-        $this->destinataire = $destinataire;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'text', nullable: false)]
-    private ?string $contenu = null;
 
     public function getContenu(): ?string
     {
         return $this->contenu;
     }
 
-    public function setContenu(string $contenu): self
+    public function setContenu(string $contenu): static
     {
         $this->contenu = $contenu;
         return $this;
     }
 
-    #[ORM\Column(type: 'datetime', nullable: false)]
-    private ?\DateTimeInterface $date_envoi = null;
-
-    public function getDate_envoi(): ?\DateTimeInterface
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
-        return $this->date_envoi;
+        return $this->createdAt;
     }
 
-    public function setDate_envoi(\DateTimeInterface $date_envoi): self
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
-        $this->date_envoi = $date_envoi;
+        $this->createdAt = $createdAt;
         return $this;
     }
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private ?bool $isRead = false;
 
-    #[ORM\Column(type: 'boolean', nullable: true)]
-    private ?bool $lu = null;
+    public function getIsRead(): ?bool { return $this->isRead; }
+    public function setIsRead(bool $isRead): static { $this->isRead = $isRead; return $this; }
 
-    public function isLu(): ?bool
-    {
-        return $this->lu;
-    }
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $attachment = null;
 
-    public function setLu(?bool $lu): self
-    {
-        $this->lu = $lu;
-        return $this;
-    }
-
-    public function getDateEnvoi(): ?\DateTime
-    {
-        return $this->date_envoi;
-    }
-
-    public function setDateEnvoi(\DateTime $date_envoi): static
-    {
-        $this->date_envoi = $date_envoi;
-
-        return $this;
-    }
-
+    public function getAttachment(): ?string { return $this->attachment; }
+    public function setAttachment(?string $attachment): static { $this->attachment = $attachment; return $this; }
 }

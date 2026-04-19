@@ -75,10 +75,93 @@
         .form-control-custom.is-valid { border-color: #10b981; }
         
         .error-message { color: #ef4444; font-size: 11px; font-weight: 600; margin-top: 5px; display: none; position: absolute; bottom: -18px; left: 5px; }
+
+        /* =========================================
+           AI GOD TIER MODAL STYLES 
+           ========================================= */
+        .ai-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px);
+            z-index: 105000; display: flex; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden; transition: 0.4s ease;
+        }
+        .ai-modal-overlay.active { opacity: 1; visibility: visible; }
+        
+        .ai-modal-content {
+            background: rgba(255, 255, 255, 0.95); box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 40px rgba(59, 130, 246, 0.3);
+            border-radius: 28px; padding: 40px; max-width: 550px; width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transform: scale(0.85) translateY(30px); transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative; overflow: hidden;
+        }
+        .ai-modal-overlay.active .ai-modal-content { transform: scale(1) translateY(0); }
+        .ai-modal-content::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 6px;
+            background: linear-gradient(90deg, #8b5cf6, #3b82f6, #06b6d4);
+        }
+        
+        .ai-brand { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 30px; }
+        
+        .ai-logo-container { position: relative; width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; background: rgba(59,130,246,0.05); border-radius: 50%; }
+        .ai-aura { position: absolute; width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 0 25px rgba(59, 130, 246, 0.6); animation: pulse-aura 2s infinite alternate; }
+        .ai-svg-brain { width: 40px; height: 40px; z-index: 1; }
+        .brain-dot { animation: blink-dot 1.5s infinite alternate; }
+        @keyframes pulse-aura { 0% { transform: scale(0.95); opacity: 0.4;} 100% { transform: scale(1.15); opacity: 1;} }
+        @keyframes blink-dot { 0% { opacity: 0.2; } 100% { opacity: 1; filter: drop-shadow(0 0 5px currentColor); } }
+        
+        .ai-title { font-family: "Fira Sans", sans-serif; font-size: 1.8rem; font-weight: 900; background: linear-gradient(90deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .ai-response-area {
+            font-size: 1.05rem; color: #1e293b; line-height: 1.7; font-weight: 500;
+            background: #f8fafc; padding: 25px; border-radius: 16px; border: 1px dashed #cbd5e1;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
+            max-height: 350px; overflow-y: auto;
+        }
+        .ai-response-area::-webkit-scrollbar { width: 6px; }
+        .ai-response-area::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .ai-close-btn {
+            margin-top: 30px; width: 100%; background: #0f172a; color: white; border: none;
+            padding: 14px; border-radius: 14px; font-weight: bold; transition: 0.3s; font-size: 1.1rem;
+        }
+        .ai-close-btn:hover { background: #1e293b; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(15,23,42,0.2); }
+
+        .btn-ai-trigger {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: white !important; border: none; border-radius: 50px;
+            padding: 6px 18px; font-size: 13px; font-weight: bold; letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            transition: all 0.3s ease; float: right; margin-top: -6px; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-ai-trigger:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(139, 92, 246, 0.6); }
+        .btn-ai-trigger i { animation: blink-dot 2s infinite alternate; }
     </style>
 {% endblock %}
 
 {% block body %}
+    <!-- AI GOD TIER MODAL -->
+    <div class="ai-modal-overlay" id="aiModal">
+        <div class="ai-modal-content">
+            <div class="ai-brand">
+                <div class="ai-logo-container">
+                    <div class="ai-aura"></div>
+                    <svg class="ai-svg-brain" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path class="brain-path" d="M12 22C12 22 20 18 20 12C20 6 16 2 12 2C8 2 4 6 4 12C4 18 12 22 12 22Z" stroke="#3b82f6" stroke-width="1.5"/>
+                        <path class="brain-path" d="M12 2V22" stroke="#3b82f6" stroke-width="1" stroke-dasharray="2 2"/>
+                        <circle class="brain-dot" cx="12" cy="7" r="1.5" fill="#3b82f6"/>
+                        <circle class="brain-dot" cx="16" cy="11" r="1" fill="#8b5cf6" style="animation-delay: 0.5s;"/>
+                        <circle class="brain-dot" cx="8" cy="13" r="1" fill="#3b82f6" style="animation-delay: 1s;"/>
+                    </svg>
+                </div>
+                <div class="ai-title">IntelLink-AI</div>
+            </div>
+            <div class="ai-response-area" id="ai-suggestion-content">
+                <!-- Content goes here -->
+            </div>
+            <button type="button" class="ai-close-btn" id="btn-ai-close">Compris, merci !</button>
+        </div>
+    </div>
+
     <div class="scroll-progress-bar" id="scrollBar"></div>
     
     <div id="preloader">
@@ -147,30 +230,24 @@
                         <span class="error-message" id="error-objet">L'objet doit contenir entre 5 et 100 caractères.</span>
                     </div>
 
-                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                        <div class="form-group-custom" style="flex: 1; min-width: 200px;">
-                            <label>TYPE</label>
-                            <select id="type" name="type" class="form-control-custom" required>
-                                <option value="" disabled selected>Sélectionnez un type</option>
-                                <option value="Technique">Technique</option>
-                                <option value="Facturation">Facturation</option>
-                                <option value="Service Client">Service Client</option>
-                                <option value="Autre">Autre</option>
-                            </select>
-                            <span class="error-message" id="error-type">Veuillez sélectionner un type de demande.</span>
-                        </div>
-                        <div class="form-group-custom" style="flex: 1; min-width: 200px;">
-                            <label>PRIORITÉ</label>
-                            <select id="priorite" name="priorite" class="form-control-custom" required>
-                                <option value="FAIBLE">🟢 Faible</option>
-                                <option value="MOYENNE" selected>🟡 Moyenne</option>
-                                <option value="ELEVEE">🔴 Élevée</option>
-                            </select>
-                        </div>
+                    <div class="form-group-custom">
+                        <label>TYPE</label>
+                        <select id="type" name="type" class="form-control-custom" required>
+                            <option value="" disabled selected>Sélectionnez un type</option>
+                            <option value="Technique">Technique</option>
+                            <option value="Facturation">Facturation</option>
+                            <option value="Service Client">Service Client</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                        <span class="error-message" id="error-type">Veuillez sélectionner un type de demande.</span>
                     </div>
 
                     <div class="form-group-custom">
-                        <label>DESCRIPTION DÉTAILLÉE</label>
+                        <label>DESCRIPTION DÉTAILLÉE 
+                            <button type="button" id="btn-ai-suggest" class="btn-ai-trigger">
+                                <i class="lni lni-sprout"></i> IntelLink-AI
+                            </button>
+                        </label>
                         <textarea id="description" name="description" class="form-control-custom" rows="6" placeholder="Soyez le plus précis possible pour nous aider à vous répondre rapidement... (minimum 20 caractères)" required minlength="20" maxlength="1000"></textarea>
                         <span class="error-message" id="error-description">La description doit contenir au moins 20 caractères.</span>
                     </div>
@@ -193,6 +270,7 @@
 {% block javascripts %}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         window.addEventListener('load', () => { setTimeout(() => { document.getElementById('preloader').style.opacity = '0'; setTimeout(() => document.getElementById('preloader').style.display = 'none', 800); }, 500); });
@@ -215,16 +293,16 @@
         const inputDesc = document.getElementById('description');
         const inputFile = document.getElementById('pieceJointe');
         
-        // Fonction générique pour afficher/masquer les erreurs
+        // Fonction générique pour afficher/masquer les erreurs avec style
         function setValidationState(inputElement, isValid, errorElementId) {
             const errorElement = document.getElementById(errorElementId);
             if (isValid) {
-                inputElement.classList.remove('is-invalid');
-                inputElement.classList.add('is-valid');
+                inputElement.style.borderColor = '#10b981';
+                inputElement.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.15)';
                 errorElement.style.display = 'none';
             } else {
-                inputElement.classList.remove('is-valid');
-                inputElement.classList.add('is-invalid');
+                inputElement.style.borderColor = '#ef4444';
+                inputElement.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.15)';
                 errorElement.style.display = 'block';
             }
             return isValid;
@@ -248,7 +326,8 @@
         function validateFile() {
             // Le fichier est optionnel
             if (inputFile.files.length === 0) {
-                inputFile.classList.remove('is-invalid', 'is-valid');
+                inputFile.style.borderColor = '#cbd5e1';
+                inputFile.style.boxShadow = 'none';
                 document.getElementById('error-pieceJointe').style.display = 'none';
                 return true; 
             }
@@ -269,19 +348,119 @@
 
         // Validation finale à la soumission
         form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
             const isObjetValid = validateObjet();
             const isTypeValid = validateType();
             const isDescValid = validateDescription();
             const isFileValid = validateFile();
 
             if (!isObjetValid || !isTypeValid || !isDescValid || !isFileValid) {
-                event.preventDefault(); // Empêche l'envoi du formulaire si une erreur est détectée
-                
                 // Petit effet visuel pour montrer que ça a bloqué
                 const submitBtn = document.getElementById('submitBtn');
                 submitBtn.style.transform = 'translateY(2px)';
                 setTimeout(() => { submitBtn.style.transform = 'translateY(0)'; }, 150);
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Formulaire incomplet',
+                    text: 'Veuillez corriger les champs en rouge avant de soumettre.',
+                    confirmButtonColor: '#3b82f6',
+                    background: '#ffffff',
+                    customClass: { popup: 'rounded-xl shadow-2xl border border-gray-100', title: 'font-bold text-gray-800' }
+                });
+                return;
             }
+            
+            // État de chargement professionnel sur le bouton
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right: 8px;"></span> Envoi en cours...';
+            submitBtn.style.opacity = '0.8';
+            submitBtn.style.cursor = 'not-allowed';
+            
+            // Léger délai pour afficher l'animation avant l'envoi réel
+            setTimeout(() => {
+                form.submit();
+            }, 400);
         });
+
+        // =========================================================================
+        // INTEGRATION IA - SUGGESTION DE SOLUTION (GEMINI)
+        // =========================================================================
+        const btnAiSuggest = document.getElementById('btn-ai-suggest');
+        const aiModal = document.getElementById('aiModal');
+        const aiSuggestionContent = document.getElementById('ai-suggestion-content');
+        const btnAiClose = document.getElementById('btn-ai-close');
+
+        if (btnAiSuggest) {
+            btnAiSuggest.addEventListener('click', async function(e) {
+                e.preventDefault();
+                const descText = inputDesc.value.trim();
+                
+                if (descText.length < 10) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Description trop courte',
+                        text: 'Veuillez écrire au moins 10 caractères dans la description pour que l\'IA puisse l\'analyser.',
+                        confirmButtonColor: '#3b82f6',
+                        background: '#ffffff',
+                        customClass: { popup: 'rounded-xl shadow-2xl border border-gray-100' }
+                    });
+                    return;
+                }
+
+                // Animation du bouton UI
+                const originalText = btnAiSuggest.innerHTML;
+                btnAiSuggest.innerHTML = '<i class="lni lni-spinner lni-spin"></i> IA au travail...';
+                btnAiSuggest.disabled = true;
+
+                try {
+                    // Simuler l'appel API ou utiliser le vrai
+                    const response = await fetch('/reclamation/ai/analyze', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({ description: descText })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        aiSuggestionContent.innerHTML = data.suggestion || "L'IA n'a pu générer de suggestion précise pour cette requête.";
+                        aiModal.classList.add('active');
+                    } else {
+                        aiSuggestionContent.textContent = "Un problème est survenu. Veuillez réessayer ultérieurement.";
+                        aiModal.classList.add('active');
+                    }
+                } catch (error) {
+                    console.error('Erreur IA:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Connexion échouée',
+                        text: 'Le service IA est actuellement indisponible.',
+                        confirmButtonColor: '#ef4444'
+                    });
+                } finally {
+                    btnAiSuggest.innerHTML = originalText;
+                    btnAiSuggest.disabled = false;
+                }
+            });
+        }
+
+        if (btnAiClose) {
+            btnAiClose.addEventListener('click', function() {
+                aiModal.classList.remove('active');
+            });
+        }
+        
+        // Fermer le modal en cliquant en dehors
+        if (aiModal) {
+            aiModal.addEventListener('click', function(e) {
+                if (e.target === aiModal) aiModal.classList.remove('active');
+            });
+        }
     </script>
 {% endblock %}

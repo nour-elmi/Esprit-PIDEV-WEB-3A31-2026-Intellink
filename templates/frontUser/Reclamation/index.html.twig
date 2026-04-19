@@ -51,7 +51,7 @@
         @keyframes glitch-anim-2 { 0% { clip-path: inset(10% 0 60% 0); } 100% { clip-path: inset(80% 0 10% 0); } }
 
         /* PRELOADER IMAGE */
-        #preloader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; z-index: 999999; display: flex; justify-content: center; align-items: center; transition: opacity 0.8s ease-out, visibility 0.8s; }
+        #preloader { pointer-events: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; z-index: 999999; display: flex; justify-content: center; align-items: center; transition: opacity 0.8s ease-out, visibility 0.8s; }
         .loader-logo-img { height: 60px; animation: pulse-glow-img 1.5s infinite alternate; }
         @keyframes pulse-glow-img { 
             0% { transform: scale(0.95); filter: drop-shadow(0 0 15px rgba(86, 204, 242, 0.2)); } 
@@ -217,9 +217,9 @@
                         <div style="display: flex; justify-content: flex-end; gap: 12px; transform: translateZ(20px); margin-top: auto;">
                             <a href="{{ path('app_reclamation_show', {'id': rec.id}) }}" class="btn-outline-custom"><i class="lni lni-eye"></i> Détails</a>
                             {% if rec.statut == 'OUVERT' %}
-                                <form method="post" action="{{ path('app_reclamation_delete', {'id': rec.id}) }}" onsubmit="return confirm('Supprimer ce ticket ?');" style="margin: 0;">
+                                <form method="post" action="{{ path('app_reclamation_delete', {'id': rec.id}) }}" class="delete-form" style="margin: 0;">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ rec.id) }}">
-                                    <button type="submit" class="btn-danger-custom"><i class="lni lni-trash"></i></button>
+                                    <button type="button" class="btn-danger-custom delete-btn"><i class="lni lni-trash"></i></button>
                                 </form>
                             {% endif %}
                         </div>
@@ -239,6 +239,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.2/vanilla-tilt.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         window.addEventListener('load', () => { setTimeout(() => { document.getElementById('preloader').style.opacity = '0'; setTimeout(() => document.getElementById('preloader').style.display = 'none', 800); }, 500); });
@@ -252,20 +253,65 @@
             lastScrollTop = scrollTop;
         });
 
-        // Filtrage dynamique
+        // Suppression avec SweetAlert2 au lieu de confirm()
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const form = this.closest('.delete-form');
+                
+                Swal.fire({
+                    title: 'Êtes-vous sûr ?',
+                    text: "Cette action est irréversible et supprimera définitivement votre ticket.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: 'Oui, supprimer !',
+                    cancelButtonText: 'Annuler',
+                    background: '#ffffff',
+                    customClass: {
+                        popup: 'rounded-xl shadow-2xl border border-gray-100',
+                        title: 'font-bold text-gray-800'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+
+        // Filtrage dynamique avec animation douce
         const searchInput = document.getElementById('searchInput');
         const statusFilter = document.getElementById('statusFilter');
+        
         function filterList() {
             const searchText = searchInput.value.toLowerCase();
             const status = statusFilter.value;
+            
             document.querySelectorAll('.rec-card').forEach(card => {
                 const matchesText = card.dataset.text.includes(searchText);
                 const matchesStatus = status === 'Tous' || card.dataset.status === status;
-                card.style.display = matchesText && matchesStatus ? 'flex' : 'none';
+                
+                if (matchesText && matchesStatus) {
+                    card.style.display = 'flex';
+                    setTimeout(() => { card.style.opacity = '1'; card.style.transform = 'translateY(0)'; }, 50);
+                } else {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(10px)';
+                    setTimeout(() => {
+                        if (card.style.opacity === '0') card.style.display = 'none';
+                    }, 300);
+                }
             });
         }
         searchInput.addEventListener('input', filterList);
         statusFilter.addEventListener('change', filterList);
+        
+        // Initialiser le style des cartes pour les animations
+        document.querySelectorAll('.rec-card').forEach(card => {
+            card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        });
         
         VanillaTilt.init(document.querySelectorAll(".rec-card"), { max: 3, speed: 400, glare: true, "max-glare": 0.1 });
     </script>
