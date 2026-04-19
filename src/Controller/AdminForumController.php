@@ -4,12 +4,12 @@ namespace App\Controller;
 
 use App\Repository\PostRepository;
 use App\Repository\ReactionRepository;
-use App\Service\ResendEmailService;
+use App\Service\MailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class AdminForumController extends AbstractController
@@ -35,10 +35,10 @@ final class AdminForumController extends AbstractController
             });
         }
 
-        if ($statusFilter === 'Masqués') {
-            $posts = array_filter($posts, fn($post) => $post->getStatus() === 'HIDDEN');
+        if (in_array($statusFilter, ['Masques', 'Masqués', 'MasquÃ©s'], true)) {
+            $posts = array_filter($posts, fn ($post) => $post->getStatus() === 'HIDDEN');
         } elseif ($statusFilter === 'Actifs') {
-            $posts = array_filter($posts, fn($post) => $post->getStatus() === 'ACTIVE');
+            $posts = array_filter($posts, fn ($post) => $post->getStatus() === 'ACTIVE');
         }
 
         if ($filter === '24h') {
@@ -73,7 +73,7 @@ final class AdminForumController extends AbstractController
         int $id,
         PostRepository $postRepository,
         EntityManagerInterface $entityManager,
-        ResendEmailService $resendEmailService
+        MailService $mailService
     ): RedirectResponse {
         $post = $postRepository->find($id);
 
@@ -83,19 +83,14 @@ final class AdminForumController extends AbstractController
             $entityManager->flush();
 
             if ($willHide && $post->getAuthor() && $post->getAuthor()->getEmail()) {
-                $author = $post->getAuthor()->getNom() ?? 'user';
-                $content = $post->getContent() ?? '';
-
-                $subject = 'Votre publication a été masquée';
-                $html = "
-                    <h2>Bonjour {$author},</h2>
-                    <p>Votre publication a été <b>masquée</b> par un administrateur.</p>
-                    <p><b>Contenu :</b></p>
-                    <blockquote>{$content}</blockquote>
-                    <p>— UniForum</p>
-                ";
-
-                $resendEmailService->send($post->getAuthor()->getEmail(), $subject, $html);
+                try {
+                    $mailService->sendPostHiddenEmail($post->getAuthor(), $post);
+                    $this->addFlash('success', 'Post masque et email envoye au proprietaire.');
+                } catch (\Throwable $e) {
+                    $this->addFlash('error', 'Post masque, mais email non envoye.');
+                }
+            } elseif ($willHide) {
+                $this->addFlash('error', 'Post masque, mais aucun email utilisateur trouve.');
             }
         }
 
@@ -106,13 +101,28 @@ final class AdminForumController extends AbstractController
     public function toggleLock(
         int $id,
         PostRepository $postRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        MailService $mailService
     ): RedirectResponse {
         $post = $postRepository->find($id);
 
         if ($post) {
-            $post->setIsLocked(!$post->isLocked());
+            $willLock = !$post->isLocked();
+            $post->setIsLocked($willLock);
             $entityManager->flush();
+
+            $ownerEmail = $post->getAuthor()?->getEmail();
+
+            if ($willLock && $ownerEmail) {
+                try {
+                    $mailService->sendPostLockedEmail($post->getAuthor(), $post);
+                    $this->addFlash('success', 'Post verrouille et email envoye au proprietaire.');
+                } catch (\Throwable $e) {
+                    $this->addFlash('error', 'Post verrouille, mais email non envoye.');
+                }
+            } elseif ($willLock) {
+                $this->addFlash('error', 'Post verrouille, mais aucun email proprietaire trouve.');
+            }
         }
 
         return $this->redirectToRoute('app_admin_forum');

@@ -34,9 +34,6 @@ class User
     #[ORM\Column(name: "image", length: 255, nullable: true)]
     private ?string $image = null;
 
-    #[ORM\Column(name: "statutCompte", length: 50, nullable: true)]
-    private ?string $statutCompte = null;
-
     #[ORM\OneToMany(targetEntity: Post::class, mappedBy: 'author')]
     private Collection $posts;
 
@@ -52,8 +49,6 @@ class User
         $this->comments = new ArrayCollection();
         $this->reactions = new ArrayCollection();
     }
-
-    // ---------------- GETTERS / SETTERS ----------------
 
     public function getId(): ?int
     {
@@ -123,17 +118,6 @@ class User
     public function setImage(?string $image): static
     {
         $this->image = $image;
-        return $this;
-    }
-
-    public function getStatutCompte(): ?string
-    {
-        return $this->statutCompte;
-    }
-
-    public function setStatutCompte(?string $statutCompte): static
-    {
-        $this->statutCompte = $statutCompte;
         return $this;
     }
 
