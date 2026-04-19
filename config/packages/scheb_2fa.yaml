@@ -1,0 +1,9 @@
+scheb_two_factor:
+    security_tokens:
+        - Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken
+        - Symfony\Component\Security\Http\Authenticator\Token\PostAuthenticationToken
+    google:
+        enabled: true
+        server_name: Server Name
+        issuer: Issuer Option
+        template: '@SchebTwoFactor/Authentication/form.html.twig'

@@ -1,0 +1,758 @@
+{% extends 'formation/admin/base_admin.html.twig' %}
+
+{% block title %}Formations{% endblock %}
+
+{% block body %}
+<style>
+/* ═══════════════════════════════════════
+   STATS MODAL
+═══════════════════════════════════════ */
+.stats-modal .modal-content {
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(2,6,23,.28);
+}
+.stats-modal .modal-header {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e3a5f 100%);
+    padding: 20px 26px;
+    border-bottom: none;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.stats-modal-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(255,255,255,.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+.stats-modal .modal-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.2;
+}
+.stats-modal-subtitle {
+    font-size: 11px;
+    color: rgba(255,255,255,.5);
+    margin-top: 2px;
+}
+.stats-modal .modal-body {
+    background: #f1f5f9;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.stats-modal .modal-footer {
+    background: #f1f5f9;
+    border-top: 1px solid #e2e8f0;
+    padding: 12px 18px;
+}
+
+/* KPI row */
+.stats-kpi-row {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+}
+@media (max-width: 1100px) {
+    .stats-kpi-row { grid-template-columns: repeat(3, 1fr); }
+}
+.stats-kpi-card {
+    border-radius: 14px;
+    padding: 14px 12px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.stats-kpi-card::after {
+    content: '';
+    position: absolute;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    right: -16px;
+    top: -16px;
+    background: rgba(255,255,255,.15);
+    pointer-events: none;
+}
+.stats-kpi-card.c-blue   { background: linear-gradient(145deg, #1d4ed8, #3b82f6); }
+.stats-kpi-card.c-violet { background: linear-gradient(145deg, #6d28d9, #8b5cf6); }
+.stats-kpi-card.c-teal   { background: linear-gradient(145deg, #0f766e, #14b8a6); }
+.stats-kpi-card.c-amber  { background: linear-gradient(145deg, #b45309, #f59e0b); }
+.stats-kpi-card.c-pink   { background: linear-gradient(145deg, #be185d, #ec4899); }
+.stats-kpi-card.c-green  { background: linear-gradient(145deg, #065f46, #10b981); }
+.stats-kpi-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255,255,255,.75);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+.stats-kpi-value {
+    font-size: 24px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+}
+.stats-kpi-sub {
+    font-size: 10px;
+    color: rgba(255,255,255,.55);
+}
+
+/* Charts rows */
+.stats-charts-row1 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.6fr;
+    gap: 10px;
+}
+.stats-charts-row2 {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr;
+    gap: 10px;
+}
+@media (max-width: 1000px) {
+    .stats-charts-row1,
+    .stats-charts-row2 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+    .stats-charts-row1,
+    .stats-charts-row2 { grid-template-columns: 1fr; }
+}
+
+.stats-chart-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 16px;
+}
+.stats-chart-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+.stats-chart-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.stats-chart-title-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.stats-chart-badge {
+    font-size: 10px;
+    font-weight: 700;
+    color: #94a3b8;
+    background: #f1f5f9;
+    border-radius: 99px;
+    padding: 3px 9px;
+}
+
+/* Progression bars card */
+.stats-prog-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.stats-prog-row {}
+.stats-prog-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+.stats-prog-name { font-size: 11px; color: #64748b; }
+.stats-prog-pct  { font-size: 12px; font-weight: 800; color: #1e293b; }
+.stats-prog-track {
+    height: 8px;
+    background: #f1f5f9;
+    border-radius: 99px;
+    overflow: hidden;
+}
+.stats-prog-fill {
+    height: 100%;
+    border-radius: 99px;
+}
+
+/* Open button */
+.stats-open-btn {
+    border-radius: 25px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #2563eb, #0ea5e9);
+    border: none;
+    color: #fff;
+    font-weight: 700;
+    box-shadow: 0 8px 20px rgba(37,99,235,.3);
+    transition: all .2s;
+}
+.stats-open-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(37,99,235,.35);
+    color: #fff;
+}
+</style>
+
+<div class="page-header">
+    <h3 class="fw-bold mb-3">Gestion des Formations</h3>
+    <ul class="breadcrumbs mb-3">
+        <li class="nav-home"><a href="#"><i class="icon-home"></i></a></li>
+        <li class="separator"><i class="icon-arrow-right"></i></li>
+        <li class="nav-item"><a href="#">Formations</a></li>
+        <li class="separator"><i class="icon-arrow-right"></i></li>
+        <li class="nav-item"><a href="#">Liste</a></li>
+    </ul>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex align-items-center flex-wrap gap-3">
+                    <h4 class="card-title mb-0">Liste des Formations</h4>
+
+                    <div class="d-flex align-items-center gap-2 ms-auto flex-wrap">
+                        <div style="position: relative;">
+                            <i class="fa fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 14px;"></i>
+                            <input type="text" id="searchInput" placeholder="Rechercher une formation..."
+                                style="padding: 8px 14px 8px 36px; border: 1.5px solid #e0e0e0; border-radius: 25px;
+                                       font-size: 14px; width: 240px; outline: none; transition: border-color 0.2s;"
+                                onfocus="this.style.borderColor='#4d8aff'"
+                                onblur="this.style.borderColor='#e0e0e0'">
+                        </div>
+
+                        <select id="filterDomaine"
+                            style="padding: 8px 16px; border: 1.5px solid #e0e0e0; border-radius: 25px;
+                                   font-size: 14px; outline: none; cursor: pointer; background: #f8f9fa;">
+                            <option value="">Tous les domaines</option>
+                            {% set domaines = [] %}
+                            {% for formation in formations %}
+                                {% if formation.domaine and formation.domaine not in domaines %}
+                                    {% set domaines = domaines|merge([formation.domaine]) %}
+                                    <option value="{{ formation.domaine|lower }}">{{ formation.domaine }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+
+                        <select id="filterNiveau"
+                            style="padding: 8px 16px; border: 1.5px solid #e0e0e0; border-radius: 25px;
+                                   font-size: 14px; outline: none; cursor: pointer; background: #f8f9fa;">
+                            <option value="">Tous les niveaux</option>
+                            <option value="débutant">Débutant</option>
+                            <option value="intermédiaire">Intermédiaire</option>
+                            <option value="avancé">Avancé</option>
+                        </select>
+
+                        <button type="button"
+                                class="btn stats-open-btn btn-sm"
+                                data-bs-toggle="modal"
+                                data-bs-target="#statsModal">
+                            <i class="fa fa-chart-line me-1"></i> Statistiques
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+
+                {% for message in app.flashes('success') %}
+                    <div class="alert alert-success">{{ message }}</div>
+                {% endfor %}
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover" style="font-size: 15px;">
+                        <thead>
+                            <tr style="font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                <th>Titre</th>
+                                <th>Domaine</th>
+                                <th>Niveau</th>
+                                <th>Inscrits</th>
+                                <th style="width: 160px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for formation in formations %}
+                            <tr class="formation-row"
+                                data-titre="{{ formation.titre|lower }}"
+                                data-domaine="{{ formation.domaine|lower }}"
+                                data-niveau="{{ formation.niveau|lower }}">
+
+                                <td style="vertical-align: middle;">
+                                    <strong style="font-size: 15px;">{{ formation.titre }}</strong>
+                                </td>
+
+                                <td style="vertical-align: middle;">
+                                    {% if formation.domaine %}
+                                        <span class="badge badge-info" style="font-size: 13px; padding: 6px 12px;">{{ formation.domaine }}</span>
+                                    {% else %}—{% endif %}
+                                </td>
+
+                                <td style="vertical-align: middle;">
+                                    {% if formation.niveau == 'Débutant' %}
+                                        <span class="badge badge-success" style="font-size: 13px; padding: 6px 12px;">{{ formation.niveau }}</span>
+                                    {% elseif formation.niveau == 'Intermédiaire' %}
+                                        <span class="badge badge-warning" style="font-size: 13px; padding: 6px 12px;">{{ formation.niveau }}</span>
+                                    {% else %}
+                                        <span class="badge badge-danger" style="font-size: 13px; padding: 6px 12px;">{{ formation.niveau }}</span>
+                                    {% endif %}
+                                </td>
+
+                                <td style="vertical-align: middle;">
+                                    <span class="badge badge-primary" style="font-size: 13px; padding: 6px 12px;">
+                                        <i class="fas fa-users me-1"></i>{{ formation.participations|length }}
+                                    </span>
+                                </td>
+
+                                <td style="vertical-align: middle;">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <button type="button"
+                                            class="btn btn-info btn-sm"
+                                            title="Voir la vidéo"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#videoModal"
+                                            data-url="{{ formation.urlVideo }}"
+                                            data-titre="{{ formation.titre }}"
+                                            data-description="{{ formation.description ?? 'Aucune description disponible.' }}"
+                                            style="padding: 6px 10px; font-size: 15px;">
+                                            <i class="fa fa-play-circle"></i>
+                                        </button>
+
+                                        <a href="{{ path('app_admin_participations', {id: formation.idFormation}) }}"
+                                           class="btn btn-success btn-sm"
+                                           title="Voir les participations"
+                                           style="padding: 6px 10px; font-size: 15px;">
+                                            <i class="fas fa-users"></i>
+                                        </a>
+
+                                        <a href="{{ path('app_formation_delete', {id: formation.idFormation}) }}"
+                                           class="btn btn-danger btn-sm"
+                                           title="Supprimer"
+                                           onclick="return confirm('Supprimer cette formation ?')"
+                                           style="padding: 6px 10px; font-size: 15px;">
+                                            <i class="fa fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <div id="noResults" style="display:none; text-align:center; padding: 40px;">
+                        <i class="fa fa-search fa-3x text-muted mb-3"></i>
+                        <p class="text-muted" style="font-size: 16px;">Aucune formation ne correspond à votre recherche.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ══════════════════════════════════════
+   MODAL STATISTIQUES
+══════════════════════════════════════ #}
+<div class="modal fade stats-modal" id="statsModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+
+            {# Header #}
+            <div class="modal-header">
+                <div class="stats-modal-icon">📊</div>
+                <div style="flex:1">
+                    <div class="modal-title">Statistiques des formations</div>
+                    <div class="stats-modal-subtitle">Vue analytique globale — engagement &amp; performance</div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            {# Body #}
+            <div class="modal-body">
+
+                {# ── KPI row ── #}
+                <div class="stats-kpi-row">
+                    <div class="stats-kpi-card c-blue">
+                        <div class="stats-kpi-label">Formations</div>
+                        <div class="stats-kpi-value">{{ stats.kpis.totalFormations }}</div>
+                        <div class="stats-kpi-sub">total disponibles</div>
+                    </div>
+                    <div class="stats-kpi-card c-violet">
+                        <div class="stats-kpi-label">Inscriptions</div>
+                        <div class="stats-kpi-value">{{ stats.kpis.totalParticipations }}</div>
+                        <div class="stats-kpi-sub">participations totales</div>
+                    </div>
+                    <div class="stats-kpi-card c-teal">
+                        <div class="stats-kpi-label">Apprenants</div>
+                        <div class="stats-kpi-value">{{ stats.kpis.activeLearners }}</div>
+                        <div class="stats-kpi-sub">actifs actuellement</div>
+                    </div>
+                    <div class="stats-kpi-card c-amber">
+                        <div class="stats-kpi-label">Inscr. / F.</div>
+                        <div class="stats-kpi-value">{{ stats.kpis.avgInscriptions }}</div>
+                        <div class="stats-kpi-sub">moyenne par formation</div>
+                    </div>
+                    <div class="stats-kpi-card c-pink">
+                        <div class="stats-kpi-label">Progression</div>
+                        <div class="stats-kpi-value">{{ stats.kpis.avgProgression }}%</div>
+                        <div class="stats-kpi-sub">moyenne globale</div>
+                    </div>
+                    <div class="stats-kpi-card c-green">
+                        <div class="stats-kpi-label">Terminés</div>
+                        <div class="stats-kpi-value">{{ stats.kpis.completionRate }}%</div>
+                        <div class="stats-kpi-sub">taux de complétion</div>
+                    </div>
+                </div>
+
+                {# ── Charts row 1 : domaine | niveau | line mensuel ── #}
+                <div class="stats-charts-row1">
+
+                    <div class="stats-chart-card">
+                        <div class="stats-chart-top">
+                            <div class="stats-chart-title">
+                                <div class="stats-chart-title-dot" style="background:#6366f1"></div>
+                                Par domaine
+                            </div>
+                        </div>
+                        <canvas id="statsDomainChart" height="160"></canvas>
+                    </div>
+
+                    <div class="stats-chart-card">
+                        <div class="stats-chart-top">
+                            <div class="stats-chart-title">
+                                <div class="stats-chart-title-dot" style="background:#10b981"></div>
+                                Par niveau
+                            </div>
+                        </div>
+                        <canvas id="statsLevelChart" height="160"></canvas>
+                    </div>
+
+                    <div class="stats-chart-card">
+                        <div class="stats-chart-top">
+                            <div class="stats-chart-title">
+                                <div class="stats-chart-title-dot" style="background:#6366f1"></div>
+                                Inscriptions — 6 derniers mois
+                            </div>
+                            <div class="stats-chart-badge" style="color:#10b981;">↑ tendance</div>
+                        </div>
+                        <canvas id="statsMonthlyChart" height="140"></canvas>
+                    </div>
+
+                </div>
+
+                {# ── Charts row 2 : top formations | statut | progression par niveau ── #}
+                <div class="stats-charts-row2">
+
+                    <div class="stats-chart-card">
+                        <div class="stats-chart-top">
+                            <div class="stats-chart-title">
+                                <div class="stats-chart-title-dot" style="background:#a78bfa"></div>
+                                Top formations par inscriptions
+                            </div>
+                        </div>
+                        <canvas id="statsTopFormationsChart" height="140"></canvas>
+                    </div>
+
+                    <div class="stats-chart-card">
+                        <div class="stats-chart-top">
+                            <div class="stats-chart-title">
+                                <div class="stats-chart-title-dot" style="background:#f472b6"></div>
+                                Statut progression
+                            </div>
+                        </div>
+                        <canvas id="statsStatusChart" height="160"></canvas>
+                    </div>
+
+                    <div class="stats-chart-card" id="statsProgCard">
+                        <div class="stats-chart-top">
+                            <div class="stats-chart-title">
+                                <div class="stats-chart-title-dot" style="background:#34d399"></div>
+                                Progression par niveau
+                            </div>
+                        </div>
+                        <div class="stats-prog-list" id="statsProgList">
+                            <div class="stats-prog-row">
+                                <div class="stats-prog-header">
+                                    <span class="stats-prog-name">Global</span>
+                                    <span class="stats-prog-pct">{{ stats.kpis.avgProgression }}%</span>
+                                </div>
+                                <div class="stats-prog-track">
+                                    <div class="stats-prog-fill" style="width:{{ stats.kpis.avgProgression }}%;background:linear-gradient(90deg,#6366f1,#818cf8)"></div>
+                                </div>
+                            </div>
+                            {% if stats.progressionByLevel is defined %}
+                                {% for lvl in stats.progressionByLevel %}
+                                <div class="stats-prog-row">
+                                    <div class="stats-prog-header">
+                                        <span class="stats-prog-name">{{ lvl.label }}</span>
+                                        <span class="stats-prog-pct">{{ lvl.value }}%</span>
+                                    </div>
+                                    <div class="stats-prog-track">
+                                        <div class="stats-prog-fill" style="width:{{ lvl.value }}%;background:{{ lvl.color }}"></div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="stats-prog-row">
+                                    <div class="stats-prog-header">
+                                        <span class="stats-prog-name">Débutant</span>
+                                        <span class="stats-prog-pct">—</span>
+                                    </div>
+                                    <div class="stats-prog-track"><div class="stats-prog-fill" style="width:0%;background:#10b981"></div></div>
+                                </div>
+                                <div class="stats-prog-row">
+                                    <div class="stats-prog-header">
+                                        <span class="stats-prog-name">Intermédiaire</span>
+                                        <span class="stats-prog-pct">—</span>
+                                    </div>
+                                    <div class="stats-prog-track"><div class="stats-prog-fill" style="width:0%;background:#f59e0b"></div></div>
+                                </div>
+                                <div class="stats-prog-row">
+                                    <div class="stats-prog-header">
+                                        <span class="stats-prog-name">Avancé</span>
+                                        <span class="stats-prog-pct">—</span>
+                                    </div>
+                                    <div class="stats-prog-track"><div class="stats-prog-fill" style="width:0%;background:#ef4444"></div></div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fa fa-times me-1"></i> Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ══════════════════════════════════════
+   MODAL VIDEO
+══════════════════════════════════════ #}
+<div class="modal fade" id="videoModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background: #1a1c38; border: none;">
+                <h5 class="modal-title text-white" id="videoModalTitle">
+                    <i class="fa fa-play-circle me-2"></i> Vidéo de formation
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000;">
+                    <iframe id="videoFrame"
+                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"
+                        src=""
+                        allowfullscreen>
+                    </iframe>
+                </div>
+                <div style="padding: 20px 24px; border-top: 3px solid #4d8aff; background: #fff;">
+                    <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; color: #999; font-weight: 600; margin-bottom: 8px;">
+                        <i class="fa fa-align-left me-1"></i> Description
+                    </div>
+                    <p id="videoDescText" style="color: #555; font-size: 15px; line-height: 1.7; margin: 0;">
+                        Aucune description disponible.
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer" style="border: none; background: #f8f9fa;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fa fa-times me-1"></i> Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+$(document).ready(function () {
+
+    /* ── Filtres tableau ── */
+    function filterRows() {
+        var search  = $('#searchInput').val().toLowerCase();
+        var domaine = $('#filterDomaine').val().toLowerCase();
+        var niveau  = $('#filterNiveau').val().toLowerCase();
+        var visible = 0;
+
+        $('.formation-row').each(function () {
+            var matchSearch  = $(this).data('titre').includes(search);
+            var matchDomaine = domaine === '' || $(this).data('domaine') === domaine;
+            var matchNiveau  = niveau  === '' || $(this).data('niveau')  === niveau;
+
+            if (matchSearch && matchDomaine && matchNiveau) { $(this).show(); visible++; }
+            else { $(this).hide(); }
+        });
+
+        $('#noResults').toggle(visible === 0);
+    }
+
+    $('#searchInput').on('input', filterRows);
+    $('#filterDomaine').on('change', filterRows);
+    $('#filterNiveau').on('change', filterRows);
+
+    /* ── Modal vidéo ── */
+    $('#videoModal').on('show.bs.modal', function (event) {
+        var btn  = $(event.relatedTarget);
+        var url  = btn.data('url');
+        var titre = btn.data('titre');
+        var desc  = btn.data('description');
+
+        $('#videoModalTitle').html('<i class="fa fa-play-circle me-2"></i>' + titre);
+        $('#videoDescText').text(desc);
+
+        var embedUrl = url;
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+            var videoId = '';
+            if (url.includes('v='))        videoId = url.split('v=')[1].split('&')[0];
+            else if (url.includes('youtu.be/')) videoId = url.split('youtu.be/')[1].split('?')[0];
+            embedUrl = 'https://www.youtube.com/embed/' + videoId;
+        }
+        $('#videoFrame').attr('src', embedUrl);
+    });
+
+    $('#videoModal').on('hide.bs.modal', function () {
+        $('#videoFrame').attr('src', '');
+    });
+
+    /* ── Statistiques ── */
+    const statsData = {{ stats|json_encode|raw }};
+    const statCharts = [];
+
+    const PALETTE = ['#6366f1','#14b8a6','#f59e0b','#ec4899','#10b981','#38bdf8','#a78bfa','#f97316'];
+
+    const BASE_OPTS = {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: { legend: { labels: { boxWidth: 10, font: { size: 11 } } } }
+    };
+
+    function makeDoughnut(ctx, labels, data) {
+        return new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels,
+                datasets: [{
+                    data,
+                    backgroundColor: labels.map((_, i) => PALETTE[i % PALETTE.length]),
+                    borderWidth: 2,
+                    borderColor: '#fff',
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                ...BASE_OPTS,
+                cutout: '62%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { boxWidth: 10, font: { size: 11 }, padding: 10 }
+                    }
+                }
+            }
+        });
+    }
+
+    function makeLine(ctx, labels, data) {
+        return new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Inscriptions',
+                    data,
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99,102,241,.12)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#6366f1',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                ...BASE_OPTS,
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0, font: { size: 11 } }, grid: { color: '#f1f5f9' } },
+                    x: { ticks: { font: { size: 11 } }, grid: { display: false } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    function makeHBar(ctx, labels, data) {
+        return new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    data,
+                    backgroundColor: function(ctx) {
+                        const chart = ctx.chart;
+                        const {ctx: c, chartArea} = chart;
+                        if (!chartArea) return '#6366f1';
+                        const grad = c.createLinearGradient(chartArea.left, 0, chartArea.right, 0);
+                        grad.addColorStop(0, '#6366f1');
+                        grad.addColorStop(1, '#818cf8');
+                        return grad;
+                    },
+                    borderRadius: 5,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                ...BASE_OPTS,
+                indexAxis: 'y',
+                scales: {
+                    x: { beginAtZero: true, ticks: { precision: 0, font: { size: 11 } }, grid: { color: '#f8fafc' } },
+                    y: { ticks: { font: { size: 11 } }, grid: { display: false } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    function destroyStatCharts() {
+        while (statCharts.length) {
+            try { statCharts.pop().destroy(); } catch(e) {}
+        }
+    }
+
+    $('#statsModal').on('shown.bs.modal', function () {
+        destroyStatCharts();
+        statCharts.push(makeDoughnut(document.getElementById('statsDomainChart'),       statsData.domain.labels,        statsData.domain.data));
+        statCharts.push(makeDoughnut(document.getElementById('statsLevelChart'),         statsData.level.labels,         statsData.level.data));
+        statCharts.push(makeLine(    document.getElementById('statsMonthlyChart'),       statsData.monthly.labels,       statsData.monthly.data));
+        statCharts.push(makeHBar(    document.getElementById('statsTopFormationsChart'), statsData.topFormations.labels, statsData.topFormations.data));
+        statCharts.push(makeDoughnut(document.getElementById('statsStatusChart'),        statsData.status.labels,        statsData.status.data));
+    });
+
+    $('#statsModal').on('hidden.bs.modal', function () {
+        destroyStatCharts();
+    });
+});
+</script>
+{% endblock %}

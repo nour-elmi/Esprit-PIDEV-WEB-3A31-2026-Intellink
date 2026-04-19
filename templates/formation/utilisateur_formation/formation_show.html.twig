@@ -1,0 +1,523 @@
+{% extends 'formation/base.html.twig' %}
+
+{% block title %}{{ formation.titre }}{% endblock %}
+{% block role_badge_class %}badge-utilisateur{% endblock %}
+{% block role_label %}Apprenant{% endblock %}
+{% block stylesheets %}
+<style>
+.detail-fav-wrap {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 8;
+}
+
+.detail-fav-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    background: rgba(15, 23, 42, 0.38);
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.2s ease;
+}
+
+.detail-fav-btn:hover {
+    transform: scale(1.05);
+    background: rgba(15, 23, 42, 0.52);
+}
+
+.detail-fav-btn.active {
+    border-color: #fecaca;
+    background: #fff1f2;
+    color: #e11d48;
+}
+
+.detail-fav-btn.loading {
+    opacity: 0.65;
+    pointer-events: none;
+}
+
+.progress-pill {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+}
+
+.progress-pill-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--body-color);
+}
+
+.progress-pill-track {
+    width: 100%;
+    height: 10px;
+    border-radius: 999px;
+    background: #e8edf8;
+    overflow: hidden;
+}
+
+.progress-pill-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #2f80ed 0%, #56ccf2 100%);
+    border-radius: 999px;
+    transition: width 0.35s ease;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-content">
+            <a href="{{ path('app_utilisateur_formations') }}" class="back-link" style="color: rgba(255,255,255,0.7);">
+                <i class="lni lni-arrow-left"></i> Retour aux formations
+            </a>
+            <h1>{{ formation.titre }}</h1>
+        </div>
+    </div>
+</section>
+
+<div class="main-content">
+    <div class="container">
+        <div class="row g-4">
+
+            <div class="col-lg-8">
+                <div class="video-card-show">
+                    <div class="video-wrapper">
+                        {% set isYoutubeVideo = ('youtube.com' in formation.urlVideo or 'youtu.be' in formation.urlVideo) %}
+                        {% set isDirectVideo = formation.urlVideo matches '/\\.(mp4|webm|ogg)(\\?.*)?$/i' %}
+                        <form method="post"
+                              action="{{ path('app_utilisateur_favori_toggle', {id: formation.idFormation}) }}"
+                              id="detailFavoriteForm"
+                              class="detail-fav-wrap">
+                            <input type="hidden" name="_token" value="{{ csrf_token('toggle_favori_' ~ formation.idFormation) }}">
+                            <input type="hidden" name="return_route" value="show">
+                            <button type="submit"
+                                    class="detail-fav-btn {{ estFavori ? 'active' : '' }}"
+                                    id="detailFavoriteBtn"
+                                    title="{{ estFavori ? 'Retirer des favoris' : 'Ajouter aux favoris' }}"
+                                    aria-label="{{ estFavori ? 'Retirer des favoris' : 'Ajouter aux favoris' }}">
+                                <i class="lni lni-heart"></i>
+                            </button>
+                        </form>
+                        {% if isYoutubeVideo %}
+                            {% set videoId = formation.urlVideo|split('v=')[1] ?? formation.urlVideo|split('youtu.be/')[1] %}
+                            {% set videoId = videoId|split('&')[0] %}
+                            <iframe id="formationPlayerFrame"
+                                src="https://www.youtube.com/embed/{{ videoId }}?enablejsapi=1&origin={{ app.request.schemeAndHttpHost|url_encode }}"
+                                class="{{ dejaInscrit ? '' : 'video-blurred' }}"
+                                allowfullscreen></iframe>
+                        {% elseif isDirectVideo %}
+                            <video
+                                id="formationHtml5Video"
+                                class="{{ dejaInscrit ? '' : 'video-blurred' }}"
+                                controls
+                                preload="metadata">
+                                <source src="{{ formation.urlVideo }}">
+                                Votre navigateur ne supporte pas la lecture video.
+                            </video>
+                        {% else %}
+                            <iframe id="formationPlayerFrame"
+                                src="{{ formation.urlVideo }}"
+                                class="{{ dejaInscrit ? '' : 'video-blurred' }}"
+                                allowfullscreen></iframe>
+                        {% endif %}
+
+                        {% if not dejaInscrit %}
+                        <div class="video-blur-overlay">
+                            <div class="blur-overlay-content">
+                                <div class="blur-lock-icon">
+                                    <i class="lni lni-lock-alt"></i>
+                                </div>
+                                <h5>Contenu reserve aux inscrits</h5>
+                                <p>Inscrivez-vous pour acceder a la video complete</p>
+                                <a href="{{ path('app_utilisateur_participer', {id: formation.idFormation}) }}"
+                                   class="btn-primary-custom">
+                                    <i class="lni lni-pencil-alt"></i> S'inscrire maintenant
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="video-desc-body">
+                        <div class="video-desc-title">
+                            <i class="lni lni-text-align-left"></i> Description
+                        </div>
+                        <p style="color: var(--body-color); line-height: 1.8;">
+                            {{ formation.description ?? 'Aucune description disponible.' }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="sidebar-sticky">
+                    <div class="info-card-show">
+                        <div class="info-card-header">
+                            <i class="lni lni-information"></i>
+                            <span>Informations</span>
+                        </div>
+                        <div class="info-card-body">
+                            <div class="info-item">
+                                <span class="info-item-label">Domaine</span>
+                                <span class="tag tag-primary">
+                                    <i class="lni lni-tag"></i> {{ formation.domaine ?? 'N/A' }}
+                                </span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-label">Niveau</span>
+                                {% if formation.niveau in ['Debutant', 'Débutant'] %}
+                                    <span class="tag tag-success">{{ formation.niveau }}</span>
+                                {% elseif formation.niveau in ['Intermediaire', 'Intermédiaire'] %}
+                                    <span class="tag tag-warning">{{ formation.niveau }}</span>
+                                {% else %}
+                                    <span class="tag tag-dark">{{ formation.niveau }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-label">Inscrits</span>
+                                <span class="info-item-value">
+                                    <i class="lni lni-users" style="color: var(--primary);"></i>
+                                    {{ formation.participations|length }} participants
+                                </span>
+                            </div>
+                            <div class="info-item" style="align-items: stretch;">
+                                <span class="info-item-label" style="margin-bottom: 6px;">Progression video</span>
+                                <div class="progress-pill">
+                                    <div class="progress-pill-head">
+                                        <span id="progressStatusText">
+                                            {% set p = progressionPercent|default(0) %}
+                                            {% if hasQuiz and not quizCompleted %}
+                                                {{ p > 0 ? 'En cours' : 'Non commence' }}
+                                            {% else %}
+                                                {{ p >= 95 ? 'Termine' : (p > 0 ? 'En cours' : 'Non commence') }}
+                                            {% endif %}
+                                        </span>
+                                        <strong id="progressPercentText">{{ progressionPercent|default(0)|round(0, 'floor') }}%</strong>
+                                    </div>
+                                    <div class="progress-pill-track">
+                                        <div class="progress-pill-bar" id="progressBar" style="width: {{ progressionPercent|default(0) }}%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card-show">
+                        <div class="info-card-header" style="background: linear-gradient(135deg, var(--primary) 0%, #1a6fd8 100%);">
+                            <i class="lni lni-pencil-alt" style="color: white;"></i>
+                            <span>Quiz</span>
+                        </div>
+                        <div class="info-card-body">
+                            {% if dejaInscrit and quiz %}
+                                <div style="text-align: center; padding: 10px 0;">
+                                    <div style="width: 56px; height: 56px; background: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
+                                        <i class="lni lni-pencil-alt" style="font-size: 26px; color: var(--primary);"></i>
+                                    </div>
+                                    <p style="color: var(--body-color); font-size: 14px; margin-bottom: 8px;">
+                                        Testez vos connaissances sur cette formation.
+                                    </p>
+                                    {% if dejaInscrit.score is not null %}
+                                        <p style="font-size: 12px; color: var(--primary); margin-bottom: 14px;">
+                                            Votre dernier score: <strong>{{ dejaInscrit.score }}</strong>
+                                        </p>
+                                    {% endif %}
+                                    <a href="{{ path('app_utilisateur_quiz_passer', {id: formation.idFormation}) }}" class="btn-primary-custom" style="width: 100%; justify-content: center;">
+                                        <i class="lni lni-play"></i> Passer le quiz
+                                    </a>
+                                </div>
+                            {% elseif dejaInscrit and not quiz %}
+                                <div style="text-align: center; padding: 10px 0;">
+                                    <div style="width: 56px; height: 56px; background: rgba(50,52,80,0.06); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
+                                        <i class="lni lni-hourglass" style="font-size: 26px; color: var(--body-color);"></i>
+                                    </div>
+                                    <p style="color: var(--body-color); font-size: 14px;">
+                                        Le quiz n'est pas encore disponible.
+                                    </p>
+                                </div>
+                            {% else %}
+                                <div style="text-align: center; padding: 10px 0;">
+                                    <div style="width: 56px; height: 56px; background: rgba(50,52,80,0.06); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
+                                        <i class="lni lni-lock-alt" style="font-size: 26px; color: var(--body-color);"></i>
+                                    </div>
+                                    <p style="color: var(--body-color); font-size: 14px;">
+                                        Inscrivez-vous pour acceder au quiz.
+                                    </p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+(() => {
+    const form = document.getElementById('detailFavoriteForm');
+    const btn = document.getElementById('detailFavoriteBtn');
+    if (!form || !btn) return;
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        btn.classList.add('loading');
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+
+            const data = await response.json();
+            const isFavori = !!data.isFavori;
+            btn.classList.toggle('active', isFavori);
+            const label = isFavori ? 'Retirer des favoris' : 'Ajouter aux favoris';
+            btn.title = label;
+            btn.setAttribute('aria-label', label);
+        } catch (err) {
+            form.submit();
+        } finally {
+            btn.classList.remove('loading');
+        }
+    });
+})();
+
+(() => {
+    const isEnrolled = {{ dejaInscrit ? 'true' : 'false' }};
+    const isYoutube = {{ isYoutubeVideo ? 'true' : 'false' }};
+    const isDirectVideo = {{ isDirectVideo ? 'true' : 'false' }};
+    const hasQuiz = {{ hasQuiz ? 'true' : 'false' }};
+    let quizCompleted = {{ quizCompleted ? 'true' : 'false' }};
+    const progressUrl = "{{ path('app_utilisateur_progression_video', {id: formation.idFormation}) }}";
+    const progressBar = document.getElementById('progressBar');
+    const progressPercentText = document.getElementById('progressPercentText');
+    const progressStatusText = document.getElementById('progressStatusText');
+
+    if (!isEnrolled || !progressBar || !progressPercentText || !progressStatusText) {
+        return;
+    }
+
+    let maxSeconds = {{ progressionSeconds|default(0) }};
+    let knownDuration = {{ progressionDuration|default(0) }};
+    let lastSentAt = 0;
+    let lastSentSeconds = 0;
+    let ytPlayer = null;
+    let ytInterval = null;
+
+    function setProgressUI(percent) {
+        const p = Math.max(0, Math.min(100, Number(percent || 0)));
+        progressBar.style.width = p + '%';
+        progressPercentText.textContent = Math.floor(p) + '%';
+        if (hasQuiz && !quizCompleted && p >= 95) {
+            progressStatusText.textContent = 'Video terminee - quiz requis';
+        } else if (p >= 95) {
+            progressStatusText.textContent = 'Termine';
+        } else if (p > 0) {
+            progressStatusText.textContent = 'En cours';
+        } else {
+            progressStatusText.textContent = 'Non commence';
+        }
+    }
+
+    async function sendProgress(seconds, duration, force = false) {
+        let sec = Math.max(0, Math.floor(seconds || 0));
+        let dur = Math.max(0, Math.floor(duration || 0));
+
+        if (dur <= 0) return;
+
+        sec = Math.max(sec, maxSeconds);
+        dur = Math.max(dur, knownDuration);
+        if (sec > dur) sec = dur;
+
+        const now = Date.now();
+        if (!force && (now - lastSentAt) < 12000 && Math.abs(sec - lastSentSeconds) < 5) {
+            return;
+        }
+
+        lastSentAt = now;
+        lastSentSeconds = sec;
+
+        try {
+            const response = await fetch(progressUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ seconds: sec, duration: dur })
+            });
+
+            if (!response.ok) return;
+            const data = await response.json();
+            if (!data || !data.ok) return;
+
+            maxSeconds = Math.max(maxSeconds, Number(data.seconds || 0));
+            knownDuration = Math.max(knownDuration, Number(data.duration || 0));
+            if (typeof data.quizCompleted === 'boolean') {
+                quizCompleted = data.quizCompleted;
+            }
+            setProgressUI(Number(data.progress || 0));
+        } catch (e) {
+            // ignore network hiccups
+        }
+    }
+
+    function initYoutubeTracking() {
+        const iframe = document.getElementById('formationPlayerFrame');
+        if (!iframe) return;
+
+        function startLoop() {
+            if (ytInterval) clearInterval(ytInterval);
+            ytInterval = setInterval(() => {
+                if (!ytPlayer || typeof ytPlayer.getCurrentTime !== 'function' || typeof ytPlayer.getPlayerState !== 'function') return;
+                const state = ytPlayer.getPlayerState();
+                if (state !== 1) return; // PLAYING
+                const sec = ytPlayer.getCurrentTime();
+                const dur = ytPlayer.getDuration();
+                sendProgress(sec, dur, false);
+            }, 5000);
+        }
+
+        function stopLoop() {
+            if (ytInterval) {
+                clearInterval(ytInterval);
+                ytInterval = null;
+            }
+        }
+
+        const createPlayer = () => {
+            ytPlayer = new window.YT.Player('formationPlayerFrame', {
+                events: {
+                    onReady: () => {
+                        startLoop();
+                    },
+                    onStateChange: (event) => {
+                        const state = event.data;
+                        const YTState = window.YT.PlayerState;
+                        if (state === YTState.PLAYING) {
+                            startLoop();
+                        } else if (state === YTState.PAUSED) {
+                            stopLoop();
+                            sendProgress(ytPlayer.getCurrentTime(), ytPlayer.getDuration(), true);
+                        } else if (state === YTState.ENDED) {
+                            stopLoop();
+                            sendProgress(ytPlayer.getDuration(), ytPlayer.getDuration(), true);
+                        }
+                    }
+                }
+            });
+        };
+
+        if (window.YT && window.YT.Player) {
+            createPlayer();
+            return;
+        }
+
+        const oldCb = window.onYouTubeIframeAPIReady;
+        window.onYouTubeIframeAPIReady = function () {
+            if (typeof oldCb === 'function') oldCb();
+            createPlayer();
+        };
+
+        if (!document.querySelector('script[data-yt-api="1"]')) {
+            const s = document.createElement('script');
+            s.src = 'https://www.youtube.com/iframe_api';
+            s.async = true;
+            s.dataset.ytApi = '1';
+            document.head.appendChild(s);
+        }
+    }
+
+    function initDirectVideoTracking() {
+        const video = document.getElementById('formationHtml5Video');
+        if (!video) return;
+
+        video.addEventListener('loadedmetadata', () => {
+            const sec = Number(video.currentTime || 0);
+            const dur = Number(video.duration || 0);
+            sendProgress(sec, dur, false);
+        });
+
+        video.addEventListener('timeupdate', () => {
+            const sec = Number(video.currentTime || 0);
+            const dur = Number(video.duration || 0);
+            sendProgress(sec, dur, false);
+        });
+
+        video.addEventListener('pause', () => {
+            const sec = Number(video.currentTime || 0);
+            const dur = Number(video.duration || 0);
+            sendProgress(sec, dur, true);
+        });
+
+        video.addEventListener('ended', () => {
+            const dur = Number(video.duration || 0);
+            sendProgress(dur, dur, true);
+        });
+    }
+
+    setProgressUI({{ progressionPercent|default(0) }});
+
+    if (isYoutube) {
+        initYoutubeTracking();
+    } else if (isDirectVideo) {
+        initDirectVideoTracking();
+    }
+
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) return;
+
+        if (isYoutube && ytPlayer && typeof ytPlayer.getCurrentTime === 'function') {
+            sendProgress(ytPlayer.getCurrentTime(), ytPlayer.getDuration(), true);
+            return;
+        }
+
+        if (isDirectVideo) {
+            const video = document.getElementById('formationHtml5Video');
+            if (!video) return;
+            sendProgress(Number(video.currentTime || 0), Number(video.duration || 0), true);
+        }
+    });
+
+    window.addEventListener('beforeunload', () => {
+        if (isYoutube && ytPlayer && typeof ytPlayer.getCurrentTime === 'function') {
+            sendProgress(ytPlayer.getCurrentTime(), ytPlayer.getDuration(), true);
+            return;
+        }
+
+        if (isDirectVideo) {
+            const video = document.getElementById('formationHtml5Video');
+            if (!video) return;
+            sendProgress(Number(video.currentTime || 0), Number(video.duration || 0), true);
+        }
+    });
+})();
+</script>
+
+{% endblock %}

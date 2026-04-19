@@ -3,3 +3,24 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+
+admin_projets:
+    path: /admin/projets
+    controller: App\Controller\AdminProjetController::index
+
+admin_projet_participations:
+    path: /admin/projets/{id}/participations
+    controller: App\Controller\AdminProjetController::participations
+    requirements:
+        id: '\d+'
+
+admin_projet_delete:
+    path: /admin/projets/{id}/supprimer
+    controller: App\Controller\AdminProjetController::delete
+    requirements:
+        id: '\d+'
+
+admin_projets_export_csv:
+    path: /admin/projets/export/csv
+    controller: App\Controller\AdminProjetController::exportCsv
+    methods: [GET]

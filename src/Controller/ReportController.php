@@ -2,8 +2,10 @@
 
 namespace App\Controller;
 
+use App\Controller\Concern\ResolvesForumUser;
 use App\Entity\Report;
 use App\Repository\ReportRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -12,16 +14,25 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class ReportController extends AbstractController
 {
+    use ResolvesForumUser;
+
     #[Route('/report/create', name: 'app_report_create', methods: ['POST'])]
     public function create(
         Request $request,
         ReportRepository $reportRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        UserRepository $userRepository
     ): RedirectResponse {
         $type = trim((string) $request->request->get('targetType', ''));
         $targetId = (int) $request->request->get('targetId', 0);
         $reason = trim((string) $request->request->get('reason', ''));
-        $reporterId = 3; // static test user
+        $utilisateur = $this->getForumUser($userRepository);
+        $reporterId = $utilisateur?->getId();
+
+        if (!$reporterId) {
+            $this->addFlash('error', 'Vous devez etre connecte pour signaler un contenu.');
+            return $this->redirectToRoute('app_login');
+        }
 
         if ($type === '' || $targetId <= 0 || $reason === '') {
             $this->addFlash('error', 'Données du signalement invalides.');

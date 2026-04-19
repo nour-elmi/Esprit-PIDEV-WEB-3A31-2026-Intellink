@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Controller\Concern\ResolvesForumUser;
 use App\Entity\Comment;
 use App\Repository\CommentRepository;
 use App\Repository\PostRepository;
@@ -15,14 +16,18 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class CommentController extends AbstractController
 {
+    use ResolvesForumUser;
+
     #[Route('/post/{id}/comments', name: 'app_comments')]
     public function index(
         int $id,
         Request $request,
         PostRepository $postRepository,
-        CommentRepository $commentRepository
+        CommentRepository $commentRepository,
+        UserRepository $userRepository
     ): Response {
         $post = $postRepository->find($id);
+        $utilisateur = $this->getForumUser($userRepository);
 
         if (!$post) {
             throw $this->createNotFoundException('Post introuvable.');
@@ -54,7 +59,8 @@ final class CommentController extends AbstractController
             'groupedReplies' => $groupedReplies,
             'search' => $search,
             'sort' => $sort,
-            'currentUserId' => 3, // static test user
+            'currentUserId' => $utilisateur?->getId(),
+            'utilisateur' => $utilisateur,
         ]);
     }
 
@@ -66,13 +72,12 @@ final class CommentController extends AbstractController
         UserRepository $userRepository,
         EntityManagerInterface $entityManager
     ): RedirectResponse {
-        $currentUserId = 3;
-
         $post = $postRepository->find($id);
-        $author = $userRepository->find($currentUserId);
+        $author = $this->getForumUser($userRepository);
 
         if (!$post || !$author) {
-            return $this->redirectToRoute('app_forum');
+            $this->addFlash('error', 'Vous devez etre connecte pour commenter.');
+            return $this->redirectToRoute('app_login');
         }
 
         if ($post->isLocked()) {
@@ -108,13 +113,12 @@ final class CommentController extends AbstractController
         UserRepository $userRepository,
         EntityManagerInterface $entityManager
     ): RedirectResponse {
-        $currentUserId = 3;
-
         $parentComment = $commentRepository->find($id);
-        $author = $userRepository->find($currentUserId);
+        $author = $this->getForumUser($userRepository);
 
         if (!$parentComment || !$author) {
-            return $this->redirectToRoute('app_forum');
+            $this->addFlash('error', 'Vous devez etre connecte pour repondre.');
+            return $this->redirectToRoute('app_login');
         }
 
         $post = $parentComment->getPost();
@@ -150,17 +154,17 @@ final class CommentController extends AbstractController
         int $id,
         Request $request,
         CommentRepository $commentRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        UserRepository $userRepository
     ): RedirectResponse {
-        $currentUserId = 3;
-
+        $utilisateur = $this->getForumUser($userRepository);
         $comment = $commentRepository->find($id);
 
         if (!$comment || !$comment->getPost()) {
             return $this->redirectToRoute('app_forum');
         }
 
-        if (!$comment->getAuthor() || $comment->getAuthor()->getId() !== $currentUserId) {
+        if (!$utilisateur || !$comment->getAuthor() || $comment->getAuthor()->getId() !== $utilisateur->getId()) {
             return $this->redirectToRoute('app_comments', ['id' => $comment->getPost()->getId()]);
         }
 
@@ -189,17 +193,17 @@ final class CommentController extends AbstractController
     public function delete(
         int $id,
         CommentRepository $commentRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        UserRepository $userRepository
     ): RedirectResponse {
-        $currentUserId = 3;
-
+        $utilisateur = $this->getForumUser($userRepository);
         $comment = $commentRepository->find($id);
 
         if (!$comment || !$comment->getPost()) {
             return $this->redirectToRoute('app_forum');
         }
 
-        if (!$comment->getAuthor() || $comment->getAuthor()->getId() !== $currentUserId) {
+        if (!$utilisateur || !$comment->getAuthor() || $comment->getAuthor()->getId() !== $utilisateur->getId()) {
             return $this->redirectToRoute('app_comments', ['id' => $comment->getPost()->getId()]);
         }
 

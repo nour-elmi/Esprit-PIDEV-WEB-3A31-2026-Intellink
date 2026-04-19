@@ -1,0 +1,200 @@
+{% set hasDemandes = (demandesRecues is defined and demandesRecues|length > 0) %}
+<div id="demandesContainer" style="{% if not hasDemandes %}display: none;{% endif %}">
+    <div class="section-title" style="color: var(--intel-blue);">Demandes en attente</div>
+    <div class="imessage-contact-list" id="demandesAttenteList" style="margin-bottom: 10px; border-bottom: 1px solid rgba(0,0,0,0.05); max-height: 200px;">
+        
+        {% for demande in demandesRecues %}
+            <div class="imessage-contact" id="demande-{{ demande.id }}" style="cursor: default; padding: 10px 20px;">
+                
+                {# GESTION DE L'IMAGE DU DEMANDEUR #}
+                {% if demande.requester.image is not empty and demande.requester.image|trim != '' %}
+                    {% if demande.requester.image starts with 'http' or demande.requester.image starts with 'data:image' %}
+                        <img src="{{ demande.requester.image }}" class="avatar" alt="PDP" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ demande.requester.nom|url_encode }}&background=f1f5f9&color=000'">
+                    {% else %}
+                        <img src="{{ asset('uploads/profiles/' ~ demande.requester.image) }}" class="avatar" alt="PDP" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ demande.requester.nom|url_encode }}&background=f1f5f9&color=000'">
+                    {% endif %}
+                {% else %}
+                    <img src="https://ui-avatars.com/api/?name={{ demande.requester.nom|url_encode }}&background=f1f5f9&color=000" class="avatar" alt="Avatar">
+                {% endif %}
+
+                <div class="contact-content" style="display: flex; justify-content: space-between; align-items: center; border-bottom: none; padding-bottom: 0;">
+                    <div class="contact-top" style="flex-direction: column; align-items: flex-start;">
+                        <span class="name" style="font-size: 15px; margin-bottom: 2px;">{{ demande.requester.nom }}</span>
+                        <span class="last-msg" style="font-size: 12px; color: #8E8E93;">Veut se connecter</span>
+                    </div>
+                    
+                    <button onclick="accepterDemande({{ demande.id }}, this)" 
+                            style="background: var(--intel-blue); color: white; border: none; padding: 6px 14px; border-radius: 15px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s;">
+                        Accepter
+                    </button>
+                </div>
+            </div>
+        {% endfor %}
+
+    </div>
+</div>
+
+<div class="section-title">Suggestions de contacts</div>
+<div class="imessage-suggestions-container">
+    
+    {% for utilisateur in users %}
+        
+        {# On vérifie si une demande a déjà été envoyée à cette personne #}
+        {% set isPending = utilisateur.id in pendingSentIds %}
+        
+        <div class="suggestion-item" data-user-id="{{ utilisateur.id }}" {% if not isPending %}onclick="envoyerDemande({{ utilisateur.id }}, this)"{% endif %} style="{% if isPending %}opacity: 0.8; cursor: default;{% endif %}">
+            
+            <div class="suggestion-avatar-wrapper" style="{% if isPending %}border-color: #f59e0b;{% endif %}">
+                
+                {# GESTION INTELLIGENTE DE L'IMAGE #}
+                {% if utilisateur.image is not empty and utilisateur.image|trim != '' %}
+                    {% if utilisateur.image starts with 'http' or utilisateur.image starts with 'data:image' %}
+                        <img src="{{ utilisateur.image }}" alt="PDP" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ utilisateur.nom|url_encode }}&background=f1f5f9&color=000'">
+                    {% else %}
+                        <img src="{{ asset('uploads/profiles/' ~ utilisateur.image) }}" alt="PDP" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ utilisateur.nom|url_encode }}&background=f1f5f9&color=000'">
+                    {% endif %}
+                {% else %}
+                    <img src="https://ui-avatars.com/api/?name={{ utilisateur.nom|url_encode }}&background=f1f5f9&color=000" alt="Avatar">
+                {% endif %}
+
+                {# LE BADGE DYNAMIQUE (Horloge ou Plus) #}
+                {% if isPending %}
+                    <div class="suggestion-add-badge" style="background: #f59e0b; border-color: white;" title="Demande en attente">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                {% else %}
+                    <div class="suggestion-add-badge" title="Ajouter {{ utilisateur.nom }}">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                {% endif %}
+
+            </div>
+            <div class="suggestion-name">{{ utilisateur.nom }}</div>
+        </div>
+        
+    {% else %}
+        <div style="font-size: 13px; color: gray; padding: 10px 20px;">
+            Aucune nouvelle suggestion pour le moment.
+        </div>
+    {% endfor %}
+    
+</div>
+
+<div class="section-title">Discussions récentes</div>
+<div class="imessage-contact-list">
+    
+    <span id="initTotalUnread" style="display:none;">{{ totalUnread|default(0) }}</span>
+
+    {% for data in conversationsData|default([]) %}
+        {% set conversation = data.entity %}
+        {% set unreadCount = data.unreadCount %}
+        
+        {# Trouver l'autre participant #}
+        {% set otherUser = null %}
+        {% for participant in conversation.participants %}
+            {% if participant.id != currentUser.id %}
+                {% set otherUser = participant %}
+            {% endif %}
+        {% endfor %}
+
+        {% if otherUser %}
+            
+            {# Déterminer la bonne image #}
+            {% set avatarUrl = 'https://ui-avatars.com/api/?name=' ~ otherUser.nom|url_encode ~ '&background=f1f5f9&color=000' %}
+            {% if otherUser.image is not empty and otherUser.image|trim != '' %}
+                {% if otherUser.image starts with 'http' or otherUser.image starts with 'data:image' %}
+                    {% set avatarUrl = otherUser.image %}
+                {% else %}
+                    {% set avatarUrl = asset('uploads/profiles/' ~ otherUser.image) %}
+                {% endif %}
+            {% endif %}
+
+            {% set isFriend = are_friends(currentUser, otherUser) %}
+            {% set lastActivityStr = '' %}
+            {% set statusColor = '' %}
+            
+            {% if isFriend %}
+                {% set lastActivityStr = 'Hors ligne' %}
+                {% set statusColor = '#9CA3AF' %}
+                {% if otherUser.lastActivityAt %}
+                    {% set diffMinutes = ((date().timestamp - otherUser.lastActivityAt.timestamp) / 60)|round(0, 'floor') %}
+                    {% if diffMinutes < 5 %}
+                        {% set lastActivityStr = 'En ligne' %}
+                        {% set statusColor = '#10B981' %}
+                    {% else %}
+                        {% if diffMinutes < 60 %}
+                            {% set lastActivityStr = 'Il y a ' ~ diffMinutes ~ ' min' %}
+                        {% elseif diffMinutes < 1440 %}
+                            {% set lastActivityStr = 'Il y a ' ~ (diffMinutes / 60)|round(0, 'floor') ~ 'h' %}
+                        {% else %}
+                            {% set lastActivityStr = 'Il y a ' ~ (diffMinutes / 1440)|round(0, 'floor') ~ ' j' %}
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+
+            <div class="imessage-contact {% if unreadCount > 0 %}unread-bold{% endif %}" 
+                 id="conv-item-{{ conversation.id }}" 
+                 data-user-id="{{ otherUser.id }}"
+                 data-unread="{{ unreadCount }}"
+                 data-status="{{ lastActivityStr }}"
+                 data-status-color="{{ statusColor }}"
+                 data-conversation-id="{{ conversation.id }}"
+                   data-name="{{ otherUser.nom|e('html_attr') }}"
+                   data-avatar="{{ avatarUrl|e('html_attr') }}">
+                 
+                <div style="position: relative; margin-right: 12px; height: 45px;">
+                    <img src="{{ avatarUrl }}" class="avatar" style="margin-right: 0;" alt="PDP" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ otherUser.nom|url_encode }}&background=f1f5f9&color=000'">
+                    {% if isFriend %}
+                        <div style="position: absolute; bottom: 0px; right: 2px; width: 13px; height: 13px; background: {{ statusColor }}; border-radius: 50%; border: 2px solid white;"></div>
+                    {% endif %}
+                </div>
+                
+                <div class="contact-content">
+                    <div class="contact-top">
+                        <span class="name">{{ otherUser.nom }}</span>
+                        {% if isFriend %}
+                            <span class="time" style="font-size: 11px; color: {{ statusColor }}; font-weight: 600;">{{ lastActivityStr }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="contact-bottom">
+                        <span class="last-msg">Cliquez pour voir les messages...</span>
+                    </div>
+                </div>
+            </div>
+            
+        {% endif %}
+
+    {% else %}
+        <div style="font-size: 13px; color: gray; padding: 10px 20px;">
+            Aucune discussion pour le moment.
+        </div>
+    {% endfor %}
+
+    <div class="imessage-contact" style="background: linear-gradient(90deg, rgba(0,122,255,0.06) 0%, transparent 100%); border-left: 4px solid var(--intel-blue); margin-top: 10px;" 
+         data-name="IntelLink-AI" data-avatar="ai-logo" data-conversation-id="ai">
+        
+        <div class="ai-logo-container" style="margin-right: 12px;">
+            <div class="ai-aura"></div>
+            <svg class="ai-svg-brain" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path class="brain-path" d="M12 22C12 22 20 18 20 12C20 6 16 2 12 2C8 2 4 6 4 12C4 18 12 22 12 22Z" stroke="#007AFF" stroke-width="1.5"/>
+                <path class="brain-path" d="M12 2V22" stroke="#007AFF" stroke-width="1" stroke-dasharray="2 2"/>
+                <circle class="brain-dot" cx="12" cy="7" r="1.5" fill="#007AFF"/>
+                <circle class="brain-dot" cx="16" cy="11" r="1" fill="#8b5cf6" style="animation-delay: 0.5s;"/>
+                <circle class="brain-dot" cx="8" cy="13" r="1" fill="#007AFF" style="animation-delay: 1s;"/>
+            </svg>
+            <div style="position: absolute; bottom: 0px; right: 0px; width: 10px; height: 10px; background: #34D399; border-radius: 50%; border: 2px solid white;"></div>
+        </div>
+        
+        <div class="contact-content">
+            <div class="contact-top">
+                <span class="name" style="color: var(--intel-blue); font-weight: 800;">IntelLink-AI</span>
+                <span class="time" style="color: #34D399; font-weight: 700; font-size: 11px;">En ligne</span>
+            </div>
+            <div class="contact-bottom">
+                <span class="last-msg" style="color: #64748b; font-weight: 500;">Votre assistant virtuel</span>
+            </div>
+        </div>
+    </div>
+
+</div>

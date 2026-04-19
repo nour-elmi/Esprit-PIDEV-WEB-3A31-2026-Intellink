@@ -1,0 +1,1183 @@
+﻿{% extends 'formation/base.html.twig' %}
+
+{% block title %}Passer le quiz - {{ formation.titre }}{% endblock %}
+{% block role_badge_class %}badge-utilisateur{% endblock %}
+{% block role_label %}Apprenant{% endblock %}
+
+{% block body %}
+<style>
+/* ═══════════════════════════════════════════
+   SHELL
+═══════════════════════════════════════════ */
+.qz-shell {
+    position: relative;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 150px 56px;   /* espace lateral pour les bulles */
+}
+
+@media (max-width: 1080px) {
+    .qz-shell { padding: 32px 120px 48px; }
+}
+@media (max-width: 860px) {
+    .qz-shell { padding: 0 0 48px; }
+}
+
+/* ── Zones centrales ── */
+#qz-start,
+#qz-question,
+#qz-score {
+    width: min(900px, 100%);
+}
+
+/* ══════════════════════════════════════════
+   ÉCRAN DE DÉMARRAGE
+══════════════════════════════════════════ */
+#qz-start {
+    text-align: center;
+    padding: 52px 36px 44px;
+    background: #fff;
+    border: 1px solid #dde8f9;
+    border-radius: 20px;
+    box-shadow: 0 24px 56px rgba(47,128,237,.13), 0 2px 8px rgba(0,0,0,.04);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Cercles décoratifs */
+#qz-start::before {
+    content: '';
+    position: absolute;
+    width: 220px; height: 220px;
+    top: -80px; right: -60px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(99,102,241,.18) 0%, transparent 70%);
+    pointer-events: none;
+}
+#qz-start::after {
+    content: '';
+    position: absolute;
+    width: 160px; height: 160px;
+    bottom: -60px; left: -40px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(16,185,129,.16) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.qz-start-icon {
+    width: 68px; height: 68px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #818cf8);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 18px;
+    box-shadow: 0 8px 24px rgba(99,102,241,.35);
+    font-size: 28px;
+    color: #fff;
+}
+
+#qz-start h2 {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--dark);
+    margin-bottom: 10px;
+}
+#qz-start .sub {
+    font-size: 14px;
+    color: var(--body-color);
+    max-width: 440px;
+    margin: 0 auto 28px;
+    line-height: 1.75;
+}
+
+.qz-rules {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+}
+.qz-rule {
+    background: #f4f7ff;
+    border: 1px solid #dde6fb;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4b5a80;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+.qz-rule i { color: var(--primary); }
+
+/* ══════════════════════════════════════════
+   CARTE QUESTION
+══════════════════════════════════════════ */
+.qz-card {
+    background: #fff;
+    border: 1px solid #dde8f9;
+    border-radius: 20px;
+    box-shadow: 0 18px 48px rgba(47,128,237,.10), 0 2px 8px rgba(0,0,0,.04);
+    padding: 38px 34px;
+    
+}
+
+#qz-question { display: none; }
+
+/* Badge numéro de question */
+.qz-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(90deg, #eef2ff, #f0fdf4);
+    border: 1px solid #c7d7fb;
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: #4338ca;
+    margin-bottom: 14px;
+}
+.qz-label-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #10b981);
+}
+
+/* Barre de progression */
+.qz-pbar-wrap {
+    background: #e9eef8;
+    border-radius: 999px;
+    height: 7px;
+    margin-bottom: 24px;
+    overflow: hidden;
+}
+.qz-pbar {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, #6366f1, #10b981);
+    border-radius: 999px;
+    transition: width .4s cubic-bezier(.4,0,.2,1);
+}
+
+/* Texte de la question */
+.qz-text {
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--dark);
+    line-height: 1.65;
+    margin-bottom: 28px;
+    padding: 20px 22px;
+    background: linear-gradient(135deg, #f8fbff 0%, #f4f7ff 100%);
+    border: 1px solid #dde8fa;
+    border-left: 5px solid #6366f1;
+    border-radius: 14px;
+}
+
+/* Boutons Vrai / Faux */
+.qz-vf { display: flex; gap: 12px; }
+.qz-vf-btn {
+    flex: 1;
+    border: 2px solid #e2e8f5;
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px 12px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 700;
+    color: #5c6680;
+    transition: all .18s cubic-bezier(.4,0,.2,1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: .01em;
+}
+.qz-vf-btn:hover {
+    border-color: #6366f1;
+    color: #4338ca;
+    background: #f0f1ff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(99,102,241,.18);
+}
+.qz-vf-btn.sel-v {
+    border-color: #10b981;
+    background: linear-gradient(135deg, #ecfdf5, #f0fdf9);
+    color: #059669;
+    box-shadow: 0 6px 18px rgba(16,185,129,.2);
+}
+.qz-vf-btn.sel-f {
+    border-color: #ef4444;
+    background: linear-gradient(135deg, #fef2f2, #fff5f5);
+    color: #dc2626;
+    box-shadow: 0 6px 18px rgba(239,68,68,.18);
+}
+
+/* Navigation */
+.qz-nav {
+    margin-top: 24px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding-top: 18px;
+    border-top: 1px solid #eef2fa;
+}
+.qz-nav .sp { flex: 1; }
+
+/* ══════════════════════════════════════════
+   BOUTONS GÉNÉRIQUES
+══════════════════════════════════════════ */
+.qz-btn {
+    border: none;
+    border-radius: 999px;
+    padding: 11px 22px;
+    font-size: 14px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all .15s;
+}
+.qz-btn-primary {
+    background: linear-gradient(135deg, #6366f1, #818cf8);
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(99,102,241,.32);
+}
+.qz-btn-primary:hover { opacity: .9; transform: translateY(-1px); box-shadow: 0 10px 24px rgba(99,102,241,.38); }
+.qz-btn-ghost {
+    background: #f4f7ff;
+    border: 1px solid #dde6fb;
+    color: #5c6680;
+}
+.qz-btn-ghost:hover { background: #eef2ff; color: var(--dark); }
+.qz-btn:disabled { opacity: .4; cursor: default; transform: none; box-shadow: none; }
+
+.qz-start-status {
+    margin: 14px 0 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+}
+.qz-start-status.warn { color: #92400e; }
+.qz-start-status.ok { color: #065f46; }
+.qz-start-status.danger { color: #b91c1c; }
+
+/* ══════════════════════════════════════════
+   SCORE
+══════════════════════════════════════════ */
+#qz-score {
+    display: none;
+    text-align: center;
+}
+.qz-ring {
+    width: 124px; height: 124px;
+    border-radius: 50%;
+    border: 7px solid #10b981;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    margin: 0 auto 20px;
+    background: #f0fdf4;
+}
+.qz-ring.fail { border-color: #ef4444; background: #fef2f2; }
+.qz-ring-num  { font-size: 36px; font-weight: 800; color: var(--dark); line-height: 1; }
+.qz-ring-sub  { font-size: 13px; color: #94a3b8; }
+.qz-verdict   { font-size: 22px; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
+.qz-detail    { font-size: 14px; color: var(--body-color); margin-bottom: 24px; line-height: 1.6; }
+
+/* ══════════════════════════════════════════
+   BULLES — sidebar positionnée en absolu
+   dans le shell, côtés gauche et droit
+══════════════════════════════════════════ */
+.qz-sidebar {
+    display: none;
+}
+
+/* Les bulles sont positionnées en absolu par rapport au .qz-shell */
+.qz-bubble {
+    position: absolute;
+    top: -34px;
+    transform: none;
+    width: 168px;
+    height: 168px;
+    border-radius: 50%;
+    border: 3px solid #dde6fb;
+    box-shadow: 0 12px 36px rgba(15,23,42,.13);
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 25;
+}
+
+/* Caméra : collée à gauche du shell */
+.qz-bubble-cam {
+    left: 10px;
+    padding: 0;
+}
+
+/* Timer : collé à droite du shell */
+.qz-bubble-timer {
+    right: 10px;
+    gap: 4px;
+}
+
+/* ── Caméra ── */
+#qzVideo {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 50%;
+    background: #0f172a;
+}
+#qzCanvas { display: none; }
+
+.qz-cam-badge {
+    position: absolute;
+    bottom: 9px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15,23,42,.75);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 99px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    pointer-events: none;
+}
+.qz-cam-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #94a3b8;
+    flex-shrink: 0;
+    transition: background .2s;
+}
+.qz-cam-dot.ok     { background: #10b981; }
+.qz-cam-dot.warn   { background: #f59e0b; }
+.qz-cam-dot.danger { background: #ef4444; }
+
+/* ── Timer ── */
+.qz-timer {
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--dark);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    transition: color .3s;
+}
+.qz-timer.warn   { color: #f59e0b; }
+.qz-timer.danger { color: #ef4444; animation: qzblink .8s infinite alternate; }
+@keyframes qzblink { to { opacity: .3; } }
+
+.qz-timer-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    text-align: center;
+    margin-top: 4px;
+}
+
+.qz-alert-badge {
+    position: absolute;
+    bottom: 9px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15,23,42,.75);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 99px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    pointer-events: none;
+}
+.qz-alert-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #94a3b8;
+    flex-shrink: 0;
+    transition: background .2s;
+}
+.qz-alert-dot.warn   { background: #f59e0b; }
+.qz-alert-dot.danger { background: #ef4444; }
+
+/* Anneau décoratif autour des bulles */
+.qz-bubble::before {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    border: 2px dashed #dde6fb;
+    pointer-events: none;
+    animation: bubble-spin 18s linear infinite;
+}
+@keyframes bubble-spin { to { transform: rotate(360deg); } }
+
+/* ── Responsive ── */
+@media (max-width: 860px) {
+    .qz-shell { padding: 0 0 48px; }
+    .qz-sidebar {
+        position: static;
+        display: flex !important;
+        flex-direction: row;
+        justify-content: center;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    .qz-bubble {
+        position: static;
+        transform: none;
+        width: 120px;
+        height: 120px;
+    }
+    .qz-timer { font-size: 24px; }
+    .qz-bubble::before { display: none; }
+}
+
+/* ══════════════════════════════════════════
+   OVERLAYS
+══════════════════════════════════════════ */
+.qz-cheat-overlay,
+.qz-auto-overlay {
+    position: fixed; inset: 0;
+    background: rgba(15,23,42,.72);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999;
+    opacity: 0; pointer-events: none;
+    transition: opacity .22s;
+}
+.qz-auto-overlay        { display: none; opacity: 1; pointer-events: auto; }
+.qz-auto-overlay.show   { display: flex; }
+.qz-cheat-overlay.show  { opacity: 1; pointer-events: auto; }
+
+.qz-cheat-box,
+.qz-auto-box {
+    background: #fff;
+    border-radius: 20px;
+    padding: 38px 34px;
+    width: 92%; max-width: 390px;
+    text-align: center;
+    box-shadow: 0 24px 64px rgba(0,0,0,.22);
+}
+.qz-cheat-icon,
+.qz-auto-icon  { font-size: 2.6rem; margin-bottom: 10px; }
+.qz-cheat-title,
+.qz-auto-title { font-size: 18px; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
+.qz-cheat-msg,
+.qz-auto-msg   { font-size: 13px; color: var(--body-color); line-height: 1.7; margin-bottom: 14px; }
+.qz-cheat-badge {
+    display: inline-block;
+    border-radius: 999px;
+    background: #fff7e8; color: #92400e;
+    font-size: 12px; font-weight: 700;
+    padding: 4px 14px;
+    margin-bottom: 18px;
+}
+.qz-cheat-badge.critical { background: #fef2f2; color: #7f1d1d; }
+</style>
+
+{# ── Overlay soumission automatique ── #}
+<div class="qz-auto-overlay" id="qzAutoOverlay">
+    <div class="qz-auto-box">
+        <div class="qz-auto-icon"  id="qzAutoIcon">⏱️</div>
+        <div class="qz-auto-title" id="qzAutoTitle">Soumission automatique</div>
+        <div class="qz-auto-msg"   id="qzAutoMsg">Le quiz est soumis automatiquement…</div>
+    </div>
+</div>
+
+{# ── Overlay infraction ── #}
+<div class="qz-cheat-overlay" id="qzCheatOverlay">
+    <div class="qz-cheat-box">
+        <div class="qz-cheat-icon"  id="qzCheatIcon">⚠️</div>
+        <div class="qz-cheat-title" id="qzCheatTitle">Infraction détectée</div>
+        <div class="qz-cheat-msg"   id="qzCheatMsg"></div>
+        <div class="qz-cheat-badge" id="qzCheatBadge">1 / 3 infractions</div>
+        <button class="qz-btn qz-btn-primary"
+                style="width:100%;justify-content:center;"
+                id="qzCheatContinueBtn"
+                onclick="document.getElementById('qzCheatOverlay').classList.remove('show')">
+            <i class="lni lni-checkmark"></i> Je comprends — continuer
+        </button>
+    </div>
+</div>
+
+{# ── Hero ── #}
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-content">
+            <a href="{{ path('app_utilisateur_formation_show', {id: formation.idFormation}) }}"
+               class="back-link" style="color:rgba(255,255,255,0.7);">
+                <i class="lni lni-arrow-left"></i> Retour à la formation
+            </a>
+            <h1>{{ quiz.titre ?? 'Quiz' }}</h1>
+            <p>{{ formation.titre }}</p>
+        </div>
+    </div>
+</section>
+
+{# ── Contenu ── #}
+<div class="main-content">
+    <div class="container">
+        <div class="qz-shell">
+
+            {# ── Bulles (cachées jusqu'au démarrage) ── #}
+            <div class="qz-sidebar" id="qzSidebar">
+
+                {# Caméra — bulle gauche #}
+                <div class="qz-bubble qz-bubble-cam">
+                    <video id="qzVideo" autoplay muted playsinline></video>
+                    <canvas id="qzCanvas"></canvas>
+                    <div class="qz-cam-badge">
+                        <div class="qz-cam-dot" id="dotFace"></div>
+                        <span id="stFace">--</span>
+                    </div>
+                </div>
+
+                {# Timer — bulle droite #}
+                <div class="qz-bubble qz-bubble-timer">
+                    <div class="qz-timer" id="qzTimer"
+                         data-duration="{{ quiz.duree|default(10) }}">
+                        {{ '%02d'|format(quiz.duree|default(10)) }}:00
+                    </div>
+                    <div class="qz-timer-label">temps restant</div>
+                    <div class="qz-alert-badge">
+                        <div class="qz-alert-dot" id="dotAlert"></div>
+                        <span id="stAlert">0 / 3</span>
+                    </div>
+                </div>
+
+            </div>
+
+            {# ── Écran de démarrage ── #}
+            <div id="qz-start">
+                <div class="qz-start-icon">
+                    <i class="lni lni-notepad"></i>
+                </div>
+                <h2>Prêt à commencer ?</h2>
+                <p class="sub">
+                    Assurez-vous d'être dans un endroit calme et bien éclairé.
+                    La caméra et le minuteur démarrent dès que vous cliquez sur le bouton.
+                </p>
+                <div class="qz-rules">
+                    <div class="qz-rule"><i class="lni lni-timer"></i> {{ quiz.duree|default(10) }} min</div>
+                    <div class="qz-rule"><i class="lni lni-question-circle"></i> {{ questions|length }} question(s)</div>
+                    <div class="qz-rule"><i class="lni lni-camera"></i> Surveillance</div>
+                    <div class="qz-rule"><i class="lni lni-warning"></i> 3 infractions max</div>
+                </div>
+                <button id="qzStartBtn" class="qz-btn qz-btn-primary" style="font-size:15px;padding:13px 28px;" onclick="startQuiz()">
+                    <i class="lni lni-play"></i> Commencer le quiz
+                </button>
+                <p id="qzStartStatus" class="qz-start-status"></p>
+            </div>
+
+            {# ── Question courante ── #}
+            <div class="qz-card" id="qz-question">
+                <div class="qz-label" id="qzLabel">
+                    <span class="qz-label-dot"></span>
+                    Question 1 / {{ questions|length }}
+                </div>
+                <div class="qz-pbar-wrap">
+                    <div class="qz-pbar" id="qzPbar"></div>
+                </div>
+                <div class="qz-text" id="qzText"></div>
+                <div class="qz-vf">
+                    <button class="qz-vf-btn" id="btnVrai" onclick="pickAnswer('vrai')">
+                        ✅ Vrai
+                    </button>
+                    <button class="qz-vf-btn" id="btnFaux" onclick="pickAnswer('faux')">
+                        ❌ Faux
+                    </button>
+                </div>
+                <div class="qz-nav">
+                    <button class="qz-btn qz-btn-ghost" id="btnPrev"
+                            onclick="prevQuestion()" disabled>
+                        <i class="lni lni-arrow-left"></i> Précédent
+                    </button>
+                    <span class="sp"></span>
+                    <button class="qz-btn qz-btn-primary" id="btnNext"
+                            onclick="nextQuestion()">
+                        Suivant <i class="lni lni-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            {# ── Score ── #}
+            <div class="qz-card" id="qz-score">
+                <div class="qz-ring" id="qzRing">
+                    <div class="qz-ring-num" id="qzScoreNum">—</div>
+                    <div class="qz-ring-sub">/ {{ questions|length }}</div>
+                </div>
+                <div class="qz-verdict" id="qzVerdict">Résultat</div>
+                <div class="qz-detail"  id="qzDetail"></div>
+                <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+                    <a href="{{ path('app_utilisateur_formation_show', {id: formation.idFormation}) }}"
+                       class="qz-btn qz-btn-primary">
+                        <i class="lni lni-arrow-left"></i> Retour à la formation
+                    </a>
+                    <a href="{{ path('app_utilisateur_quiz_passer', {id: formation.idFormation}) }}"
+                       class="qz-btn qz-btn-ghost">
+                        <i class="lni lni-reload"></i> Recommencer
+                    </a>
+                </div>
+            </div>
+
+            {# Statut fenêtre #}
+            <div id="stWin" style="display:none;font-size:11px;color:#94a3b8;text-align:center;margin-top:10px;">
+                Fenêtre : active
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{# ── Données PHP → JS ── #}
+<script>
+const QZ_QUESTIONS = [
+    {% for q in questions %}
+    {
+        id: {{ q.idQuestion }},
+        text: {{ q.enonce|json_encode|raw }},
+        correct: {{ (q.reponseCorrecte ?? 'vrai')|lower|json_encode|raw }},
+        points: {{ q.points is not null ? q.points : 1 }}
+    }{{ not loop.last ? ',' : '' }}
+    {% endfor %}
+];
+const QZ_DURATION   = {{ quiz.duree|default(10) }};
+const QZ_MAX_CHEATS = 3;
+const QZ_FACE_CHECK_URL = {{ path('app_utilisateur_quiz_face_check', {id: formation.idFormation})|json_encode|raw }};
+</script>
+
+<script>
+(() => {
+    const $ = id => document.getElementById(id);
+    const el = {
+        start    : $('qz-start'),
+        question : $('qz-question'),
+        score    : $('qz-score'),
+        sidebar  : $('qzSidebar'),
+        stWin    : $('stWin'),
+        timer    : $('qzTimer'),
+        label    : $('qzLabel'),
+        pbar     : $('qzPbar'),
+        text     : $('qzText'),
+        btnVrai  : $('btnVrai'),
+        btnFaux  : $('btnFaux'),
+        btnPrev  : $('btnPrev'),
+        btnNext  : $('btnNext'),
+        startBtn : $('qzStartBtn'),
+        startMsg : $('qzStartStatus'),
+        video    : $('qzVideo'),
+        canvas   : $('qzCanvas'),
+        cheatOv  : $('qzCheatOverlay'),
+        autoOv   : $('qzAutoOverlay'),
+        dotFace  : $('dotFace'),
+        dotAlert : $('dotAlert'),
+        stFace   : $('stFace'),
+        stAlert  : $('stAlert'),
+    };
+
+    let current = 0, answers = {}, cheatCount = 0, cheatEvents = [];
+    let remaining = Math.max(1, QZ_DURATION) * 60;
+    let timerInt = null, detectInt = null, stream = null;
+    let quizStarted = false, isSubmitting = false;
+    let quizStarting = false;
+    let lastFaceState = '', lastWinState = 'active', noFaceStreak = 0;
+    let faceCheckBusy = false;
+    let referenceFrameBase64 = '';
+    let darkFrameStreak = 0;
+    let faceApiCooldownUntil = 0;
+    const FACE_CHECK_INTERVAL_MS = 2200;
+    const FACE_FULL_COMPARE_EVERY = 2;
+    let faceCheckTick = 0;
+    let faceReferenceValidated = false;
+
+    function setStartStatus(message, kind = '') {
+        if (!el.startMsg) return;
+        el.startMsg.textContent = message || '';
+        el.startMsg.className = 'qz-start-status' + (kind ? ' ' + kind : '');
+    }
+
+    /* ════ 1. QUIZ FLOW ════ */
+    window.startQuiz = async function () {
+        if (quizStarted || quizStarting || isSubmitting) return;
+        if (!QZ_QUESTIONS.length) {
+            alert('Aucune question n est disponible pour ce quiz.');
+            return;
+        }
+        quizStarting = true;
+        setStartStatus('Initialisation de la camera...', 'warn');
+        if (el.startBtn) {
+            el.startBtn.disabled = true;
+            el.startBtn.innerHTML = '<i class="lni lni-spinner-arrow"></i> Verification en cours...';
+        }
+
+        const initResult = await initCamera();
+        if (!initResult.ok) {
+            stopAll();
+            quizStarting = false;
+            setStartStatus(initResult.error || 'Impossible de demarrer la surveillance.', 'danger');
+            if (el.startBtn) {
+                el.startBtn.disabled = false;
+                el.startBtn.innerHTML = '<i class="lni lni-reload"></i> Reessayer';
+            }
+            return;
+        }
+
+        setStartStatus('Surveillance active. Le quiz commence...', 'ok');
+        quizStarted = true;
+        quizStarting = false;
+        el.start.style.display    = 'none';
+        el.question.style.display = 'block';
+        el.sidebar.style.display  = 'flex';
+        el.stWin.style.display    = 'block';
+        renderQuestion();
+        startTimer();
+        void checkFaceWithApi(false, 'detect');
+        detectInt = setInterval(() => { void checkFaceWithApi(); }, FACE_CHECK_INTERVAL_MS);
+    };
+
+    function renderQuestion () {
+        const q = QZ_QUESTIONS[current], total = QZ_QUESTIONS.length;
+        el.label.innerHTML = `<span class="qz-label-dot"></span> Question ${current + 1} / ${total}`;
+        el.pbar.style.width  = Math.round((current / total) * 100) + '%';
+        el.text.textContent  = q.text;
+        el.btnVrai.className = 'qz-vf-btn' + (answers[q.id] === 'vrai' ? ' sel-v' : '');
+        el.btnFaux.className = 'qz-vf-btn' + (answers[q.id] === 'faux' ? ' sel-f' : '');
+        el.btnPrev.disabled  = current === 0;
+        el.btnNext.innerHTML = current === total - 1
+            ? '<i class="lni lni-checkmark-circle"></i> Terminer'
+            : 'Suivant <i class="lni lni-arrow-right"></i>';
+    }
+
+    window.pickAnswer = function (val) {
+        if (!quizStarted) return;
+        const q = QZ_QUESTIONS[current];
+        answers[q.id] = val;
+        el.btnVrai.className = 'qz-vf-btn' + (val === 'vrai' ? ' sel-v' : '');
+        el.btnFaux.className = 'qz-vf-btn' + (val === 'faux' ? ' sel-f' : '');
+    };
+
+    window.nextQuestion = function () {
+        const q = QZ_QUESTIONS[current];
+        if (!answers[q.id]) { alert('Veuillez répondre avant de continuer.'); return; }
+        if (current < QZ_QUESTIONS.length - 1) { current++; renderQuestion(); }
+        else { doSubmit(); }
+    };
+
+    window.prevQuestion = function () {
+        if (current > 0) { current--; renderQuestion(); }
+    };
+
+    function doSubmit () {
+        if (isSubmitting) return;
+        isSubmitting = true;
+        stopAll();
+        el.question.style.display = 'none';
+        el.sidebar.style.display  = 'none';
+        el.stWin.style.display    = 'none';
+        showScore();
+        persistScoreInBackground();
+    }
+
+    function showScore () {
+        const scoreMax = QZ_QUESTIONS.reduce((sum, q) => sum + Number(q.points || 1), 0);
+        const score = QZ_QUESTIONS.reduce((sum, q) => {
+            const selected = String(answers[q.id] || "").toLowerCase();
+            const correct = String(q.correct || "").toLowerCase();
+            if (selected !== "" && selected === correct) {
+                return sum + Number(q.points || 1);
+            }
+            return sum;
+        }, 0);
+        const pass = score >= (scoreMax * 0.6);
+
+        const scoreText = Number.isInteger(score) ? String(score) : score.toFixed(1);
+        const maxText = Number.isInteger(scoreMax) ? String(scoreMax) : scoreMax.toFixed(1);
+
+        $("qzScoreNum").textContent = scoreText;
+        $("qzRing").className       = "qz-ring" + (pass ? "" : " fail");
+        $("qzVerdict").textContent  = pass ? "Quiz valide !" : "Quiz non valide";
+        $("qzDetail").textContent   = `Votre score est ${scoreText} / ${maxText}.`;
+
+        const ringSub = document.querySelector("#qz-score .qz-ring-sub");
+        if (ringSub) {
+            ringSub.textContent = `/ ${maxText}`;
+        }
+
+        el.score.style.display = "block";
+    }
+
+    function stopAll () {
+        clearInterval(timerInt); clearInterval(detectInt);
+        timerInt = null; detectInt = null;
+        if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+        faceCheckBusy = false;
+        referenceFrameBase64 = '';
+        darkFrameStreak = 0;
+    }
+
+    /* ════ 2. TIMER ════ */
+    const pad = n => String(n).padStart(2, '0');
+    const fmt = s => pad(Math.floor(s / 60)) + ':' + pad(s % 60);
+
+    function startTimer () {
+        el.timer.textContent = fmt(remaining);
+        timerInt = setInterval(() => {
+            remaining--;
+            el.timer.textContent = fmt(Math.max(0, remaining));
+            el.timer.className   = 'qz-timer'
+                + (remaining <= 30 ? ' danger' : remaining <= 120 ? ' warn' : '');
+            if (remaining <= 0) { clearInterval(timerInt); autoSubmit('Temps écoulé', '⏱️', 'Temps écoulé'); }
+        }, 1000);
+    }
+
+    /* ════ 3. ANTI-TRICHE ════ */
+    function setFaceBadge (label, kind) {
+        el.stFace.textContent = label;
+        el.dotFace.className  = 'qz-cam-dot' + (kind ? ' ' + kind : '');
+    }
+
+    function showCheatAlert (msg) {
+        if (isSubmitting || !quizStarted) return;
+        cheatCount++;
+        cheatEvents.push({ msg, at: new Date().toISOString() });
+        const isCritical = cheatCount >= QZ_MAX_CHEATS;
+
+        $('qzCheatIcon').textContent  = isCritical ? '🚨' : '⚠️';
+        $('qzCheatTitle').textContent = isCritical ? 'Limite atteinte — soumission imminente' : 'Infraction détectée';
+        $('qzCheatMsg').textContent   = msg + (isCritical
+            ? '\nLe quiz sera soumis automatiquement dans 3 secondes.'
+            : '\nRestez sur cette page et devant la caméra.');
+
+        const badge = $('qzCheatBadge');
+        badge.textContent = `${cheatCount} / ${QZ_MAX_CHEATS} infraction(s)`;
+        badge.className   = 'qz-cheat-badge' + (isCritical ? ' critical' : '');
+
+        el.stAlert.textContent = `${cheatCount} / ${QZ_MAX_CHEATS}`;
+        el.dotAlert.className  = 'qz-alert-dot ' + (cheatCount >= QZ_MAX_CHEATS ? 'danger' : 'warn');
+
+        el.cheatOv.classList.add('show');
+
+        if (isCritical) {
+            const btn = $('qzCheatContinueBtn');
+            if (btn) btn.style.display = 'none';
+            setTimeout(() => {
+                el.cheatOv.classList.remove('show');
+                autoSubmit(`Trop d'infractions (${cheatCount}/${QZ_MAX_CHEATS})`, '🚨', 'Soumission pour triche');
+            }, 3000);
+        }
+    }
+
+    function autoSubmit (reason, icon, title) {
+        if (isSubmitting) return;
+        isSubmitting = true; stopAll();
+        $('qzAutoIcon').textContent  = icon  || '⏱️';
+        $('qzAutoTitle').textContent = title || 'Soumission automatique';
+        $('qzAutoMsg').textContent   = reason + '. Soumission dans 3 secondes…';
+        el.autoOv.classList.add('show');
+        setTimeout(() => {
+            const f = document.createElement('form');
+            f.method = 'POST'; f.action = window.location.href;
+            const hid = (n, v) => { const i = document.createElement('input'); i.type='hidden'; i.name=n; i.value=v; f.appendChild(i); };
+            hid('cheat_events', JSON.stringify(cheatEvents));
+            Object.entries(answers).forEach(([qid, val]) => hid(`answers[${qid}]`, val));
+            document.body.appendChild(f); f.submit();
+        }, 3000);
+    }
+
+    async function persistScoreInBackground () {
+        try {
+            const payload = new URLSearchParams();
+            payload.set('cheat_events', JSON.stringify(cheatEvents));
+            Object.entries(answers).forEach(([qid, val]) => {
+                payload.set(`answers[${qid}]`, val);
+            });
+
+            await fetch(window.location.href, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: payload.toString(),
+                credentials: 'same-origin',
+                keepalive: true
+            });
+        } catch (e) {
+            console.warn('Sauvegarde du score echouee en arriere-plan', e);
+        }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+        if (!quizStarted || isSubmitting) return;
+        if (document.hidden && lastWinState !== 'hidden') {
+            lastWinState = 'hidden';
+            el.stWin.textContent = 'Fenêtre : sortie détectée';
+            showCheatAlert('Vous avez quitté l\'onglet du quiz.');
+        } else if (!document.hidden) {
+            lastWinState = 'active';
+            el.stWin.textContent = 'Fenêtre : active';
+        }
+    });
+
+    window.addEventListener('blur', () => {
+        if (!quizStarted || isSubmitting || lastWinState === 'blur') return;
+        lastWinState = 'blur';
+        el.stWin.textContent = 'Fenêtre : perte de focus';
+        showCheatAlert('Vous avez perdu le focus de la fenêtre.');
+    });
+
+/* ════ 4. CAMERA + FACE++ DETECTION ════ */
+function processFaces(count) {
+    if (count === 0) {
+        noFaceStreak++;
+        if (noFaceStreak < 2) {
+            setFaceBadge('verification...', 'warn');
+            return;
+        }
+
+        setFaceBadge('absente', 'danger');
+
+        if (lastFaceState !== 'none') {
+            lastFaceState = 'none';
+            showCheatAlert('Aucune personne detectee devant la camera.');
+        }
+        return;
+    }
+
+    noFaceStreak = 0;
+
+    if (count > 1) {
+        setFaceBadge('plusieurs', 'danger');
+
+        if (lastFaceState !== 'multi') {
+            lastFaceState = 'multi';
+            showCheatAlert('Plusieurs personnes detectees.');
+        }
+        return;
+    }
+
+    setFaceBadge('detectee', 'ok');
+    lastFaceState = 'single';
+}
+
+function markFaceMismatch() {
+    setFaceBadge('different', 'danger');
+    if (lastFaceState !== 'mismatch') {
+        lastFaceState = 'mismatch';
+        showCheatAlert('Visage different detecte devant la camera.');
+    }
+}
+
+function detectObstructedCamera() {
+    if (!el.canvas || !el.video || el.video.readyState < 2) return false;
+    const ctx = el.canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return false;
+
+    const w = 64;
+    const h = 48;
+    el.canvas.width = w;
+    el.canvas.height = h;
+    ctx.drawImage(el.video, 0, 0, w, h);
+
+    const frame = ctx.getImageData(0, 0, w, h).data;
+    let lumSum = 0;
+    for (let i = 0; i < frame.length; i += 4) {
+        lumSum += 0.2126 * frame[i] + 0.7152 * frame[i + 1] + 0.0722 * frame[i + 2];
+    }
+    const avg = lumSum / (w * h);
+
+    const VERY_DARK = 18;
+    if (avg < VERY_DARK) {
+        darkFrameStreak += 1;
+    } else {
+        darkFrameStreak = 0;
+    }
+
+    if (darkFrameStreak >= 2) {
+        setFaceBadge('camera couverte', 'danger');
+        if (lastFaceState !== 'blocked') {
+            lastFaceState = 'blocked';
+            showCheatAlert('Camera couverte ou image trop sombre.');
+        }
+        return true;
+    }
+    return false;
+}
+
+function captureFrameBase64() {
+    if (!el.canvas || !el.video || el.video.readyState < 2) {
+        return '';
+    }
+
+    const ctx = el.canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) {
+        return '';
+    }
+
+    const w = 224;
+    const h = 168;
+    el.canvas.width = w;
+    el.canvas.height = h;
+    ctx.drawImage(el.video, 0, 0, w, h);
+
+    return el.canvas.toDataURL('image/jpeg', 0.45);
+}
+
+async function checkFaceWithApi(forceStart = false, modeOverride = 'auto') {
+    if (faceCheckBusy || isSubmitting) {
+        return { ok: false, error: 'Verification occupee.' };
+    }
+    if (!forceStart && !quizStarted) {
+        return { ok: false, error: 'Quiz non demarre.' };
+    }
+    if (el.video.readyState < 2) {
+        return { ok: false, error: 'Camera non prete.' };
+    }
+    if (!forceStart && Date.now() < faceApiCooldownUntil) {
+        return { ok: false, error: 'Cooldown API.' };
+    }
+
+    if (detectObstructedCamera()) {
+        return { ok: false, error: 'Camera couverte.' };
+    }
+
+    const currentFrame = captureFrameBase64();
+    if (!currentFrame) {
+        setFaceBadge('camera indisponible', 'warn');
+        return { ok: false, error: 'Capture impossible.' };
+    }
+
+    if (!referenceFrameBase64) {
+        referenceFrameBase64 = currentFrame;
+    }
+
+    let runFullCompare = false;
+    if (modeOverride === 'full') {
+        runFullCompare = true;
+    } else if (modeOverride === 'detect') {
+        runFullCompare = false;
+    } else if (forceStart) {
+        runFullCompare = false;
+    } else if (!faceReferenceValidated) {
+        runFullCompare = true;
+    } else {
+        runFullCompare = (faceCheckTick % FACE_FULL_COMPARE_EVERY === 0);
+    }
+    faceCheckTick++;
+
+    faceCheckBusy = true;
+    try {
+        const response = await fetch(QZ_FACE_CHECK_URL, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                mode: runFullCompare ? 'full' : 'detect',
+                reference: referenceFrameBase64,
+                current: currentFrame
+            })
+        });
+
+        const data = await response.json().catch(() => null);
+        if (!response.ok) {
+            const err = String(data?.error || 'api indisponible').slice(0, 28);
+            setFaceBadge(err, 'warn');
+            console.warn('Face++ backend error:', data);
+            faceApiCooldownUntil = Date.now() + 4000;
+            return { ok: false, error: 'API indisponible.' };
+        }
+
+        if (!data || !data.ok) {
+            const err = String(data?.error || 'api erreur').slice(0, 28);
+            setFaceBadge(err, 'warn');
+            console.warn('Face++ payload error:', data);
+            faceApiCooldownUntil = Date.now() + 4000;
+            return { ok: false, error: 'Reponse API invalide.' };
+        }
+
+        const faceCount = Number(data.faceCount ?? 0);
+        if (faceCount === 0) {
+            processFaces(0);
+            return { ok: false, error: 'Aucun visage detecte.' };
+        }
+
+        if (faceCount > 1) {
+            processFaces(faceCount);
+            return { ok: false, error: 'Plusieurs visages detectes.' };
+        }
+
+        if (runFullCompare && data.samePerson === false) {
+            markFaceMismatch();
+            return { ok: false, error: 'Visage different detecte.' };
+        }
+
+        if (runFullCompare && data.samePerson === true) {
+            faceReferenceValidated = true;
+        }
+
+        processFaces(1);
+        return { ok: true };
+    } catch (err) {
+        setFaceBadge('reseau', 'warn');
+        faceApiCooldownUntil = Date.now() + 4000;
+        return { ok: false, error: 'Erreur reseau Face++.' };
+    } finally {
+        faceCheckBusy = false;
+    }
+}
+
+/* =========================
+   CAMERA
+========================= */
+async function initCamera() {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: "user",
+                width: { ideal: 480 },
+                height: { ideal: 360 }
+            },
+            audio: false
+        });
+
+        el.video.srcObject = stream;
+
+        await new Promise(resolve => {
+            if (el.video.readyState >= 2) return resolve();
+            el.video.onloadeddata = () => resolve();
+        });
+
+        setFaceBadge('camera ok', 'ok');
+
+        return { ok: true };
+
+    } catch (err) {
+        console.error(err);
+        setFaceBadge('refusee', 'danger');
+        return { ok: false, error: 'Camera non autorisee. Activez-la pour commencer.' };
+    }
+}
+
+    window.addEventListener('beforeunload', stopAll);
+})();
+</script>
+{% endblock %}
+

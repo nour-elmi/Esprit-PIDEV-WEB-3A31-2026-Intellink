@@ -2,8 +2,10 @@
 
 namespace App\Controller;
 
+use App\Controller\Concern\ResolvesForumUser;
 use App\Repository\PostRepository;
 use App\Repository\ReactionRepository;
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,13 +13,17 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class ForumController extends AbstractController
 {
+    use ResolvesForumUser;
+
     #[Route('/forum', name: 'app_forum')]
     public function index(
         Request $request,
         PostRepository $postRepository,
-        ReactionRepository $reactionRepository
+        ReactionRepository $reactionRepository,
+        UserRepository $userRepository
     ): Response {
-        $currentUserId = 3;
+        $utilisateur = $this->getForumUser($userRepository);
+        $currentUserId = $utilisateur?->getId();
 
         $search = trim((string) $request->query->get('q', ''));
         $filter = $request->query->get('filter', 'accueil');
@@ -59,6 +65,7 @@ final class ForumController extends AbstractController
             'filter' => $filter,
             'sort' => $sort,
             'currentUserId' => $currentUserId,
+            'utilisateur' => $utilisateur,
         ]);
     }
 }

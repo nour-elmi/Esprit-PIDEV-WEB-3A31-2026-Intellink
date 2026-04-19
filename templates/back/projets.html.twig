@@ -1,0 +1,1799 @@
+﻿{% extends 'base_projet.html.twig' %}
+
+{% block title %}Mes projets{% endblock %}
+
+{% block body %}
+<style>
+    .chef-badge-wrap {
+        position: relative;
+        display: flex;
+    }
+
+    .chef-badge-trigger {
+        min-width: 210px;
+        min-height: 112px;
+        padding: 16px 18px;
+        border: 0;
+        border-radius: 22px;
+        cursor: pointer;
+        color: #ffffff;
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.23) 0%, rgba(99, 102, 241, 0.24) 55%, rgba(16, 185, 129, 0.24) 100%);
+        box-shadow: 0 18px 34px rgba(12, 27, 84, 0.24);
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        text-align: left;
+        transition: transform .2s ease, box-shadow .2s ease;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        backdrop-filter: blur(8px);
+    }
+
+    .chef-badge-trigger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 24px 40px rgba(12, 27, 84, 0.32);
+    }
+
+    .chef-badge-trigger svg {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .chef-badge-trigger-left {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .chef-badge-kicker {
+        font-size: 12px;
+        font-weight: 800;
+        color: rgba(255, 255, 255, 0.86);
+        letter-spacing: .2px;
+    }
+
+    .chef-badge-score {
+        font-size: 35px;
+        line-height: 1;
+        font-weight: 900;
+        color: #fff;
+    }
+
+    .chef-badge-level {
+        font-size: 12px;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .chef-badge-trigger-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.17);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        margin-top: 2px;
+    }
+
+    .chef-badge-panel {
+        position: fixed;
+        width: min(380px, calc(100vw - 24px));
+        border-radius: 22px;
+        background: linear-gradient(180deg, rgba(255,255,255,.99) 0%, rgba(246,249,255,.99) 100%);
+        border: 1px solid #d5e2fc;
+        box-shadow: 0 28px 58px rgba(18, 41, 97, 0.3);
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(8px) scale(.98);
+        pointer-events: none;
+        transition: .2s ease;
+        z-index: 9999;
+    }
+
+    .chef-badge-panel.open {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+    }
+
+    .chef-badge-head {
+        padding: 12px 14px;
+        background: linear-gradient(135deg, #173e9c 0%, #2559c8 60%, #10b981 100%);
+        color: #fff;
+    }
+
+    .chef-badge-head h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 900;
+    }
+
+    .chef-badge-head p {
+        margin: 4px 0 0;
+        font-size: 12px;
+        color: rgba(255,255,255,.92);
+        font-weight: 600;
+    }
+
+    .chef-badge-body {
+        padding: 12px;
+    }
+
+    .chef-score-row {
+        display: grid;
+        grid-template-columns: 92px 1fr;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .chef-score-circle {
+        --score: 0;
+        width: 86px;
+        height: 86px;
+        border-radius: 999px;
+        background: conic-gradient(#2563eb calc(var(--score) * 1%), #dbeafe 0);
+        display: grid;
+        place-items: center;
+    }
+
+    .chef-score-inner {
+        width: 66px;
+        height: 66px;
+        border-radius: 999px;
+        background: #fff;
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+        font-weight: 900;
+        color: #15367d;
+    }
+
+    .chef-score-meta h4 {
+        margin: 0 0 4px;
+        font-size: 18px;
+        font-weight: 900;
+        color: #0f2b6a;
+    }
+
+    .chef-score-meta p {
+        margin: 0;
+        font-size: 12px;
+        color: #5b7399;
+        font-weight: 700;
+    }
+
+    .chef-kpis {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin: 10px 0 8px;
+    }
+
+    .chef-kpi {
+        border-radius: 12px;
+        border: 1px solid #d6e3fb;
+        background: #fff;
+        padding: 8px 9px;
+    }
+
+    .chef-kpi span {
+        display: block;
+        font-size: 11px;
+        color: #6b7f9f;
+        font-weight: 800;
+        margin-bottom: 3px;
+        text-transform: uppercase;
+    }
+
+    .chef-kpi strong {
+        font-size: 16px;
+        color: #143477;
+        font-weight: 900;
+        line-height: 1;
+    }
+
+    .chef-earned {
+        margin-top: 8px;
+    }
+
+    .chef-earned h5 {
+        margin: 0 0 6px;
+        font-size: 12px;
+        color: #17356f;
+        font-weight: 900;
+        text-transform: uppercase;
+    }
+
+    .chef-earned-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .chef-earned-chip {
+        border-radius: 999px;
+        padding: 5px 9px;
+        font-size: 11px;
+        font-weight: 800;
+        color: #1e3a8a;
+        background: linear-gradient(135deg, #e5efff 0%, #dcfdf0 100%);
+        border: 1px solid #cde0ff;
+    }
+
+    .chef-next-badge {
+        margin-top: 8px;
+        border-radius: 10px;
+        padding: 8px 10px;
+        background: linear-gradient(135deg, #eff5ff 0%, #ecfaf5 100%);
+        border: 1px solid #d0e3ff;
+        font-size: 12px;
+        color: #23457f;
+        font-weight: 800;
+    }
+
+    .projects-v2-hero-right {
+        display: grid;
+        gap: 8px;
+        justify-items: end;
+        align-content: start;
+        margin-top: 6px;
+        position: relative;
+        z-index: 3;
+    }
+
+    .chef-notif-row {
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 2px;
+    }
+
+    .chef-top-row {
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 2px;
+    }
+
+    .chef-top-section {
+        margin: 10px 0 16px;
+        border-radius: 16px;
+        border: 1px solid #dce8ff;
+        background: linear-gradient(135deg, #f7fbff 0%, #eef5ff 55%, #f7fffb 100%);
+        padding: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .chef-top-section-copy h3 {
+        margin: 0 0 3px;
+        font-size: 17px;
+        font-weight: 900;
+        color: #16397c;
+    }
+
+    .chef-top-section-copy p {
+        margin: 0;
+        font-size: 12px;
+        color: #4f6f9f;
+        font-weight: 700;
+    }
+
+    .chef-top-row.standalone {
+        width: auto;
+        margin-bottom: 0;
+    }
+
+    .chef-top-wrap {
+        position: relative;
+        z-index: 4;
+    }
+
+    .chef-top-trigger {
+        min-width: 220px;
+        min-height: 56px;
+        border: 0;
+        border-radius: 18px;
+        cursor: pointer;
+        color: #fff;
+        padding: 10px 14px;
+        background:
+            radial-gradient(120px 60px at 0% 0%, rgba(255,255,255,.22), rgba(255,255,255,0)),
+            linear-gradient(135deg, #f59e0b 0%, #f97316 46%, #ec4899 100%);
+        box-shadow: 0 18px 30px rgba(248, 126, 35, 0.35);
+        display: grid;
+        grid-template-columns: 42px 1fr auto;
+        align-items: center;
+        gap: 10px;
+        text-align: left;
+        transition: transform .2s ease, box-shadow .2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .chef-top-trigger::after {
+        content: "";
+        position: absolute;
+        inset: -1px;
+        background: linear-gradient(90deg, rgba(255,255,255,.0), rgba(255,255,255,.45), rgba(255,255,255,.0));
+        transform: translateX(-130%);
+        animation: chefTopSweep 3.6s linear infinite;
+        pointer-events: none;
+    }
+
+    .chef-top-trigger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 22px 38px rgba(248, 126, 35, 0.42);
+    }
+
+    .chef-top-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+    .chef-top-icon svg {
+        width: 20px;
+        height: 20px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .chef-top-label {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .chef-top-label b {
+        font-size: 14px;
+        font-weight: 900;
+    }
+
+    .chef-top-label span {
+        font-size: 12px;
+        opacity: .94;
+        font-weight: 700;
+    }
+
+    .chef-top-count {
+        min-width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 900;
+        color: #7a2300;
+        background: #fff8e8;
+        border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .chef-top-panel {
+        position: fixed;
+        width: min(430px, calc(100vw - 24px));
+        border-radius: 22px;
+        background: linear-gradient(180deg, rgba(255,255,255,.99) 0%, rgba(255,247,233,.99) 100%);
+        border: 1px solid #ffd8a8;
+        box-shadow: 0 28px 58px rgba(147, 68, 0, 0.28);
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(10px) scale(.98);
+        pointer-events: none;
+        transition: .22s ease;
+        z-index: 9999;
+    }
+
+    .chef-top-panel.open {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+    }
+
+    .chef-top-head {
+        padding: 13px 14px;
+        color: #fff;
+        background: linear-gradient(135deg, #b45309 0%, #ea580c 54%, #db2777 100%);
+    }
+
+    .chef-top-head h4 {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 900;
+        letter-spacing: .2px;
+    }
+
+    .chef-top-head p {
+        margin: 4px 0 0;
+        font-size: 12px;
+        font-weight: 600;
+        opacity: .94;
+    }
+
+    .chef-top-body {
+        padding: 12px;
+        display: grid;
+        gap: 10px;
+    }
+
+    .chef-top-empty {
+        border: 1px dashed #f2be79;
+        border-radius: 12px;
+        background: #fff7ea;
+        padding: 14px 12px;
+        text-align: center;
+        color: #8a4706;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .chef-top-champion {
+        border-radius: 14px;
+        border: 1px solid #ffd6a7;
+        background: linear-gradient(135deg, #fff6e4 0%, #ffe8cf 100%);
+        padding: 12px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .chef-top-champion::before {
+        content: "";
+        position: absolute;
+        top: -60px;
+        right: -40px;
+        width: 140px;
+        height: 140px;
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(249, 115, 22, .25) 0%, rgba(249,115,22,0) 72%);
+    }
+
+    .chef-top-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.72);
+        border: 1px solid #ffd7ab;
+        padding: 4px 9px;
+        font-size: 11px;
+        font-weight: 900;
+        color: #8a3d05;
+        margin-bottom: 8px;
+    }
+
+    .chef-top-title {
+        margin: 0;
+        font-size: 18px;
+        color: #7f2d0a;
+        font-weight: 900;
+    }
+
+    .chef-top-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .chef-top-stat {
+        border-radius: 10px;
+        border: 1px solid #ffdcb5;
+        background: #fffdf8;
+        padding: 8px;
+    }
+
+    .chef-top-stat span {
+        display: block;
+        font-size: 10px;
+        color: #9a5a1a;
+        text-transform: uppercase;
+        font-weight: 800;
+        margin-bottom: 3px;
+    }
+
+    .chef-top-stat strong {
+        font-size: 16px;
+        color: #8a3d05;
+        font-weight: 900;
+    }
+
+    .chef-top-cta {
+        margin-top: 9px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #d97706 0%, #ea580c 100%);
+        color: #fff;
+        padding: 8px 11px;
+        font-size: 12px;
+        font-weight: 900;
+        box-shadow: 0 10px 16px rgba(217, 119, 6, 0.28);
+    }
+
+    .chef-top-cta:hover {
+        color: #fff;
+    }
+
+    .chef-top-list {
+        border-radius: 12px;
+        border: 1px solid #ffe0bb;
+        background: #fff;
+        padding: 8px;
+        display: grid;
+        gap: 6px;
+    }
+
+    .chef-top-item {
+        display: grid;
+        grid-template-columns: 24px 1fr auto;
+        align-items: center;
+        gap: 8px;
+        border-radius: 9px;
+        border: 1px solid #ffe7c8;
+        background: #fffaf2;
+        padding: 7px 8px;
+    }
+
+    .chef-top-rank {
+        width: 22px;
+        height: 22px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 900;
+        color: #8a3d05;
+        background: #ffe9ca;
+    }
+
+    .chef-top-item-title {
+        font-size: 12px;
+        font-weight: 800;
+        color: #7c2d12;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .chef-top-item-count {
+        font-size: 12px;
+        font-weight: 900;
+        color: #9a3d00;
+    }
+
+    @keyframes chefTopSweep {
+        0% { transform: translateX(-130%); }
+        40%, 100% { transform: translateX(160%); }
+    }
+
+    .chef-notif-wrap {
+        position: relative;
+        flex: 0 0 auto;
+        z-index: 4;
+    }
+
+    .chef-notif-trigger {
+        width: 46px;
+        height: 46px;
+        border: 0;
+        border-radius: 14px;
+        cursor: pointer;
+        color: #fff;
+        background:
+            radial-gradient(80px 40px at 18% 10%, rgba(255,255,255,.22), rgba(255,255,255,0)),
+            linear-gradient(135deg, #2e63ff 0%, #4f46e5 58%, #10b981 100%);
+        box-shadow: 0 10px 18px rgba(27, 49, 125, 0.32);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform .2s ease, box-shadow .2s ease;
+        position: relative;
+    }
+
+    .chef-notif-trigger:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 16px 30px rgba(27, 49, 125, 0.42);
+    }
+
+    .chef-notif-trigger svg {
+        width: 22px;
+        height: 22px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.1;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .chef-notif-badge {
+        position: absolute;
+        top: -7px;
+        right: -7px;
+        min-width: 22px;
+        height: 22px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #ff4f4f 0%, #ff7a3b 100%);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 900;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #fff;
+        box-shadow: 0 6px 14px rgba(183, 36, 36, 0.35);
+    }
+
+    .chef-notif-panel {
+        position: fixed;
+        width: min(390px, calc(100vw - 26px));
+        border-radius: 20px;
+        background: linear-gradient(180deg, rgba(255,255,255,.99) 0%, rgba(245,249,255,.99) 100%);
+        border: 1px solid #d6e3fb;
+        box-shadow: 0 26px 54px rgba(18, 38, 90, 0.3);
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(8px) scale(.98);
+        pointer-events: none;
+        transition: .2s ease;
+        z-index: 9999;
+    }
+
+    .chef-notif-panel.open {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+    }
+
+    .chef-notif-head {
+        padding: 12px 14px;
+        background: linear-gradient(135deg, #143b98 0%, #2457c3 62%, #10b981 100%);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .chef-notif-head h4 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 900;
+    }
+
+    .chef-notif-mark {
+        border: 0;
+        border-radius: 10px;
+        min-height: 30px;
+        padding: 4px 10px;
+        background: rgba(255,255,255,.2);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .chef-notif-list {
+        max-height: 300px;
+        overflow: auto;
+        padding: 10px;
+        display: grid;
+        gap: 8px;
+    }
+
+    .chef-notif-item {
+        text-decoration: none;
+        border-radius: 12px;
+        border: 1px solid #dbe6fb;
+        background: #fff;
+        padding: 10px;
+        display: grid;
+        gap: 4px;
+        color: #18386f;
+    }
+
+    .chef-notif-item.unread {
+        border-color: #9ec0ff;
+        background: linear-gradient(135deg, #f3f8ff 0%, #eefcf7 100%);
+    }
+
+    .chef-notif-title {
+        font-size: 13px;
+        font-weight: 900;
+    }
+
+    .chef-notif-text {
+        font-size: 12px;
+        font-weight: 700;
+        color: #4f6a93;
+        line-height: 1.4;
+    }
+
+    .chef-notif-date {
+        font-size: 11px;
+        font-weight: 700;
+        color: #6d81a6;
+    }
+
+    .chef-notif-empty {
+        border-radius: 12px;
+        border: 1px dashed #c7d8fa;
+        background: #f6faff;
+        color: #35558d;
+        text-align: center;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 16px 10px;
+    }
+
+    .hero-btn-wow {
+        position: relative;
+        min-width: 208px;
+        min-height: 46px;
+        border-radius: 14px;
+        padding: 0 13px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 900;
+        letter-spacing: 0.12px;
+        text-decoration: none;
+        box-shadow: 0 10px 20px rgba(15, 33, 102, 0.28), 0 0 14px rgba(16, 185, 129, 0.14);
+        transform: translateZ(0);
+        transition: transform .24s ease, box-shadow .24s ease, filter .24s ease;
+        backdrop-filter: blur(6px);
+    }
+
+    .hero-btn-wow::before {
+        content: "";
+        position: absolute;
+        inset: 1px;
+        border-radius: 13px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        pointer-events: none;
+    }
+
+    .hero-btn-wow::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -120%;
+        width: 70%;
+        height: 100%;
+        transform: skewX(-20deg);
+        background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.35) 52%, rgba(255,255,255,0) 100%);
+        transition: left .55s ease;
+        pointer-events: none;
+    }
+
+    .hero-btn-wow:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 26px rgba(15, 33, 102, 0.34), 0 0 18px rgba(16, 185, 129, 0.18);
+        filter: saturate(1.08);
+    }
+
+    .hero-btn-wow:hover::after {
+        left: 150%;
+    }
+
+    .hero-btn-history {
+        background:
+            radial-gradient(160px 90px at 15% 12%, rgba(255,255,255,.25), rgba(255,255,255,0)),
+            linear-gradient(135deg, #143b98 0%, #2457c3 62%, #10b981 100%);
+    }
+
+    .hero-btn-create {
+        background:
+            radial-gradient(160px 90px at 15% 12%, rgba(255,255,255,.28), rgba(255,255,255,0)),
+            linear-gradient(135deg, #0f3a9b 0%, #2563eb 58%, #0ea5e9 100%);
+    }
+
+    .hero-btn-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.32);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+        flex: 0 0 auto;
+    }
+
+    .hero-btn-icon svg {
+        width: 13px;
+        height: 13px;
+        stroke: currentColor;
+        stroke-width: 2.1;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .hero-btn-label {
+        position: relative;
+        z-index: 1;
+        line-height: 1;
+    }
+
+    /* Keep card size stable when a page has a single project */
+    .projects-v2-grid .project-v2-card {
+        width: min(100%, 520px);
+        justify-self: start;
+    }
+
+
+    @media (max-width: 900px) {
+        .chef-badge-trigger {
+            min-width: 180px;
+            min-height: 98px;
+            padding: 14px 14px;
+        }
+
+        .chef-badge-score {
+            font-size: 30px;
+        }
+
+        .projects-v2-hero-right {
+            width: 100%;
+            justify-items: stretch;
+        }
+
+        .hero-top-actions {
+            width: 100%;
+        }
+
+        .chef-notif-row {
+            justify-content: flex-end;
+        }
+
+        .chef-notif-wrap {
+            width: auto;
+        }
+
+        .chef-notif-trigger {
+            width: 46px;
+            justify-content: center;
+        }
+
+        .chef-notif-panel {
+            width: min(390px, calc(100vw - 34px));
+        }
+
+        .chef-top-section {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .chef-top-row.standalone {
+            width: 100%;
+            justify-content: flex-start;
+        }
+
+        .chef-top-trigger {
+            min-width: 186px;
+            min-height: 52px;
+            padding: 9px 11px;
+        }
+
+        .chef-top-label b {
+            font-size: 13px;
+        }
+
+        .chef-top-panel {
+            width: min(410px, calc(100vw - 20px));
+        }
+
+        .hero-btn-wow {
+            width: 100%;
+            min-width: 0;
+            min-height: 50px;
+            font-size: 15px;
+            border-radius: 16px;
+        }
+
+        .hero-btn-wow::before {
+            border-radius: 15px;
+        }
+    }
+</style>
+<section class="projects-v2-page">
+    <div class="container">
+
+        <div class="projects-v2-hero">
+            <div class="projects-v2-hero-left">
+                <span class="projects-v2-badge">Workspace</span>
+                <h1>Mes projets</h1>
+                <p>Une interface plus moderne pour piloter, filtrer et gerer tes projets en un coup d'oeil.</p>
+
+                <div class="projects-v2-stats">
+                    <div class="projects-v2-stat">
+                        <span>Total projets</span>
+                        <strong id="statTotal">{{ projets|length }}</strong>
+                    </div>
+                    <div class="projects-v2-stat">
+                        <span>Resultats affiches</span>
+                        <strong id="statVisible">{{ projets|length }}</strong>
+                    </div>
+                    <div class="chef-badge-wrap">
+                        <button type="button" id="chefBadgeTrigger" class="chef-badge-trigger" aria-label="Performance chef">
+                            <span class="chef-badge-trigger-left">
+                                <span class="chef-badge-kicker">Badge performance</span>
+                                <strong class="chef-badge-score">{{ chefBadgeProfile.score|default(0) }}</strong>
+                                <span class="chef-badge-level">{{ chefBadgeProfile.level|default('Pilote debutant') }}</span>
+                            </span>
+                            <span class="chef-badge-trigger-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M12 3l2.1 4.4L19 8l-3.5 3.3.9 4.7-4.4-2.4-4.4 2.4.9-4.7L5 8l4.9-.6L12 3z"></path>
+                                </svg>
+                            </span>
+                        </button>
+                        <div id="chefBadgePanel" class="chef-badge-panel">
+                            <div class="chef-badge-head">
+                                <h3>Performance chef</h3>
+                                <p>Mesure metier de ton pilotage projet.</p>
+                            </div>
+                            <div class="chef-badge-body">
+                                <div class="chef-score-row">
+                                    <div class="chef-score-circle" style="--score: {{ chefBadgeProfile.score|default(0) }};">
+                                        <div class="chef-score-inner">{{ chefBadgeProfile.score|default(0) }}</div>
+                                    </div>
+                                    <div class="chef-score-meta">
+                                        <h4>{{ chefBadgeProfile.level|default('Pilote debutant') }}</h4>
+                                        <p>Taux acceptation: {{ chefBadgeProfile.acceptRate|default(0) }}%</p>
+                                    </div>
+                                </div>
+
+                                <div class="chef-kpis">
+                                    <div class="chef-kpi">
+                                        <span>Projets ajoutes</span>
+                                        <strong>{{ chefBadgeProfile.projectsCount|default(0) }}</strong>
+                                    </div>
+                                    <div class="chef-kpi">
+                                        <span>Demandes acceptees</span>
+                                        <strong>{{ chefBadgeProfile.acceptedDemandes|default(0) }}</strong>
+                                    </div>
+                                    <div class="chef-kpi">
+                                        <span>Actions site</span>
+                                        <strong>{{ chefBadgeProfile.totalActions|default(0) }}</strong>
+                                    </div>
+                                    <div class="chef-kpi">
+                                        <span>Activite 7 jours</span>
+                                        <strong>{{ chefBadgeProfile.weeklyActions|default(0) }}</strong>
+                                    </div>
+                                </div>
+
+                                <div class="chef-earned">
+                                    <h5>Badges debloques</h5>
+                                    <div class="chef-earned-list">
+                                        {% for badge in chefBadgeProfile.earnedBadges|default([]) %}
+                                            <span class="chef-earned-chip">{{ badge.title }}</span>
+                                        {% else %}
+                                            <span class="chef-earned-chip">Aucun pour le moment</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                {% if chefBadgeProfile.nextBadge is defined and chefBadgeProfile.nextBadge %}
+                                    <div class="chef-next-badge">
+                                        Prochain badge: {{ chefBadgeProfile.nextBadge.title }} - {{ chefBadgeProfile.nextBadge.rule }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="projects-v2-hero-right">
+                <div class="chef-notif-row">
+                    <div class="chef-notif-wrap">
+                        <button
+                            type="button"
+                            id="chefNotifTrigger"
+                            class="chef-notif-trigger"
+                            aria-label="Notifications chef"
+                        >
+                            <svg viewBox="0 0 24 24">
+                                <path d="M15 17h5l-1.4-1.4a2 2 0 0 1-.6-1.4V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5"></path>
+                                <path d="M9 17a3 3 0 0 0 6 0"></path>
+                            </svg>
+                            <span id="chefNotifCount" class="chef-notif-badge">0</span>
+                        </button>
+
+                        <div
+                            id="chefNotifPanel"
+                            class="chef-notif-panel"
+                            data-chef-notifications="{{ (chefNotifications|default([]))|json_encode|e('html_attr') }}"
+                        >
+                            <div class="chef-notif-head">
+                                <h4>Notifications chef</h4>
+                                <button type="button" id="chefNotifMarkAll" class="chef-notif-mark">Tout lire</button>
+                            </div>
+                            <div id="chefNotifList" class="chef-notif-list"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="{{ path('app_back_historique') }}" class="projects-v2-add-btn hero-btn-wow hero-btn-history">
+                    <span class="hero-btn-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 7v5l3 3"></path>
+                            <path d="M21 12a9 9 0 1 1-2.64-6.36"></path>
+                            <path d="M21 3v6h-6"></path>
+                        </svg>
+                    </span>
+                    <span class="hero-btn-label">Historique</span>
+                </a>
+
+                <a href="{{ path('app_back_projet_add') }}" class="projects-v2-add-btn hero-btn-wow hero-btn-create">
+                    <span class="hero-btn-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 5v14"></path>
+                            <path d="M5 12h14"></path>
+                        </svg>
+                    </span>
+                    <span class="hero-btn-label">Nouveau projet</span>
+                </a>
+            </div>
+        </div>
+
+        {% for message in app.flashes('success') %}
+            <div class="projects-v2-alert success">{{ message }}</div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="projects-v2-alert danger">{{ message }}</div>
+        {% endfor %}
+
+        <section class="chef-top-section">
+            <div class="chef-top-section-copy">
+                <h3>Top projet du moment</h3>
+                <p>Vue rapide de ton projet qui attire le plus de participations.</p>
+            </div>
+            <div class="chef-top-row standalone">
+                <div class="chef-top-wrap">
+                    <button
+                        type="button"
+                        id="chefTopTrigger"
+                        class="chef-top-trigger"
+                        aria-label="Top projet du chef"
+                    >
+                        <span class="chef-top-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M6 4l3 4 3-4 3 4 3-4v7a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4z"></path>
+                                <path d="M9 20h6"></path>
+                            </svg>
+                        </span>
+                        <span class="chef-top-label">
+                            <b>Top projet</b>
+                            <span>Hall of Fame participations</span>
+                        </span>
+                        <span class="chef-top-count">{{ chefTopProject.totalParticipations|default(0) }}</span>
+                    </button>
+
+                    <div id="chefTopPanel" class="chef-top-panel">
+                        <div class="chef-top-head">
+                            <h4>Top projet</h4>
+                            <p>Le classement premium de tes projets selon les participations.</p>
+                        </div>
+                        <div class="chef-top-body">
+                            {% set topBest = chefTopProject.best|default(null) %}
+                            {% if topBest and topBest.total > 0 %}
+                                <div class="chef-top-champion">
+                                    <span class="chef-top-kicker">#1 Champion</span>
+                                    <h5 class="chef-top-title">{{ topBest.title }}</h5>
+                                    <div class="chef-top-stats">
+                                        <div class="chef-top-stat">
+                                            <span>Participations</span>
+                                            <strong>{{ topBest.total }}</strong>
+                                        </div>
+                                        <div class="chef-top-stat">
+                                            <span>Acceptees</span>
+                                            <strong>{{ topBest.accepted }}</strong>
+                                        </div>
+                                        <div class="chef-top-stat">
+                                            <span>Impact</span>
+                                            <strong>{{ chefTopProject.coverage|default(0) }}%</strong>
+                                        </div>
+                                    </div>
+                                    <a class="chef-top-cta" href="{{ path('app_back_projet_demandes', {id: topBest.id}) }}">
+                                        Voir les demandes du top projet
+                                    </a>
+                                </div>
+
+                                <div class="chef-top-list">
+                                    {% for row in chefTopProject.leaderboard|default([]) %}
+                                        <div class="chef-top-item">
+                                            <span class="chef-top-rank">#{{ loop.index }}</span>
+                                            <span class="chef-top-item-title">{{ row.title }}</span>
+                                            <span class="chef-top-item-count">{{ row.total }}</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="chef-top-empty">
+                                    Aucune participation pour le moment. Le Hall of Fame se debloquera des les premieres demandes.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="projects-v2-toolbar">
+            <div class="projects-v2-toolbar-header">
+                <div>
+                    <h2>Recherche intelligente</h2>
+                    <p>Le filtrage se fait automatiquement pendant la saisie.</p>
+                </div>
+                <button type="button" id="resetFilters" class="projects-v2-reset-btn">Reinitialiser</button>
+            </div>
+
+            <div class="projects-v2-filters">
+                <div class="projects-v2-field projects-v2-field-search">
+                    <label for="liveSearch">Recherche</label>
+                    <div class="projects-v2-input-wrap">
+                        <span class="projects-v2-input-icon">⌕</span>
+                        <input
+                            type="text"
+                            id="liveSearch"
+                            class="projects-v2-input"
+                            placeholder="Titre, description ou createur..."
+                        >
+                    </div>
+                </div>
+
+                <div class="projects-v2-field">
+                    <label for="liveStatus">Statut</label>
+                    <select id="liveStatus" class="projects-v2-input">
+                        <option value="all">Tous</option>
+                        <option value="en attente">En attente</option>
+                        <option value="en cours">En cours</option>
+                        <option value="termine">Termine</option>
+                    </select>
+                </div>
+
+                <div class="projects-v2-field">
+                    <label for="liveSort">Tri</label>
+                    <select id="liveSort" class="projects-v2-input">
+                        <option value="recent">Plus recents</option>
+                        <option value="ancien">Plus anciens</option>
+                        <option value="prix_asc">Budget croissant</option>
+                        <option value="prix_desc">Budget decroissant</option>
+                        <option value="titre_asc">Titre A -> Z</option>
+                        <option value="titre_desc">Titre Z -> A</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="emptyState" class="projects-v2-empty" style="display:none;">
+            <div class="projects-v2-empty-icon">&#128193;</div>
+            <h3>Aucun projet trouve</h3>
+            <p>Essaie une autre recherche ou change les filtres.</p>
+        </div>
+
+        <div id="projectsGrid" class="projects-v2-grid">
+            {% for projet in projets %}
+                {% set statut = projet.statut|lower %}
+                <article
+                    class="project-v2-card"
+                    data-id="{{ projet.id }}"
+                    data-titre="{{ projet.titre|lower }}"
+                    data-description="{{ (projet.description ?? '')|lower }}"
+                    data-createur="{{ projet.createur|lower }}"
+                    data-statut="{{ projet.statut|lower }}"
+                    data-prix="{{ projet.prix }}"
+                >
+                    <div class="project-v2-top">
+                        <div class="project-v2-avatar">
+                            {{ projet.titre|slice(0, 1)|upper }}
+                        </div>
+
+                        <span class="project-v2-status
+                            {% if statut == 'en cours' %}status-progress
+                            {% elseif statut == 'en attente' %}status-pending
+                            {% else %}status-done{% endif %}
+                        ">
+                            {{ projet.statut }}
+                        </span>
+                    </div>
+
+                    <div class="project-v2-content">
+                        <h3>{{ projet.titre }}</h3>
+                        <p class="project-v2-owner">{{ projet.createur }}</p>
+
+                        <p class="project-v2-description">
+                            {{ projet.description ?: 'Aucune description disponible pour ce projet.' }}
+                        </p>
+
+                        <div class="project-v2-meta">
+                            <div class="project-v2-meta-box">
+                                <span>Budget</span>
+                                <strong>{{ projet.prix|number_format(2, '.', ' ') }} TND</strong>
+                            </div>
+
+                            <div class="project-v2-meta-box">
+                                <span>Reference</span>
+                                <strong>#{{ projet.id }}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-v2-actions">
+                        <a href="{{ path('app_back_projet_edit', {id: projet.id}) }}" class="project-v2-btn btn-edit">
+                            Modifier
+                        </a>
+
+                        <form
+                            method="post"
+                            action="{{ path('app_back_projet_delete', {id: projet.id}) }}"
+                            onsubmit="return confirm('Supprimer ce projet ?');"
+                        >
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_projet_' ~ projet.id) }}">
+                            <button type="submit" class="project-v2-btn btn-delete">
+                                Supprimer
+                            </button>
+                        </form>
+
+                        <a href="{{ path('app_back_projet_demandes', {id: projet.id}) }}" class="project-v2-btn btn-demandes">
+                            Demandes
+                        </a>
+                    </div>
+                </article>
+            {% else %}
+                <div class="projects-v2-empty">
+                    <div class="projects-v2-empty-icon">&#128193;</div>
+                    <h3>Aucun projet disponible</h3>
+                    <p>Commence par ajouter un projet.</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if pagination is defined and pagination.totalPages > 1 %}
+            <nav class="bundle-pagination" aria-label="Pagination projets chef">
+                {% set queryParams = app.request.query.all %}
+                <a
+                    class="bundle-page-link {{ not pagination.hasPreviousPage ? 'disabled' : '' }}"
+                    href="{{ pagination.hasPreviousPage ? path('app_back_projets', queryParams|merge({page: pagination.currentPage - 1})) : '#' }}"
+                >
+                    Precedent
+                </a>
+
+                <div class="bundle-page-numbers">
+                    {% for p in 1..pagination.totalPages %}
+                        <a
+                            class="bundle-page-link number {{ p == pagination.currentPage ? 'active' : '' }}"
+                            href="{{ path('app_back_projets', queryParams|merge({page: p})) }}"
+                        >
+                            {{ p }}
+                        </a>
+                    {% endfor %}
+                </div>
+
+                <a
+                    class="bundle-page-link {{ not pagination.hasNextPage ? 'disabled' : '' }}"
+                    href="{{ pagination.hasNextPage ? path('app_back_projets', queryParams|merge({page: pagination.currentPage + 1})) : '#' }}"
+                >
+                    Suivant
+                </a>
+            </nav>
+        {% endif %}
+
+    </div>
+</section>
+
+<style>
+    .bundle-pagination {
+        margin-top: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .bundle-page-numbers {
+        display: inline-flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .bundle-page-link {
+        text-decoration: none;
+        min-width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        border: 1px solid #cbd9f8;
+        background: #ffffff;
+        color: #1d3f83;
+        font-weight: 800;
+        font-size: 14px;
+        padding: 0 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: .18s ease;
+    }
+
+    .bundle-page-link.number {
+        min-width: 40px;
+        padding: 0;
+    }
+
+    .bundle-page-link:hover {
+        transform: translateY(-1px);
+        border-color: #9db9f0;
+        box-shadow: 0 10px 16px rgba(22, 65, 145, 0.14);
+    }
+
+    .bundle-page-link.active {
+        background: linear-gradient(135deg, #1f4fbc 0%, #10b981 100%);
+        color: #fff;
+        border-color: transparent;
+    }
+
+    .bundle-page-link.disabled {
+        pointer-events: none;
+        opacity: .48;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('liveSearch');
+    const statusSelect = document.getElementById('liveStatus');
+    const sortSelect = document.getElementById('liveSort');
+    const resetBtn = document.getElementById('resetFilters');
+    const projectsGrid = document.getElementById('projectsGrid');
+    const emptyState = document.getElementById('emptyState');
+    const statVisible = document.getElementById('statVisible');
+    const cards = Array.from(document.querySelectorAll('.project-v2-card'));
+    const chefBadgeTrigger = document.getElementById('chefBadgeTrigger');
+    const chefBadgePanel = document.getElementById('chefBadgePanel');
+    const chefNotifTrigger = document.getElementById('chefNotifTrigger');
+    const chefNotifPanel = document.getElementById('chefNotifPanel');
+    const chefTopTrigger = document.getElementById('chefTopTrigger');
+    const chefTopPanel = document.getElementById('chefTopPanel');
+    const chefNotifList = document.getElementById('chefNotifList');
+    const chefNotifCount = document.getElementById('chefNotifCount');
+    const chefNotifMarkAll = document.getElementById('chefNotifMarkAll');
+    const chefNotifDataRaw = {{ (chefNotifications|default([]))|json_encode|raw }};
+    const chefNotifData = Array.isArray(chefNotifDataRaw)
+        ? chefNotifDataRaw
+        : Object.values(chefNotifDataRaw || {});
+    const chefUserKey = '{{ app.user and app.user.id ? app.user.id : "chef_guest" }}';
+    const chefNotifSeenStorageKey = 'chef_notif_seen_' + chefUserKey;
+    const chefNotifVoiceAssetUrl = '{{ asset('assets/audio/voix-notif.mp3') }}';
+    let chefNotifVoiceAudio = null;
+    let chefPendingVoiceNotification = false;
+
+    try {
+        chefNotifVoiceAudio = new Audio(chefNotifVoiceAssetUrl);
+        chefNotifVoiceAudio.preload = 'auto';
+    } catch (e) {
+        chefNotifVoiceAudio = null;
+    }
+
+    function bindChefNotifPanel() {
+        if (!chefNotifTrigger || !chefNotifPanel) {
+            return;
+        }
+
+        chefNotifTrigger.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            try {
+                placeChefNotifPanel();
+            } catch (e) {
+                // Fallback: open panel even if placement fails.
+            }
+            chefNotifPanel.classList.toggle('open');
+            if (chefBadgePanel) {
+                chefBadgePanel.classList.remove('open');
+            }
+            if (chefTopPanel) {
+                chefTopPanel.classList.remove('open');
+            }
+        });
+
+        if (chefNotifMarkAll) {
+            chefNotifMarkAll.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                const seenAll = new Set(chefNotifData.map(item => item.id));
+                saveSeenNotifIds(seenAll);
+                renderChefNotifications();
+            });
+        }
+
+        document.addEventListener('click', function (event) {
+            if (!chefNotifPanel.contains(event.target) && !chefNotifTrigger.contains(event.target)) {
+                chefNotifPanel.classList.remove('open');
+            }
+        });
+
+        window.addEventListener('resize', function () {
+            if (chefNotifPanel.classList.contains('open')) {
+                placeChefNotifPanel();
+            }
+        });
+
+        window.addEventListener('scroll', function () {
+            if (chefNotifPanel.classList.contains('open')) {
+                placeChefNotifPanel();
+            }
+        }, { passive: true });
+
+        try {
+            renderChefNotifications();
+        } catch (e) {
+            if (chefNotifList) {
+                chefNotifList.innerHTML = '<div class="chef-notif-empty">Impossible de charger les notifications.</div>';
+            }
+        }
+    }
+
+    function bindChefTopPanel() {
+        if (!chefTopTrigger || !chefTopPanel) {
+            return;
+        }
+
+        chefTopTrigger.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            try {
+                placeChefTopPanel();
+            } catch (e) {
+                // Fallback: open panel even if placement fails.
+            }
+            chefTopPanel.classList.toggle('open');
+            if (chefBadgePanel) {
+                chefBadgePanel.classList.remove('open');
+            }
+            if (chefNotifPanel) {
+                chefNotifPanel.classList.remove('open');
+            }
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!chefTopPanel.contains(event.target) && !chefTopTrigger.contains(event.target)) {
+                chefTopPanel.classList.remove('open');
+            }
+        });
+
+        window.addEventListener('resize', function () {
+            if (chefTopPanel.classList.contains('open')) {
+                placeChefTopPanel();
+            }
+        });
+
+        window.addEventListener('scroll', function () {
+            if (chefTopPanel.classList.contains('open')) {
+                placeChefTopPanel();
+            }
+        }, { passive: true });
+    }
+
+    function normalize(value) {
+        return (value || '').toString().toLowerCase().trim();
+    }
+
+    function formatNotifDate(isoDate) {
+        if (!isoDate) return 'Date inconnue';
+        const d = new Date(isoDate);
+        if (Number.isNaN(d.getTime())) return 'Date inconnue';
+        return d.toLocaleString('fr-FR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    function getSeenNotifIds() {
+        try {
+            return new Set(JSON.parse(localStorage.getItem(chefNotifSeenStorageKey) || '[]'));
+        } catch (e) {
+            return new Set();
+        }
+    }
+
+    function saveSeenNotifIds(seenSet) {
+        localStorage.setItem(chefNotifSeenStorageKey, JSON.stringify(Array.from(seenSet)));
+    }
+
+    function playChefVoiceNotification() {
+        if (!chefNotifVoiceAudio) {
+            return;
+        }
+
+        try {
+            chefNotifVoiceAudio.currentTime = 0;
+            const playPromise = chefNotifVoiceAudio.play();
+            if (playPromise && typeof playPromise.then === 'function') {
+                playPromise.then(function () {
+                    chefPendingVoiceNotification = false;
+                }).catch(function () {
+                    chefPendingVoiceNotification = true;
+                });
+                return;
+            }
+            chefPendingVoiceNotification = false;
+        } catch (e) {
+            chefPendingVoiceNotification = true;
+        }
+    }
+
+    function maybeAnnounceChefNotification(unread) {
+        const unreadList = Array.isArray(unread) ? unread : [];
+        if (unreadList.length > 0) {
+            playChefVoiceNotification();
+        }
+    }
+
+    function renderChefNotifications() {
+        if (!chefNotifList || !chefNotifCount) {
+            return;
+        }
+
+        const seen = getSeenNotifIds();
+        const unread = chefNotifData.filter(item => !seen.has(item.id));
+        maybeAnnounceChefNotification(unread);
+
+        chefNotifCount.textContent = String(unread.length);
+        chefNotifCount.style.display = unread.length > 0 ? 'inline-flex' : 'none';
+
+        if (!chefNotifData.length) {
+            chefNotifList.innerHTML = '<div class="chef-notif-empty">Aucune notification pour le moment.</div>';
+            return;
+        }
+
+        chefNotifList.innerHTML = '';
+        chefNotifData.forEach((item) => {
+            const link = document.createElement('a');
+            link.className = 'chef-notif-item' + (seen.has(item.id) ? '' : ' unread');
+            link.href = item.url || '#';
+
+            const title = document.createElement('div');
+            title.className = 'chef-notif-title';
+            title.textContent = item.title || 'Notification';
+
+            const text = document.createElement('div');
+            text.className = 'chef-notif-text';
+            text.textContent = item.message || '';
+
+            const date = document.createElement('div');
+            date.className = 'chef-notif-date';
+            date.textContent = formatNotifDate(item.date || '');
+
+            link.appendChild(title);
+            link.appendChild(text);
+            link.appendChild(date);
+
+            link.addEventListener('click', function () {
+                const updateSeen = getSeenNotifIds();
+                updateSeen.add(item.id);
+                saveSeenNotifIds(updateSeen);
+            });
+
+            chefNotifList.appendChild(link);
+        });
+    }
+
+    function applyFilters() {
+        if (!projectsGrid || !statVisible || !emptyState) {
+            return;
+        }
+        const search = normalize(searchInput ? searchInput.value : '');
+        const status = normalize(statusSelect ? statusSelect.value : 'all');
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const titre = normalize(card.dataset.titre);
+            const description = normalize(card.dataset.description);
+            const createur = normalize(card.dataset.createur);
+            const statut = normalize(card.dataset.statut);
+
+            const matchSearch =
+                !search ||
+                titre.includes(search) ||
+                description.includes(search) ||
+                createur.includes(search);
+
+            const matchStatus =
+                status === 'all' || statut === status;
+
+            const visible = matchSearch && matchStatus;
+
+            card.style.display = visible ? 'flex' : 'none';
+
+            if (visible) {
+                visibleCount++;
+            }
+        });
+
+        sortCards();
+        statVisible.textContent = visibleCount;
+        emptyState.style.display = visibleCount === 0 ? 'flex' : 'none';
+    }
+
+    function sortCards() {
+        if (!sortSelect || !projectsGrid) {
+            return;
+        }
+        const sort = sortSelect.value;
+        const visibleCards = cards.filter(card => card.style.display !== 'none');
+
+        visibleCards.sort((a, b) => {
+            const idA = parseInt(a.dataset.id, 10);
+            const idB = parseInt(b.dataset.id, 10);
+            const prixA = parseFloat(a.dataset.prix);
+            const prixB = parseFloat(b.dataset.prix);
+            const titreA = normalize(a.dataset.titre);
+            const titreB = normalize(b.dataset.titre);
+
+            switch (sort) {
+                case 'ancien':
+                    return idA - idB;
+                case 'prix_asc':
+                    return prixA - prixB;
+                case 'prix_desc':
+                    return prixB - prixA;
+                case 'titre_asc':
+                    return titreA.localeCompare(titreB);
+                case 'titre_desc':
+                    return titreB.localeCompare(titreA);
+                case 'recent':
+                default:
+                    return idB - idA;
+            }
+        });
+
+        visibleCards.forEach(card => projectsGrid.appendChild(card));
+    }
+
+    function placeChefBadgePanel() {
+        if (!chefBadgeTrigger || !chefBadgePanel) return;
+        const rect = chefBadgeTrigger.getBoundingClientRect();
+        const panelWidth = Math.min(380, window.innerWidth - 24);
+        let left = rect.right - panelWidth;
+        if (left < 12) left = 12;
+        let top = rect.bottom + 10;
+        const estimatedHeight = 400;
+        if (top + estimatedHeight > window.innerHeight - 12) {
+            top = Math.max(12, rect.top - estimatedHeight - 10);
+        }
+
+        chefBadgePanel.style.width = panelWidth + 'px';
+        chefBadgePanel.style.left = left + 'px';
+        chefBadgePanel.style.top = top + 'px';
+    }
+
+    function placeChefNotifPanel() {
+        if (!chefNotifTrigger || !chefNotifPanel) return;
+        const rect = chefNotifTrigger.getBoundingClientRect();
+        const panelWidth = Math.min(390, window.innerWidth - 24);
+        let left = rect.right - panelWidth;
+        if (left < 12) left = 12;
+        let top = rect.bottom + 10;
+        const estimatedHeight = 380;
+        if (top + estimatedHeight > window.innerHeight - 12) {
+            top = Math.max(12, rect.top - estimatedHeight - 10);
+        }
+
+        chefNotifPanel.style.width = panelWidth + 'px';
+        chefNotifPanel.style.left = left + 'px';
+        chefNotifPanel.style.top = top + 'px';
+    }
+
+    function placeChefTopPanel() {
+        if (!chefTopTrigger || !chefTopPanel) return;
+        const rect = chefTopTrigger.getBoundingClientRect();
+        const panelWidth = Math.min(430, window.innerWidth - 24);
+        let left = rect.right - panelWidth;
+        if (left < 12) left = 12;
+        let top = rect.bottom + 10;
+        const estimatedHeight = 430;
+        if (top + estimatedHeight > window.innerHeight - 12) {
+            top = Math.max(12, rect.top - estimatedHeight - 10);
+        }
+
+        chefTopPanel.style.width = panelWidth + 'px';
+        chefTopPanel.style.left = left + 'px';
+        chefTopPanel.style.top = top + 'px';
+    }
+
+    bindChefNotifPanel();
+    bindChefTopPanel();
+
+    if (searchInput) searchInput.addEventListener('input', applyFilters);
+    if (statusSelect) statusSelect.addEventListener('change', applyFilters);
+    if (sortSelect) sortSelect.addEventListener('change', applyFilters);
+
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+            if (searchInput) searchInput.value = '';
+            if (statusSelect) statusSelect.value = 'all';
+            if (sortSelect) sortSelect.value = 'recent';
+            applyFilters();
+        });
+    }
+
+    if (chefBadgeTrigger && chefBadgePanel) {
+        chefBadgeTrigger.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            placeChefBadgePanel();
+            chefBadgePanel.classList.toggle('open');
+            if (chefNotifPanel) {
+                chefNotifPanel.classList.remove('open');
+            }
+            if (chefTopPanel) {
+                chefTopPanel.classList.remove('open');
+            }
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!chefBadgePanel.contains(event.target) && !chefBadgeTrigger.contains(event.target)) {
+                chefBadgePanel.classList.remove('open');
+            }
+        });
+
+        window.addEventListener('resize', function () {
+            if (chefBadgePanel.classList.contains('open')) {
+                placeChefBadgePanel();
+            }
+        });
+
+        window.addEventListener('scroll', function () {
+            if (chefBadgePanel.classList.contains('open')) {
+                placeChefBadgePanel();
+            }
+        }, { passive: true });
+    }
+
+    applyFilters();
+
+    ['click', 'keydown', 'touchstart'].forEach(function (eventName) {
+        document.addEventListener(eventName, function () {
+            if (!chefPendingVoiceNotification) {
+                return;
+            }
+            playChefVoiceNotification();
+        }, { passive: true });
+    });
+});
+</script>
+
+{% endblock %}

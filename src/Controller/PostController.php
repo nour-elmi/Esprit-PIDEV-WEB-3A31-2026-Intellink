@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Controller\Concern\ResolvesForumUser;
 use App\Entity\Image;
 use App\Entity\Post;
 use App\Repository\UserRepository;
@@ -17,6 +18,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class PostController extends AbstractController
 {
+    use ResolvesForumUser;
+
     #[Route('/post/create', name: 'app_post_create')]
     public function create(
         Request $request,
@@ -24,10 +27,14 @@ final class PostController extends AbstractController
         UserRepository $userRepository,
         ProfanityService $profanityService
     ): Response {
-        $currentUserId = 3; // static test user
-
         $error = null;
         $warning = null;
+        $utilisateur = $this->getForumUser($userRepository);
+
+        if (!$utilisateur) {
+            $this->addFlash('error', 'Vous devez etre connecte pour publier un post.');
+            return $this->redirectToRoute('app_login');
+        }
 
         if ($request->isMethod('POST')) {
             $content = trim((string) $request->request->get('content', ''));
@@ -48,14 +55,11 @@ final class PostController extends AbstractController
                 } catch (\Throwable $e) {
                     // API failed → keep original text
                 }
-
-                $author = $userRepository->find($currentUserId);
-
-                if (!$author) {
-                    $error = 'Utilisateur de test introuvable.';
+                if (!$utilisateur) {
+                    $error = 'Utilisateur introuvable.';
                 } else {
                     $post = new Post();
-                    $post->setAuthor($author);
+                    $post->setAuthor($utilisateur);
                     $post->setContent($content);
                     $post->setStatus('ACTIVE');
                     $post->setIsEdited(false);
@@ -109,6 +113,7 @@ final class PostController extends AbstractController
         return $this->render('post/create.html.twig', [
             'error' => $error,
             'warning' => $warning,
+            'utilisateur' => $utilisateur,
         ]);
     }
 

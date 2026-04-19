@@ -1,0 +1,466 @@
+{% extends 'base.html.twig' %}
+{% block title %}Nouvelle Réclamation - Intel_link{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/bootstrap-5.0.0-beta1.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/lindy-uikit.css') }}">
+    <link href="https://cdn.lineicons.com/2.0/LineIcons.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <style>
+        html { scroll-behavior: smooth; overflow-x: hidden; }
+        body { 
+            background-color: #e2e8f0 !important; 
+            background-image: radial-gradient(rgba(47, 128, 237, 0.05) 1px, transparent 1px), radial-gradient(rgba(47, 128, 237, 0.05) 1px, transparent 1px);
+            background-position: 0 0, 20px 20px; background-size: 40px 40px;
+            font-family: "Heebo", sans-serif; margin: 0; color: #0f172a; 
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #2F80ED; border-radius: 10px; } ::-webkit-scrollbar-thumb:hover { background: #56CCF2; }
+
+        .scroll-progress-bar { position: fixed; top: 0; left: 0; height: 4px; background: linear-gradient(90deg, #2F80ED, #56CCF2); z-index: 100000; width: 0%; box-shadow: 0 0 15px rgba(86, 204, 242, 0.8); border-radius: 0 5px 5px 0; }
+        
+        .glass-navbar { background: rgba(255, 255, 255, 0.8) !important; backdrop-filter: blur(25px); border-bottom: 1px solid rgba(0,0,0,0.05); transition: transform 0.4s; }
+        .navbar-hidden { transform: translateY(-100%); }
+        
+        /* CYBER GLITCH ADAPTÉ POUR L'IMAGE DU LOGO */
+        .glitch-logo { position: relative; display: inline-block; text-decoration: none; }
+        .glitch-img-main { height: 35px; display: block; position: relative; z-index: 2; transition: 0.3s; }
+        .glitch-img-layer { position: absolute; top: 0; left: 0; height: 35px; width: 100%; object-fit: contain; opacity: 0; z-index: 1; }
+        
+        .glitch-logo:hover .layer-1 {
+            left: 2px; opacity: 1;
+            filter: drop-shadow(-2px 0 #56CCF2);
+            animation: glitch-anim-1 0.2s infinite linear alternate-reverse;
+        }
+        .glitch-logo:hover .layer-2 {
+            left: -2px; opacity: 1;
+            filter: drop-shadow(2px 0 #2F80ED);
+            animation: glitch-anim-2 0.3s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-anim-1 { 0% { clip-path: inset(20% 0 80% 0); } 100% { clip-path: inset(50% 0 30% 0); } }
+        @keyframes glitch-anim-2 { 0% { clip-path: inset(10% 0 60% 0); } 100% { clip-path: inset(80% 0 10% 0); } }
+
+        /* PRELOADER IMAGE */
+        #preloader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; z-index: 999999; display: flex; justify-content: center; align-items: center; transition: opacity 0.8s ease-out, visibility 0.8s; }
+        .loader-logo-img { height: 60px; animation: pulse-glow-img 1.5s infinite alternate; }
+        @keyframes pulse-glow-img { 
+            0% { transform: scale(0.95); filter: drop-shadow(0 0 15px rgba(86, 204, 242, 0.2)); } 
+            100% { transform: scale(1.05); filter: drop-shadow(0 0 30px rgba(86, 204, 242, 0.6)); } 
+        }
+
+        /* BOUTONS */
+        .btn-liquid { position: relative; overflow: hidden; z-index: 1; transition: 0.3s; background: #2F80ED; color: #ffffff !important; border: none; padding: 12px 28px; border-radius: 50px; font-weight: 600; text-decoration: none; display: inline-block; box-shadow: 0 4px 12px rgba(47, 128, 237, 0.25);}
+        .btn-liquid::before { content: ''; position: absolute; top: 100%; left: 0; width: 100%; height: 200%; background: linear-gradient(135deg, #1e293b, #334155); z-index: -1; transition: top 0.6s ease; border-radius: 50% 50% 0 0; }
+        .btn-liquid:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(47, 128, 237, 0.4); }
+        .btn-liquid:hover::before { top: -20%; border-radius: 0; }
+        
+        .btn-outline-custom { background: #ffffff; color: #0f172a; border: 1px solid rgba(0,0,0,0.1); padding: 8px 24px; border-radius: 50px; font-size: 14px; font-weight: bold; text-decoration: none; transition: all 0.3s; display: inline-block;}
+        .btn-outline-custom:hover { background: #f8fafc; color: #2F80ED; border-color: #2F80ED; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(47, 128, 237, 0.15); }
+
+        /* FORMULAIRE DESIGN (Cartes blanches avec bordures) */
+        .formation-form-wrapper { 
+            background: #ffffff !important; border: 1px solid #cbd5e1 !important; border-radius: 24px; padding: 40px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08) !important; position: relative; overflow: hidden; transition: 0.3s ease;
+        }
+        .formation-form-wrapper:hover { box-shadow: 0 15px 35px rgba(15, 23, 42, 0.12) !important; border-color: #2F80ED !important; }
+        .formation-form-wrapper::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #2F80ED, #56CCF2); }
+
+        .form-group-custom { margin-bottom: 24px; position: relative; }
+        .form-group-custom label { display: block; font-family: "Fira Sans", sans-serif; font-weight: 700; color: #64748b; font-size: 12px; margin-bottom: 8px; letter-spacing: 0.5px;}
+        .form-control-custom { width: 100%; padding: 13px 18px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 15px; color: #0f172a; background: #ffffff; transition: all 0.3s ease; outline: none; }
+        
+        /* Styles de validation visuelle */
+        .form-control-custom:focus { border-color: #2F80ED; box-shadow: 0 0 0 4px rgba(47, 128, 237, 0.1); }
+        .form-control-custom.is-invalid { border-color: #ef4444; background-color: #fef2f2; }
+        .form-control-custom.is-valid { border-color: #10b981; }
+        
+        .error-message { color: #ef4444; font-size: 11px; font-weight: 600; margin-top: 5px; display: none; position: absolute; bottom: -18px; left: 5px; }
+
+        /* =========================================
+           AI GOD TIER MODAL STYLES 
+           ========================================= */
+        .ai-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px);
+            z-index: 105000; display: flex; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden; transition: 0.4s ease;
+        }
+        .ai-modal-overlay.active { opacity: 1; visibility: visible; }
+        
+        .ai-modal-content {
+            background: rgba(255, 255, 255, 0.95); box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 40px rgba(59, 130, 246, 0.3);
+            border-radius: 28px; padding: 40px; max-width: 550px; width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transform: scale(0.85) translateY(30px); transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative; overflow: hidden;
+        }
+        .ai-modal-overlay.active .ai-modal-content { transform: scale(1) translateY(0); }
+        .ai-modal-content::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 6px;
+            background: linear-gradient(90deg, #8b5cf6, #3b82f6, #06b6d4);
+        }
+        
+        .ai-brand { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 30px; }
+        
+        .ai-logo-container { position: relative; width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; background: rgba(59,130,246,0.05); border-radius: 50%; }
+        .ai-aura { position: absolute; width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 0 25px rgba(59, 130, 246, 0.6); animation: pulse-aura 2s infinite alternate; }
+        .ai-svg-brain { width: 40px; height: 40px; z-index: 1; }
+        .brain-dot { animation: blink-dot 1.5s infinite alternate; }
+        @keyframes pulse-aura { 0% { transform: scale(0.95); opacity: 0.4;} 100% { transform: scale(1.15); opacity: 1;} }
+        @keyframes blink-dot { 0% { opacity: 0.2; } 100% { opacity: 1; filter: drop-shadow(0 0 5px currentColor); } }
+        
+        .ai-title { font-family: "Fira Sans", sans-serif; font-size: 1.8rem; font-weight: 900; background: linear-gradient(90deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .ai-response-area {
+            font-size: 1.05rem; color: #1e293b; line-height: 1.7; font-weight: 500;
+            background: #f8fafc; padding: 25px; border-radius: 16px; border: 1px dashed #cbd5e1;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
+            max-height: 350px; overflow-y: auto;
+        }
+        .ai-response-area::-webkit-scrollbar { width: 6px; }
+        .ai-response-area::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .ai-close-btn {
+            margin-top: 30px; width: 100%; background: #0f172a; color: white; border: none;
+            padding: 14px; border-radius: 14px; font-weight: bold; transition: 0.3s; font-size: 1.1rem;
+        }
+        .ai-close-btn:hover { background: #1e293b; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(15,23,42,0.2); }
+
+        .btn-ai-trigger {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: white !important; border: none; border-radius: 50px;
+            padding: 6px 18px; font-size: 13px; font-weight: bold; letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            transition: all 0.3s ease; float: right; margin-top: -6px; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-ai-trigger:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(139, 92, 246, 0.6); }
+        .btn-ai-trigger i { animation: blink-dot 2s infinite alternate; }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <!-- AI GOD TIER MODAL -->
+    <div class="ai-modal-overlay" id="aiModal">
+        <div class="ai-modal-content">
+            <div class="ai-brand">
+                <div class="ai-logo-container">
+                    <div class="ai-aura"></div>
+                    <svg class="ai-svg-brain" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path class="brain-path" d="M12 22C12 22 20 18 20 12C20 6 16 2 12 2C8 2 4 6 4 12C4 18 12 22 12 22Z" stroke="#3b82f6" stroke-width="1.5"/>
+                        <path class="brain-path" d="M12 2V22" stroke="#3b82f6" stroke-width="1" stroke-dasharray="2 2"/>
+                        <circle class="brain-dot" cx="12" cy="7" r="1.5" fill="#3b82f6"/>
+                        <circle class="brain-dot" cx="16" cy="11" r="1" fill="#8b5cf6" style="animation-delay: 0.5s;"/>
+                        <circle class="brain-dot" cx="8" cy="13" r="1" fill="#3b82f6" style="animation-delay: 1s;"/>
+                    </svg>
+                </div>
+                <div class="ai-title">IntelLink-AI</div>
+            </div>
+            <div class="ai-response-area" id="ai-suggestion-content">
+                <!-- Content goes here -->
+            </div>
+            <button type="button" class="ai-close-btn" id="btn-ai-close">Compris, merci !</button>
+        </div>
+    </div>
+
+    <div class="scroll-progress-bar" id="scrollBar"></div>
+    
+    <div id="preloader">
+        <img src="{{ asset('assets/img/logo.png') }}" alt="IntelLink" class="loader-logo-img">
+    </div>
+
+    <header class="header header-6 glass-navbar" id="smartNavbar" data-aos="fade-down" data-aos-duration="1000">
+        <div class="navbar-area">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-12">
+                        <nav class="navbar navbar-expand-lg">
+                            
+                            <a class="navbar-brand glitch-logo" href="{{ path('app_home') }}">
+        <img src="{{ asset('assets/img/logo.png') }}" alt="IntelLink" class="glitch-img-main">
+        <img src="{{ asset('assets/img/logo.png') }}" alt="" class="glitch-img-layer layer-1">
+        <img src="{{ asset('assets/img/logo.png') }}" alt="" class="glitch-img-layer layer-2">
+    </a>
+
+                            <div class="collapse navbar-collapse"></div>
+                            <div class="header-action d-flex align-items-center">
+                                {% if app.user %}
+                                    <div class="dropdown">
+                                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" id="profileMenu" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer; background: #ffffff; padding: 5px 15px 5px 5px; border-radius: 50px; border: 1px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+    
+                                            {% if app.user.image %}
+                                                {% set avatar_src = app.user.image starts with 'http' ? app.user.image : asset('uploads/profiles/' ~ app.user.image) %}
+                                            {% else %}
+                                                {% set avatar_src = 'https://ui-avatars.com/api/?name=' ~ app.user.nom|url_encode ~ '&background=2F80ED&color=fff&rounded=true&bold=true' %}
+                                            {% endif %}
+
+                                            <img src="{{ avatar_src }}" alt="Profil" class="radius-full" style="width: 35px; height: 35px; object-fit: cover; margin-right: 10px; border-radius: 50%;">
+                                            <span style="color: #0f172a; font-weight: 700; font-size: 14px;">{{ app.user.nom }}</span>
+                                        </a>
+                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileMenu" style="border-radius: 16px; border: 1px solid #e2e8f0; background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(15,23,42,0.1); padding: 10px; border: none;">
+                                            <li><a class="dropdown-item fw-bold" href="{{ path('app_profile') }}" style="border-radius: 8px;"><i class="lni lni-user mr-10 text-primary"></i> Mon Profil</a></li>
+                                            <li><a class="dropdown-item fw-bold" href="{{ path('app_reclamation_index') }}" style="border-radius: 8px;"><i class="lni lni-bullhorn mr-10 text-primary"></i> Mes Réclamations</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger fw-bold" href="{{ path('app_logout') }}" style="border-radius: 8px;"><i class="lni lni-exit mr-10"></i> Se déconnecter</a></li>
+                                        </ul>
+                                    </div>
+                                {% else %}
+                                    <a href="{{ path('app_login') }}" class="btn-liquid">🔐 Console d'Accès</a>
+                                {% endif %}
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-content" style="padding: 40px 0;">
+        <div style="max-width: 800px; margin: 0 auto; padding: 0 20px;">
+            <a href="{{ path('app_reclamation_index') }}" class="btn-outline-custom" style="margin-bottom: 20px;" data-aos="fade-right">&larr; Mes Réclamations</a>
+            
+            <div class="formation-form-wrapper" data-aos="fade-up" data-aos-duration="1000">
+                <h2 style="font-family: 'Fira Sans', sans-serif; font-weight: 900; color: #0f172a; font-size: 2.2rem; letter-spacing: -1px; margin-bottom: 10px;">Créer un <span style="color: #2F80ED;">Ticket</span></h2>
+                <p style="color: #64748b; font-weight: 500; margin-bottom: 30px; font-size: 1.1rem;">Remplissez le formulaire ci-dessous pour que notre équipe d'experts analyse votre demande.</p>
+
+                <form id="reclamationForm" action="{{ path('app_reclamation_new') }}" method="POST" enctype="multipart/form-data" novalidate>
+                    
+                    <div class="form-group-custom">
+                        <label>OBJET DE LA DEMANDE</label>
+                        <input type="text" id="objet" name="objet" class="form-control-custom" placeholder="Ex: Problème technique sur le forum..." required minlength="5" maxlength="100">
+                        <span class="error-message" id="error-objet">L'objet doit contenir entre 5 et 100 caractères.</span>
+                    </div>
+
+                    <div class="form-group-custom">
+                        <label>TYPE</label>
+                        <select id="type" name="type" class="form-control-custom" required>
+                            <option value="" disabled selected>Sélectionnez un type</option>
+                            <option value="Technique">Technique</option>
+                            <option value="Facturation">Facturation</option>
+                            <option value="Service Client">Service Client</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                        <span class="error-message" id="error-type">Veuillez sélectionner un type de demande.</span>
+                    </div>
+
+                    <div class="form-group-custom">
+                        <label>DESCRIPTION DÉTAILLÉE 
+                            <button type="button" id="btn-ai-suggest" class="btn-ai-trigger">
+                                <i class="lni lni-sprout"></i> IntelLink-AI
+                            </button>
+                        </label>
+                        <textarea id="description" name="description" class="form-control-custom" rows="6" placeholder="Soyez le plus précis possible pour nous aider à vous répondre rapidement... (minimum 20 caractères)" required minlength="20" maxlength="1000"></textarea>
+                        <span class="error-message" id="error-description">La description doit contenir au moins 20 caractères.</span>
+                    </div>
+
+                    <div class="form-group-custom">
+                        <label>PIÈCE JOINTE <span style="color: #8b92a5; font-weight: 400;">(Image ou PDF, max 5Mo)</span></label>
+                        <input type="file" id="pieceJointe" name="pieceJointe" class="form-control-custom" style="padding: 10px;" accept=".png, .jpg, .jpeg, .pdf">
+                        <span class="error-message" id="error-pieceJointe">Le fichier doit être une image ou un PDF, et peser moins de 5Mo.</span>
+                    </div>
+
+                    <div style="text-align: right; margin-top: 30px;">
+                        <button type="submit" id="submitBtn" class="btn-liquid"><i class="lni lni-telegram-original"></i> Envoyer la demande</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        window.addEventListener('load', () => { setTimeout(() => { document.getElementById('preloader').style.opacity = '0'; setTimeout(() => document.getElementById('preloader').style.display = 'none', 800); }, 500); });
+        AOS.init({ once: true, offset: 50 });
+
+        let lastScrollTop = 0; const navbar = document.getElementById('smartNavbar'), progressBar = document.getElementById('scrollBar');
+        window.addEventListener('scroll', () => {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            progressBar.style.width = ((scrollTop / (document.documentElement.scrollHeight - document.documentElement.clientHeight)) * 100) + "%";
+            scrollTop > lastScrollTop && scrollTop > 100 ? navbar.classList.add('navbar-hidden') : navbar.classList.remove('navbar-hidden');
+            lastScrollTop = scrollTop;
+        });
+
+        // =========================================================================
+        // VALIDATION DU FORMULAIRE DE RÉCLAMATION EN TEMPS RÉEL
+        // =========================================================================
+        const form = document.getElementById('reclamationForm');
+        const inputObjet = document.getElementById('objet');
+        const inputType = document.getElementById('type');
+        const inputDesc = document.getElementById('description');
+        const inputFile = document.getElementById('pieceJointe');
+        
+        // Fonction générique pour afficher/masquer les erreurs avec style
+        function setValidationState(inputElement, isValid, errorElementId) {
+            const errorElement = document.getElementById(errorElementId);
+            if (isValid) {
+                inputElement.style.borderColor = '#10b981';
+                inputElement.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.15)';
+                errorElement.style.display = 'none';
+            } else {
+                inputElement.style.borderColor = '#ef4444';
+                inputElement.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.15)';
+                errorElement.style.display = 'block';
+            }
+            return isValid;
+        }
+
+        // Validateurs spécifiques
+        function validateObjet() {
+            const value = inputObjet.value.trim();
+            return setValidationState(inputObjet, value.length >= 5 && value.length <= 100, 'error-objet');
+        }
+
+        function validateType() {
+            return setValidationState(inputType, inputType.value !== "", 'error-type');
+        }
+
+        function validateDescription() {
+            const value = inputDesc.value.trim();
+            return setValidationState(inputDesc, value.length >= 20, 'error-description');
+        }
+
+        function validateFile() {
+            // Le fichier est optionnel
+            if (inputFile.files.length === 0) {
+                inputFile.style.borderColor = '#cbd5e1';
+                inputFile.style.boxShadow = 'none';
+                document.getElementById('error-pieceJointe').style.display = 'none';
+                return true; 
+            }
+
+            const file = inputFile.files[0];
+            const fileSize = file.size / 1024 / 1024; // in MB
+            const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+            
+            const isValid = allowedTypes.includes(file.type) && fileSize <= 5;
+            return setValidationState(inputFile, isValid, 'error-pieceJointe');
+        }
+
+        // Validation en temps réel lors de la saisie
+        inputObjet.addEventListener('input', validateObjet);
+        inputType.addEventListener('change', validateType);
+        inputDesc.addEventListener('input', validateDescription);
+        inputFile.addEventListener('change', validateFile);
+
+        // Validation finale à la soumission
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const isObjetValid = validateObjet();
+            const isTypeValid = validateType();
+            const isDescValid = validateDescription();
+            const isFileValid = validateFile();
+
+            if (!isObjetValid || !isTypeValid || !isDescValid || !isFileValid) {
+                // Petit effet visuel pour montrer que ça a bloqué
+                const submitBtn = document.getElementById('submitBtn');
+                submitBtn.style.transform = 'translateY(2px)';
+                setTimeout(() => { submitBtn.style.transform = 'translateY(0)'; }, 150);
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Formulaire incomplet',
+                    text: 'Veuillez corriger les champs en rouge avant de soumettre.',
+                    confirmButtonColor: '#3b82f6',
+                    background: '#ffffff',
+                    customClass: { popup: 'rounded-xl shadow-2xl border border-gray-100', title: 'font-bold text-gray-800' }
+                });
+                return;
+            }
+            
+            // État de chargement professionnel sur le bouton
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right: 8px;"></span> Envoi en cours...';
+            submitBtn.style.opacity = '0.8';
+            submitBtn.style.cursor = 'not-allowed';
+            
+            // Léger délai pour afficher l'animation avant l'envoi réel
+            setTimeout(() => {
+                form.submit();
+            }, 400);
+        });
+
+        // =========================================================================
+        // INTEGRATION IA - SUGGESTION DE SOLUTION (GEMINI)
+        // =========================================================================
+        const btnAiSuggest = document.getElementById('btn-ai-suggest');
+        const aiModal = document.getElementById('aiModal');
+        const aiSuggestionContent = document.getElementById('ai-suggestion-content');
+        const btnAiClose = document.getElementById('btn-ai-close');
+
+        if (btnAiSuggest) {
+            btnAiSuggest.addEventListener('click', async function(e) {
+                e.preventDefault();
+                const descText = inputDesc.value.trim();
+                
+                if (descText.length < 10) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Description trop courte',
+                        text: 'Veuillez écrire au moins 10 caractères dans la description pour que l\'IA puisse l\'analyser.',
+                        confirmButtonColor: '#3b82f6',
+                        background: '#ffffff',
+                        customClass: { popup: 'rounded-xl shadow-2xl border border-gray-100' }
+                    });
+                    return;
+                }
+
+                // Animation du bouton UI
+                const originalText = btnAiSuggest.innerHTML;
+                btnAiSuggest.innerHTML = '<i class="lni lni-spinner lni-spin"></i> IA au travail...';
+                btnAiSuggest.disabled = true;
+
+                try {
+                    // Simuler l'appel API ou utiliser le vrai
+                    const response = await fetch('/reclamation/ai/analyze', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({ description: descText })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        aiSuggestionContent.innerHTML = data.suggestion || "L'IA n'a pu générer de suggestion précise pour cette requête.";
+                        aiModal.classList.add('active');
+                    } else {
+                        aiSuggestionContent.textContent = "Un problème est survenu. Veuillez réessayer ultérieurement.";
+                        aiModal.classList.add('active');
+                    }
+                } catch (error) {
+                    console.error('Erreur IA:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Connexion échouée',
+                        text: 'Le service IA est actuellement indisponible.',
+                        confirmButtonColor: '#ef4444'
+                    });
+                } finally {
+                    btnAiSuggest.innerHTML = originalText;
+                    btnAiSuggest.disabled = false;
+                }
+            });
+        }
+
+        if (btnAiClose) {
+            btnAiClose.addEventListener('click', function() {
+                aiModal.classList.remove('active');
+            });
+        }
+        
+        // Fermer le modal en cliquant en dehors
+        if (aiModal) {
+            aiModal.addEventListener('click', function(e) {
+                if (e.target === aiModal) aiModal.classList.remove('active');
+            });
+        }
+    </script>
+{% endblock %}
