@@ -30,7 +30,7 @@ class Reclamation
     }
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'reclamations')]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private ?Utilisateur $utilisateur = null;
 
     public function getUtilisateur(): ?Utilisateur
@@ -84,6 +84,55 @@ class Reclamation
     {
         $this->type = $type;
         return $this;
+    }
+
+    public function estimerPriorite(): string
+    {
+        $descriptionLower = strtolower($this->description ?? '');
+        $objetLower = strtolower($this->objet ?? '');
+        $typeLower = strtolower($this->type ?? '');
+        $fileContentLocal = '';
+
+        // Essayer de lire le contenu de la pièce jointe
+        if ($this->piece_jointe) {
+            $filePath = __DIR__ . '/../../public/uploads/reclamations/' . $this->piece_jointe;
+            if (file_exists($filePath)) {
+                // Lecture partielle (jusqu'à 50 ko) pour détecter des potentiels mots clés textes (fonctionne particulièrement si le PDF n'est pas compressé, pour les autres formats texte)
+                $fileContentLocal = strtolower(file_get_contents($filePath, false, null, 0, 50000) ?: '');
+            }
+        }
+
+        // Mots clés qui indiquent une urgence élevée
+        $motsClesUrgents = ['urgent', 'immédiat', 'panne', 'bloqué', 'impossible', 'erreur fatale', 'critique', 'crash', 'piratage'];
+        
+        // Mots clés pour priorité moyenne
+        $motsClesMoyens = ['problème', 'bug', 'ralentissement', 'facturation', 'paiement', 'erreur', 'ne fonctionne pas'];
+
+        $score = 0;
+
+        if ($typeLower === 'technique') {
+            $score += 2;
+        }
+
+        foreach ($motsClesUrgents as $mot) {
+            if (str_contains($descriptionLower, $mot) || str_contains($objetLower, $mot) || str_contains($fileContentLocal, $mot)) {
+                $score += 5;
+            }
+        }
+
+        foreach ($motsClesMoyens as $mot) {
+            if (str_contains($descriptionLower, $mot) || str_contains($objetLower, $mot) || str_contains($fileContentLocal, $mot)) {
+                $score += 2;
+            }
+        }
+
+        if ($score >= 5) {
+            return 'Urgent';
+        } elseif ($score >= 2) {
+            return 'Moyenne';
+        }
+        
+        return 'Normale';
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
@@ -180,6 +229,9 @@ class Reclamation
         return $this;
     }
 
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $isRead = false;
+
     public function getPieceJointe(): ?string
     {
         return $this->piece_jointe;
@@ -188,6 +240,18 @@ class Reclamation
     public function setPieceJointe(?string $piece_jointe): static
     {
         $this->piece_jointe = $piece_jointe;
+
+        return $this;
+    }
+
+    public function getIsRead(): bool
+    {
+        return $this->isRead;
+    }
+
+    public function setIsRead(bool $isRead): static
+    {
+        $this->isRead = $isRead;
 
         return $this;
     }

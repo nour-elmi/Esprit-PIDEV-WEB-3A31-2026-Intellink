@@ -12,7 +12,7 @@ use App\Repository\UtilisateurRepository;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
 #[ORM\Table(name: 'utilisateurs')]
-class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
+class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, \Scheb\TwoFactorBundle\Model\Google\TwoFactorInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -224,5 +224,66 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function eraseCredentials(): void
     {
         // Si vous stockiez le mot de passe en clair temporairement, on le viderait ici
+    }
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $lastActivityAt = null;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $googleAuthenticatorSecret = null;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $isGoogleAuthenticatorEnabled = false;
+
+    #[ORM\Column(type: 'string', length: 255, options: ['default' => 'EMAIL'])]
+    private string $passwordRecoveryMethod = 'EMAIL';
+
+    public function getLastActivityAt(): ?\DateTimeInterface
+    {
+        return $this->lastActivityAt;
+    }
+
+    public function setLastActivityAt(?\DateTimeInterface $lastActivityAt): static
+    {
+        $this->lastActivityAt = $lastActivityAt;
+        return $this;
+    }
+
+    public function getGoogleAuthenticatorSecret(): ?string
+    {
+        return $this->googleAuthenticatorSecret;
+    }
+
+    public function setGoogleAuthenticatorSecret(?string $googleAuthenticatorSecret): static
+    {
+        $this->googleAuthenticatorSecret = $googleAuthenticatorSecret;
+        return $this;
+    }
+
+        public function getGoogleAuthenticatorUsername(): string
+    {
+        return (string) $this->email;
+    }
+
+    public function isGoogleAuthenticatorEnabled(): bool
+    {
+        return $this->isGoogleAuthenticatorEnabled;
+    }
+
+    public function setIsGoogleAuthenticatorEnabled(bool $isGoogleAuthenticatorEnabled): static
+    {
+        $this->isGoogleAuthenticatorEnabled = $isGoogleAuthenticatorEnabled;
+        return $this;
+    }
+
+    public function getPasswordRecoveryMethod(): string
+    {
+        return $this->passwordRecoveryMethod;
+    }
+
+    public function setPasswordRecoveryMethod(string $passwordRecoveryMethod): static
+    {
+        $this->passwordRecoveryMethod = $passwordRecoveryMethod;
+        return $this;
     }
 }
