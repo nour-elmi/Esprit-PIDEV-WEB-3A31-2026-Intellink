@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Emploi;
+use App\Entity\Utilisateur;               
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -17,21 +18,15 @@ use Gemini\Client;
 use App\Service\AdzunaService;
 use App\Service\MarketIntelligenceService;
 
-
 final class EmploiController extends AbstractController
 {
     #[Route('/showoffre', name: 'showoffre')]
     public function listOffresfromDB(EmploiRepository $repo, Request $request, PaginatorInterface $paginator)
     {
+        // Pas de filtre par user : visible par tout le monde
         $searchTerm = $request->query->get('search');
         $data = $repo->searchByTerm($searchTerm);
-
-        $offres = $paginator->paginate(
-            $data,
-            $request->query->getInt('page', 1),
-            6
-        );
-
+        $offres = $paginator->paginate($data, $request->query->getInt('page', 1), 6);
         return $this->render('emploi/front/showOffre.html.twig', [
             'offre' => $offres,
             'searchTerm' => $searchTerm 
@@ -95,26 +90,35 @@ final class EmploiController extends AbstractController
     #[Route('/showoffreRecruteur', name: 'showoffreRecruteur')]
     public function listOffresRfromDB(EmploiRepository $repo, Request $request, PaginatorInterface $paginator)
     {
+        // Vue "recruteur" : ne montrer que ses propres offres
+        $user = $this->getUser();
+        if (!$user instanceof Utilisateur) {
+            throw $this->createAccessDeniedException();
+        }
+
         $searchTerm = $request->query->get('search');
         $sortBy = $request->query->get('sortBy');
         
-        // Logique de tri existante
+        // Base : toutes les offres du recruteur
+        $data = $repo->findBy(['id_user' => $user->getId()]);
+
+        // Appliquer tri ou recherche sur ce sous‑ensemble
         if ($sortBy) {
-            if ($sortBy == 'salaire_desc') { $data = $repo->sortByField('salaire', 'DESC'); }
-            elseif ($sortBy == 'salaire_asc') { $data = $repo->sortByField('salaire', 'ASC'); }
-            elseif ($sortBy == 'expiration_asc') { $data = $repo->sortByField('date_expiration', 'ASC'); }
-            else { $data = $repo->findAll(); }
+            if ($sortBy == 'salaire_desc') { 
+                $data = $repo->sortByField('salaire', 'DESC', $user->getId()); 
+            } elseif ($sortBy == 'salaire_asc') { 
+                $data = $repo->sortByField('salaire', 'ASC', $user->getId()); 
+            } elseif ($sortBy == 'expiration_asc') { 
+                $data = $repo->sortByField('date_expiration', 'ASC', $user->getId()); 
+            }
         } elseif ($searchTerm) {
-            $data = $repo->searchByTerm($searchTerm);
-        } else {
-            $data = $repo->findAll();
+            $data = $repo->searchByTerm($searchTerm, $user->getId()); // à adapter dans le repository
         }
 
-        // On pagine le résultat final
         $offres = $paginator->paginate(
             $data,
             $request->query->getInt('page', 1),
-            4 // Petit nombre pour tester la pagination facilement
+            4
         );
 
         return $this->render('emploi/front/showOffreR.html.twig', [
@@ -127,42 +131,67 @@ final class EmploiController extends AbstractController
     #[Route('/addOffre', name:'addOffre')]
     public function addOffre(ManagerRegistry $Manager, Request $request)
     {
+        $user = $this->getUser();
+        if (!$user instanceof Utilisateur) {
+            throw $this->createAccessDeniedException('Vous devez être connecté.');
+        }
+
         $em = $Manager->getManager();
-        $newOffre= new Emploi();
-        $form= $this->createForm(EmploiType::class, $newOffre);
+        $newOffre = new Emploi();
+        $form = $this->createForm(EmploiType::class, $newOffre);
         $form->handleRequest($request);
-        if($form->isSubmitted() && $form->isValid()) {
-            $newOffre->setIdUser(1); 
+        if ($form->isSubmitted() && $form->isValid()) {
+            $newOffre->setIdUser($user->getId());
             $em->persist($newOffre);
             $em->flush();
+            $this->addFlash('success', 'Offre ajoutée avec succès.');
             return $this->redirectToRoute('showoffreRecruteur');
         }
-        $em->flush();
         return $this->render('emploi/front/addOffre.html.twig', ['formOffre' => $form]);
     }
 
     #[Route('/deleteOffre/{id}', name:'deleteOffre')]
     public function deleteOffre($id, ManagerRegistry $Manager, EmploiRepository $repo)
     {
-        $em= $Manager->getManager();
-        $newOffre= $repo->find($id);
-        $em->remove($newOffre);
+        $user = $this->getUser();
+        if (!$user instanceof Utilisateur) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $em = $Manager->getManager();
+        $offre = $repo->find($id);
+        if (!$offre || $offre->getIdUser() !== $user->getId()) {
+            throw $this->createNotFoundException('Offre introuvable ou accès non autorisé.');
+        }
+
+        // Vérification CSRF (optionnelle mais recommandée)
+        // if (!$this->isCsrfTokenValid('delete_offre_'.$id, $request->request->get('_token'))) { ... }
+
+        $em->remove($offre);
         $em->flush();
+        $this->addFlash('success', 'Offre supprimée.');
         return $this->redirectToRoute('showoffreRecruteur');
     }
 
     #[Route('/updateOffre/{id}', name:'updateOffre')]
     public function updateOffre($id, ManagerRegistry $Manager, EmploiRepository $repo, Request $request)
     {
+        $user = $this->getUser();
+        if (!$user instanceof Utilisateur) {
+            throw $this->createAccessDeniedException();
+        }
+
         $em = $Manager->getManager();
         $offre = $repo->find($id);
-        if (!$offre) {
-            throw $this->createNotFoundException("L'offre avec l'ID $id n'existe pas.");
+        if (!$offre || $offre->getIdUser() !== $user->getId()) {
+            throw $this->createNotFoundException("Offre introuvable ou accès non autorisé.");
         }
+
         $form = $this->createForm(EmploiType::class, $offre);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $em->flush(); 
+            $em->flush();
+            $this->addFlash('success', 'Offre mise à jour.');
             return $this->redirectToRoute('showoffreRecruteur');
         }
         return $this->render('emploi/front/addOffre.html.twig', [

@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\ListeParticipation;
 use App\Entity\Emploi;
+use App\Entity\Utilisateur;                     // ← ajout
 use App\Form\ListeParticipationType;
 use App\Repository\EmploiRepository;
 use App\Repository\ListeParticipationRepository;
@@ -25,15 +26,21 @@ final class ListeParticipationController extends AbstractController
     #[Route('/showListe/{id_offre}', name: 'showListe', defaults: ['id_offre' => null])]
     public function showListe(?Emploi $offre, ListeParticipationRepository $repo, PaginatorInterface $paginator, Request $request): Response
     {
-        // On crée la requête de base
-        $data = $offre 
-            ? $repo->findBy(['id_offre' => $offre]) 
-            : $repo->findAll();
+        $user = $this->getUser();
+        // Si c'est un candidat, on ne montre que ses propres participations
+        if ($user instanceof Utilisateur) {
+            $data = $offre 
+                ? $repo->findBy(['id_offre' => $offre, 'id_user' => $user->getId()])
+                : $repo->findBy(['id_user' => $user->getId()]);
+        } else {
+            // Pas connecté : on ne montre rien
+            $data = [];
+        }
 
         $participations = $paginator->paginate(
-            $data, // Les données
-            $request->query->getInt('page', 1), // Numéro de page
-            5 // Nombre d'éléments par page
+            $data,
+            $request->query->getInt('page', 1),
+            5
         );
 
         return $this->render('emploi/front/showListe.html.twig', [
@@ -60,7 +67,7 @@ final class ListeParticipationController extends AbstractController
             'offreChoisie' => $offre
         ]);
     }
-
+    
     private function appelerCoherePourCV(string $nom, string $prenom, string $skills, string $offre, HttpClientInterface $httpClient): string 
     {
         $apiKey = "2DcO8uLgBZTWfOazk6sCoblUVlJns29uvxEIaGGl";
@@ -114,12 +121,16 @@ final class ListeParticipationController extends AbstractController
         return new JsonResponse(['text' => $resultat]);
     }
 
-    // On passe l'id_offre dans l'URL pour savoir pour quel job on postule
     #[Route('/addListe/{id_offre}', name: 'addListe')]
-    public function addListe(int $id_offre, ManagerRegistry $doctrine, Request $request, EmploiRepository $emploiRepo): Response {
+    public function addListe(int $id_offre, ManagerRegistry $doctrine, Request $request, EmploiRepository $emploiRepo): Response 
+    {
+        $user = $this->getUser();
+        if (!$user instanceof Utilisateur) {
+            throw $this->createAccessDeniedException('Vous devez être connecté pour postuler.');
+        }
+
         $em = $doctrine->getManager();
         $offre = $emploiRepo->find($id_offre);
-
         if (!$offre) {
             throw $this->createNotFoundException("L'offre n'existe pas.");
         }
@@ -127,45 +138,29 @@ final class ListeParticipationController extends AbstractController
         $participation = new ListeParticipation();
         $participation->setIdOffre($offre);
         $participation->setDateParticipation(new \DateTime());
-        $participation->setIdUser(1); // À dynamiser avec $this->getUser() plus tard
+        $participation->setIdUser($user->getId());   // ← plus de hardcode !
 
         $form = $this->createForm(ListeParticipationType::class, $participation);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            
-
             if ($participation->getScore() === null) {
                 $participation->setScore(0);
             }
-            // 1. On récupère le fichier uploadé via le champ 'cv'
             /** @var UploadedFile $cvFile */
             $cvFile = $form->get('cv')->getData();
-
             if ($cvFile) {
-                // 2. On génère un nom unique : "cv-idunique.pdf"
                 $newFilename = 'cv-' . uniqid() . '.' . $cvFile->guessExtension();
-
-                // 3. On déplace le fichier vers le dossier de destination
                 try {
-                    $cvFile->move(
-                        $this->getParameter('cv_directory'), // Ce paramètre doit être défini dans services.yaml
-                        $newFilename
-                    );
-                    
-                    // 4. On enregistre le NOM du fichier en base de données
+                    $cvFile->move($this->getParameter('cv_directory'), $newFilename);
                     $participation->setCv($newFilename);
-                    
                 } catch (FileException $e) {
-                    // Optionnel : ajouter un message flash d'erreur si l'upload échoue
                     $this->addFlash('error', 'Impossible d\'enregistrer le CV.');
                 }
             }
-
-            $participation->setDateParticipation(new \DateTime());
             $em->persist($participation);
             $em->flush();
-
+            $this->addFlash('success', 'Candidature envoyée.');
             return $this->redirectToRoute('showListe');
         }
 
@@ -176,32 +171,63 @@ final class ListeParticipationController extends AbstractController
     }
 
     #[Route('/deleteListe/{id}', name:'deleteListe')]
-    public function deleteListe($id, ManagerRegistry $Manager, ListeParticipationRepository $repo)
+    public function deleteListe($id, ManagerRegistry $Manager, ListeParticipationRepository $repo, Request $request)
     {
-        $em= $Manager->getManager();
-        $Liste= $repo->find($id);
-        $em->remove($Liste);
+        $user = $this->getUser();
+        if (!$user instanceof Utilisateur) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $em = $Manager->getManager();
+        $participation = $repo->find($id);
+        if (!$participation) {
+            throw $this->createNotFoundException('Participation introuvable.');
+        }
+
+        // Autorisation : seul le candidat ou le recruteur propriétaire de l'offre peut supprimer
+        $offre = $participation->getIdOffre();
+        if ($participation->getIdUser() !== $user->getId() && $offre->getIdUser() !== $user->getId()) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas supprimer cette candidature.');
+        }
+
+        // Vérification CSRF (optionnelle)
+        // if (!$this->isCsrfTokenValid('delete_liste_'.$id, $request->request->get('_token'))) { ... }
+
+        $em->remove($participation);
         $em->flush();
+        $this->addFlash('success', 'Candidature supprimée.');
         return $this->redirectToRoute('showListeBack');
     }
 
     #[Route('/updateStatut/{id}/{nouveauStatut}', name: 'updateStatut')]
     public function updateStatut(int $id, string $nouveauStatut, ListeParticipationRepository $repo, EntityManagerInterface $em): Response
     {
-        $p = $repo->find($id);
-        
+        $recruteur = $this->getUser();
+        if (!$recruteur instanceof Utilisateur) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $participation = $repo->find($id);
+        if (!$participation) {
+            throw $this->createNotFoundException();
+        }
+
+        $offre = $participation->getIdOffre();
+        // Seul le propriétaire de l'offre peut changer le statut
+        if ($offre->getIdUser() !== $recruteur->getId()) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier ce statut.');
+        }
+
         try {
-            // Cela va crash si $nouveauStatut n'est pas 'aceptee', 'refusee' ou 'en_attente'
             $enumValue = \App\Enum\stat::from($nouveauStatut);
-            $p->setStatut($enumValue);
-            
+            $participation->setStatut($enumValue);
             $em->flush();
             $this->addFlash('success', 'Statut mis à jour !');
         } catch (\ValueError $e) {
             $this->addFlash('error', 'Valeur de statut invalide : ' . $nouveauStatut);
         }
 
-        $response = $this->redirectToRoute('showListeBack', ['id' => $p->getIdOffre()->getId()]);
+        $response = $this->redirectToRoute('showListeBack', ['id' => $offre->getId()]);
         $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
         return $response;
     }

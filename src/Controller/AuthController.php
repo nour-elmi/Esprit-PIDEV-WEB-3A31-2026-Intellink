@@ -275,7 +275,7 @@ class AuthController extends AbstractController
             
         } elseif (in_array('ROLE_RECRUTEUR', $roles)) {
             // Équivalent de /FrontRecruteur.fxml (Le fichier de Nour)
-            return $this->redirectToRoute('app_recruteur_dashboard'); 
+            return $this->redirectToRoute('showoffreRecruteur'); 
             
         } elseif (in_array('ROLE_CHEF_PROJET', $roles)) {
             // Équivalent de /FrontChefProjet.fxml (Votre fichier)

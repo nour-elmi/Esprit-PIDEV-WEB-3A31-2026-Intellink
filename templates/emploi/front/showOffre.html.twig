@@ -9,7 +9,6 @@
             <a href="{{ path('showoffre') }}" class="back-link" style="color: rgba(255,255,255,0.7);">
                 <i class="lni lni-arrow-left"></i> Accueil
             </a>
-            {# 'offre' contient la liste des offres envoyée par le contrôleur #}
             <h1 class="card-title mb-0">Liste des Offres ({{ offre.getTotalItemCount }})</h1>
         </div>
     </div>
@@ -37,7 +36,6 @@
                     </form>
                 </div>
 
-                {# Changement ici : 'for o in offre' pour ne pas confondre l'objet et la liste #}
                 {% for o in offre %}
                     <div class="detail-card mb-4">
                         <div class="detail-body">
@@ -59,10 +57,16 @@
                                     <i class="lni lni-apartment"></i> {{ o.nomEntreprise }}
                                 </span>
                                 
-                                {# CHANGEMENT CRUCIAL : On envoie l'ID de l'offre à la route addListe #}
-                                <a href="{{ path('addListe', {'id_offre': o.idOffre}) }}" class="btn-liquid px-3 py-2" style="font-size: 14px; text-decoration: none; background: #2F80ED; color: white; border-radius: 8px;">
-                                    Postuler
-                                </a>
+                                {# AJOUT USER : bouton conditionnel "déjà postulé" #}
+                                {% if o.alreadyApplied is defined and o.alreadyApplied %}
+                                    <button class="btn-liquid px-3 py-2" style="font-size: 14px; background: #94a3b8; color: white; border-radius: 8px; cursor: not-allowed;" disabled>
+                                        Déjà postulé
+                                    </button>
+                                {% else %}
+                                    <a href="{{ path('addListe', {'id_offre': o.idOffre}) }}" class="btn-liquid px-3 py-2" style="font-size: 14px; text-decoration: none; background: #2F80ED; color: white; border-radius: 8px;">
+                                        Postuler
+                                    </a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
