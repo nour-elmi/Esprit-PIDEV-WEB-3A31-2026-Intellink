@@ -1,0 +1,160 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Commentaires{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/forum.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="app-root">
+    <div class="topbar">
+        <a href="{{ path('app_forum') }}" class="btn-outline">←</a>
+
+        <div class="logo-wrap">
+            <img src="{{ asset('images/logo-bg.png') }}" alt="Logo" class="top-logo">
+        </div>
+
+        <form method="get" action="{{ path('app_comments', {id: post.id}) }}" class="search-form">
+            <div class="search-wrap">
+                <span class="search-icon">🔎</span>
+                <input
+                    type="text"
+                    name="q"
+                    value="{{ search }}"
+                    placeholder="Rechercher des commentaires"
+                    class="search-dark"
+                >
+            </div>
+            <input type="hidden" name="sort" value="{{ sort }}">
+        </form>
+    </div>
+
+    <div class="center-wrap">
+
+        <div class="post">
+            <div class="post-header">
+                <div>
+                    <span class="subreddit">u/{{ post.author ? post.author.nom : 'Unknown' }}</span>
+                    <span class="muted">
+                        • {{ post.createdAt ? post.createdAt|date('d/m/Y H:i') : '' }}
+                        {% if post.isEdited %} • (modifié){% endif %}
+                        {% if post.isPinned %} • 📌{% endif %}
+                        {% if post.isLocked %} • 🔒{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <div class="post-title-dark">
+                {{ post.content }}
+            </div>
+
+            {% if post.images is not empty %}
+                <div class="reddit-media-slider">
+                    <div class="reddit-media">
+                        {% for image in post.images %}
+                            <img
+                                src="{{ asset('uploads/posts/' ~ image.imageUrl) }}"
+                                alt="Post image"
+                                class="post-image"
+                            >
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        {% for message in app.flashes('error') %}
+            <div class="post error-box">
+                <p class="error-text">{{ message }}</p>
+            </div>
+        {% endfor %}
+
+        <div class="post">
+            <p class="muted">Rejoindre la conversation</p>
+
+            {% if post.isLocked %}
+                <p class="error-text">Ce post est verrouillé. Vous ne pouvez plus commenter.</p>
+            {% else %}
+                <form method="post" action="{{ path('app_comment_add', {id: post.id}) }}">
+                    <textarea
+                        name="content"
+                        rows="3"
+                        class="input-light create-textarea"
+                        placeholder="Ajouter un commentaire..."
+                    ></textarea>
+
+                    <div style="display:flex; justify-content:flex-end; margin-top:10px;">
+                        <button type="submit" class="btn-primary">Publier</button>
+                    </div>
+                </form>
+            {% endif %}
+        </div>
+
+        <div class="feed-header">
+            <form method="get" action="{{ path('app_comments', {id: post.id}) }}">
+                <input type="hidden" name="q" value="{{ search }}">
+
+                <label class="muted">Trier par :</label>
+                <select name="sort" class="combo-dark" onchange="this.form.submit()">
+                    <option value="Nouveau" {{ sort == 'Nouveau' ? 'selected' : '' }}>Nouveau</option>
+                    <option value="Ancien" {{ sort == 'Ancien' ? 'selected' : '' }}>Ancien</option>
+                </select>
+            </form>
+        </div>
+
+        <div class="feedBox">
+            {% for comment in rootComments %}
+                {% include 'comment/_comment.html.twig' with {
+                    comment: comment,
+                    groupedReplies: groupedReplies,
+                    depth: 0,
+                    currentUserId: currentUserId,
+                    post: post
+                } %}
+            {% else %}
+                <div class="post">
+                    <p class="muted">Aucun commentaire trouvé.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('click', function (e) {
+    const toggleBtn = e.target.closest('.reply-toggle-btn, .edit-toggle-btn');
+    if (toggleBtn) {
+        e.preventDefault();
+
+        const targetId = toggleBtn.getAttribute('data-target');
+        const hideId = toggleBtn.getAttribute('data-hide');
+
+        const targetBox = document.getElementById(targetId);
+        const hideBox = hideId ? document.getElementById(hideId) : null;
+
+        if (hideBox) {
+            hideBox.classList.add('hidden');
+        }
+
+        if (targetBox) {
+            targetBox.classList.toggle('hidden');
+        }
+
+        return;
+    }
+
+    const cancelBtn = e.target.closest('.cancel-toggle-btn');
+    if (cancelBtn) {
+        e.preventDefault();
+
+        const targetId = cancelBtn.getAttribute('data-target');
+        const box = document.getElementById(targetId);
+
+        if (box) {
+            box.classList.add('hidden');
+        }
+    }
+});
+</script>
+{% endblock %}

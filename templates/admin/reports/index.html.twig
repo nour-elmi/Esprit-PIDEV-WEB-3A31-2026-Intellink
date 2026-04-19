@@ -1,0 +1,87 @@
+{% extends 'admin/base_back.html.twig' %}
+
+{% block title %}Admin Reports{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/forum.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="page-content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <h2 class="mb-0">Admin • Reports</h2>
+
+        <form method="get" action="{{ path('app_admin_reports') }}" class="d-flex gap-2 flex-wrap">
+            <input
+                type="text"
+                name="q"
+                value="{{ search }}"
+                placeholder="Rechercher (raison / type / id)"
+                class="form-control"
+                style="min-width: 280px;"
+            >
+            <input type="hidden" name="filter" value="{{ filter }}">
+            <a href="{{ path('app_admin_reports') }}" class="btn btn-outline-secondary">Rafraîchir</a>
+        </form>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <form method="get" action="{{ path('app_admin_reports') }}" class="d-flex gap-2 flex-wrap align-items-center">
+                <label class="text-muted">Trier :</label>
+
+                <select name="filter" class="form-select" onchange="this.form.submit()">
+                    <option value="Tous (OPEN)" {{ filter == 'Tous (OPEN)' ? 'selected' : '' }}>Tous (OPEN)</option>
+                    <option value="POST" {{ filter == 'POST' ? 'selected' : '' }}>POST</option>
+                    <option value="COMMENT" {{ filter == 'COMMENT' ? 'selected' : '' }}>COMMENT</option>
+                </select>
+
+                <input type="hidden" name="q" value="{{ search }}">
+            </form>
+
+            <div class="text-muted">{{ count }} report(s)</div>
+        </div>
+    </div>
+
+    <div class="d-flex flex-column gap-3">
+        {% for report in reports %}
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                        <div>
+                            <div class="fw-bold mb-1">
+                                🚨 {{ report.type }} #{{ report.targetId }}
+                            </div>
+                            <div class="text-muted small">
+                                • reporter: {{ report.reporterId }}
+                                • {{ report.createdAt ? report.createdAt|date('d/m/Y H:i') : '' }}
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 flex-wrap">
+                            <form method="post" action="{{ path('app_admin_report_accept', {id: report.id}) }}" style="display:inline;" onsubmit="return confirm('Accepter ce report ?')">
+                                <button type="submit" class="btn btn-primary btn-sm">✅ Accepter</button>
+                            </form>
+
+                            <form method="post" action="{{ path('app_admin_report_reject', {id: report.id}) }}" style="display:inline;" onsubmit="return confirm('Rejeter ce report ?')">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">❌ Rejeter</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-light rounded">
+                        <strong>Raison:</strong> {{ report.reason ?: '' }}
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="card-body text-muted">Aucun report ouvert.</div>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+# Symfony
+.env
+.env.local
+.env.*.local
+.env.*
+!.env.example
+/var/
+/vendor/
+/public/bundles/
+/public/uploads/
+
+# Cache et logs
+/var/cache/
+/var/log/
+
+# Node
+/node_modules/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,338 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Forum{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/forum.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="app-root">
+
+    <div class="topbar">
+        <a href="#" class="btn-outline">🏠 Accueil</a>
+
+        <div class="logo-wrap">
+            <img src="{{ asset('images/logo-bg.png') }}" alt="Logo" class="top-logo">
+        </div>
+
+        <form method="get" action="{{ path('app_forum') }}" class="search-form" id="search-form">
+            <div class="search-wrap">
+                <span class="search-icon">🔎</span>
+                <input
+                    type="text"
+                    name="q"
+                    value="{{ search }}"
+                    placeholder="Rechercher…"
+                    class="search-dark"
+                    id="search-input"
+                >
+            </div>
+
+            <input type="hidden" name="filter" value="{{ filter }}">
+            <input type="hidden" name="sort" value="{{ sort }}">
+        </form>
+
+        <a href="{{ path('app_post_create') }}" class="btn-primary">Créer</a>
+    </div>
+
+    <div class="center-wrap">
+        <div class="feed-header">
+            <div class="tabs">
+                <a href="{{ path('app_forum', {filter: 'accueil', sort: sort, q: search}) }}"
+                   class="tab {{ filter == 'accueil' ? 'active-tab' : '' }}">
+                    Accueil
+                </a>
+
+                <a href="{{ path('app_forum', {filter: 'populaire', sort: sort, q: search}) }}"
+                   class="tab {{ filter == 'populaire' ? 'active-tab' : '' }}">
+                    Populaire
+                </a>
+
+                <a href="{{ path('app_forum', {filter: 'actualites', sort: sort, q: search}) }}"
+                   class="tab {{ filter == 'actualites' ? 'active-tab' : '' }}">
+                    Actualités
+                </a>
+            </div>
+
+            <form method="get" action="{{ path('app_forum') }}">
+                <input type="hidden" name="q" value="{{ search }}">
+                <input type="hidden" name="filter" value="{{ filter }}">
+
+                <select name="sort" class="combo-dark" onchange="this.form.submit()">
+                    <option value="Nouveau" {{ sort == 'Nouveau' ? 'selected' : '' }}>Nouveau</option>
+                    <option value="Populaire" {{ sort == 'Populaire' ? 'selected' : '' }}>Populaire</option>
+                </select>
+            </form>
+        </div>
+
+        {% for message in app.flashes('success') %}
+            <div class="post" style="border-color:#bbf7d0; background:#f0fdf4; margin-bottom:12px;">
+                <p style="color:#166534; font-weight:700; margin:0;">{{ message }}</p>
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="post error-box" style="margin-bottom:12px;">
+                <p class="error-text">{{ message }}</p>
+            </div>
+        {% endfor %}
+
+        <div class="feedBox">
+            {% for post in posts %}
+                <div class="post">
+                    <div class="post-header">
+                        <div>
+                            <span class="subreddit">u/{{ post.author ? post.author.nom : 'Unknown' }}</span>
+                            <span class="muted">
+                                • {{ post.createdAt ? post.createdAt|date('d/m/Y H:i') : '' }}
+                                {% if post.isEdited %} • (modifié){% endif %}
+                                {% if post.isPinned %} • 📌{% endif %}
+                                {% if post.isLocked %} • 🔒{% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="post-title-dark" id="post-content-{{ post.id }}">
+                        {{ post.content }}
+                    </div>
+
+                    <div class="translate-row">
+                        <span class="muted">Traduire:</span>
+                        <button type="button" class="translate-chip" data-post-id="{{ post.id }}" data-lang="fr">FR</button>
+                        <button type="button" class="translate-chip" data-post-id="{{ post.id }}" data-lang="en">EN</button>
+                        <button type="button" class="translate-chip" data-post-id="{{ post.id }}" data-lang="ar">AR</button>
+                        <button type="button" class="translate-chip hidden" id="hide-translation-{{ post.id }}">✖</button>
+                    </div>
+
+                    <div class="translated-text hidden" id="translated-text-{{ post.id }}"></div>
+
+                    {% if post.images is not empty %}
+                        <div class="reddit-media-slider" data-slider-id="slider-{{ post.id }}">
+                            <div class="reddit-media">
+                                {% for image in post.images %}
+                                    <img
+                                        src="{{ asset('uploads/posts/' ~ image.imageUrl) }}"
+                                        alt="Post image"
+                                        class="post-image slider-image {{ loop.first ? 'active' : '' }}"
+                                        data-slider-image="slider-{{ post.id }}"
+                                    >
+                                {% endfor %}
+
+                                {% if post.images|length > 1 %}
+                                    <button type="button" class="reddit-nav left" data-slider-prev="slider-{{ post.id }}">❮</button>
+                                    <button type="button" class="reddit-nav right" data-slider-next="slider-{{ post.id }}">❯</button>
+                                {% endif %}
+                            </div>
+
+                            {% if post.images|length > 1 %}
+                                <div class="reddit-dots-row">
+                                    {% for image in post.images %}
+                                        <span
+                                            class="dot-indicator {{ loop.first ? 'active-dot' : '' }}"
+                                            data-slider-dot="slider-{{ post.id }}"
+                                            data-index="{{ loop.index0 }}"
+                                        ></span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <div class="post-actions">
+                        <div class="vote-inline">
+                            <a href="{{ path('app_reaction_vote', {id: post.id, type: 'UP'}) }}" class="vote-btn">▲</a>
+                            <span class="vote-count-dark">{{ postScores[post.id] ?? 0 }}</span>
+                            <a href="{{ path('app_reaction_vote', {id: post.id, type: 'DOWN'}) }}" class="vote-btn">▼</a>
+                        </div>
+
+                        <a href="{{ path('app_comments', {id: post.id}) }}" class="chip">💬 Commenter</a>
+
+                        <button type="button" class="chip report-btn" data-post-id="{{ post.id }}">
+                            🚩 Signaler
+                        </button>
+                    </div>
+
+                    <div id="report-box-{{ post.id }}" class="hidden report-box">
+                        <form method="post" action="{{ path('app_report_create') }}">
+                            <input type="hidden" name="targetType" value="POST">
+                            <input type="hidden" name="targetId" value="{{ post.id }}">
+
+                            <textarea
+                                name="reason"
+                                rows="2"
+                                class="input-light create-textarea"
+                                placeholder="Raison du signalement..."
+                                required
+                            ></textarea>
+
+                            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+                                <button type="button" class="btn-outline cancel-report-btn" data-post-id="{{ post.id }}">
+                                    Annuler
+                                </button>
+                                <button type="submit" class="btn-primary">Envoyer</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <div class="post">
+                    <p class="muted">Aucun post trouvé.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // search auto submit
+    const searchInput = document.getElementById('search-input');
+    const searchForm = document.getElementById('search-form');
+    let searchTimeout;
+
+    if (searchInput && searchForm) {
+        searchInput.addEventListener('input', function () {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchForm.submit();
+            }, 500);
+        });
+    }
+
+    // image sliders
+    const sliders = document.querySelectorAll('[data-slider-id]');
+    sliders.forEach(slider => {
+        const sliderId = slider.dataset.sliderId;
+        const images = slider.querySelectorAll(`[data-slider-image="${sliderId}"]`);
+        const dots = slider.querySelectorAll(`[data-slider-dot="${sliderId}"]`);
+        const prevBtn = slider.querySelector(`[data-slider-prev="${sliderId}"]`);
+        const nextBtn = slider.querySelector(`[data-slider-next="${sliderId}"]`);
+
+        if (images.length <= 1) return;
+
+        let currentIndex = 0;
+
+        function showImage(index) {
+            images.forEach((img, i) => {
+                img.classList.toggle('active', i === index);
+            });
+
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active-dot', i === index);
+            });
+
+            currentIndex = index;
+        }
+
+        if (prevBtn) {
+            prevBtn.addEventListener('click', function () {
+                let newIndex = currentIndex - 1;
+                if (newIndex < 0) newIndex = images.length - 1;
+                showImage(newIndex);
+            });
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function () {
+                let newIndex = currentIndex + 1;
+                if (newIndex >= images.length) newIndex = 0;
+                showImage(newIndex);
+            });
+        }
+
+        dots.forEach(dot => {
+            dot.addEventListener('click', function () {
+                const index = parseInt(dot.dataset.index, 10);
+                showImage(index);
+            });
+        });
+
+        showImage(0);
+    });
+
+    // translation
+    const translateButtons = document.querySelectorAll('.translate-chip[data-post-id]');
+
+    translateButtons.forEach(button => {
+        button.addEventListener('click', async function () {
+            const postId = this.dataset.postId;
+            const lang = this.dataset.lang;
+            const contentElement = document.getElementById(`post-content-${postId}`);
+            const translatedElement = document.getElementById(`translated-text-${postId}`);
+            const hideBtn = document.getElementById(`hide-translation-${postId}`);
+
+            if (!contentElement || !translatedElement) return;
+
+            const originalText = contentElement.innerText.trim();
+            if (!originalText) return;
+
+            translatedElement.classList.remove('hidden');
+            translatedElement.innerText = 'Traduction...';
+            hideBtn.classList.remove('hidden');
+
+            try {
+                const response = await fetch('{{ path('app_translate') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        text: originalText,
+                        targetLang: lang
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    translatedElement.innerText = data.translatedText;
+                } else {
+                    translatedElement.innerText = '❌ Erreur de traduction.';
+                }
+            } catch (error) {
+                translatedElement.innerText = '❌ Erreur de traduction.';
+            }
+        });
+    });
+
+    document.querySelectorAll('[id^="hide-translation-"]').forEach(button => {
+        button.addEventListener('click', function () {
+            const postId = this.id.replace('hide-translation-', '');
+            const translatedElement = document.getElementById(`translated-text-${postId}`);
+
+            if (translatedElement) {
+                translatedElement.innerText = '';
+                translatedElement.classList.add('hidden');
+            }
+
+            this.classList.add('hidden');
+        });
+    });
+
+    // report buttons
+    document.querySelectorAll('.report-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const postId = this.dataset.postId;
+            const box = document.getElementById(`report-box-${postId}`);
+
+            if (!box) return;
+
+            box.classList.toggle('hidden');
+        });
+    });
+
+    document.querySelectorAll('.cancel-report-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const postId = this.dataset.postId;
+            const box = document.getElementById(`report-box-${postId}`);
+
+            if (!box) return;
+
+            box.classList.add('hidden');
+        });
+    });
+});
+</script>
+{% endblock %}

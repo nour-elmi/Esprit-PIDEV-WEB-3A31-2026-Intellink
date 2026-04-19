@@ -1,0 +1,277 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer un post{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/forum.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="app-root">
+    <div class="topbar">
+        <a href="{{ path('app_forum') }}" class="btn-ghost-dark">←</a>
+        <div class="logo">Créer un post</div>
+        <div style="flex: 1;"></div>
+        <button type="submit" form="create-post-form" class="btn-primary">Publier</button>
+    </div>
+
+    <div class="center-wrap">
+        <div class="create-post-wrap">
+            <h1 class="post-title-dark">Créer un post</h1>
+
+            <div class="create-tabs">
+                <span class="muted">Texte</span>
+                <span class="muted">Images &amp; Vidéos</span>
+                <span class="muted">Lien</span>
+            </div>
+
+            {% if error %}
+                <div class="post error-box">
+                    <p class="error-text">{{ error }}</p>
+                </div>
+            {% endif %}
+
+            {% if warning %}
+                <div class="post warning-box">
+                    <p class="warning-text">{{ warning }}</p>
+                </div>
+            {% endif %}
+
+            <form id="create-post-form" method="post" enctype="multipart/form-data">
+                <textarea
+                    id="content-input"
+                    name="content"
+                    rows="4"
+                    class="input-light create-textarea"
+                    placeholder="Content*"
+                >{{ app.request.request.get('content') }}</textarea>
+
+                <div id="suggest-box" class="suggest-box hidden">
+                    <p class="muted">Suggestions</p>
+                    <div id="suggest-pane" class="suggest-pane"></div>
+                </div>
+
+                <div class="post media-box">
+                    <div id="empty-drop-zone" class="drop-zone-web">
+                        <p class="muted">Glisser-déposer ou importer des médias</p>
+                        <button type="button" id="upload-trigger" class="btn-outline">Importer</button>
+                    </div>
+
+                    <div id="gallery-box" class="gallery-box hidden">
+                        <div class="gallery-topbar">
+                            <button type="button" id="add-more-btn" class="btn-outline add-more-btn">+ Ajouter des images</button>
+                            <span id="count-label" class="muted">0 image(s)</span>
+                        </div>
+
+                        <div id="preview-grid" class="preview-grid"></div>
+                    </div>
+
+                    <input
+                        id="image-input"
+                        type="file"
+                        name="images[]"
+                        multiple
+                        accept=".png,.jpg,.jpeg,.webp"
+                        hidden
+                    >
+
+                    <input
+                        id="replace-input"
+                        type="file"
+                        accept=".png,.jpg,.jpeg,.webp"
+                        hidden
+                    >
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const imageInput = document.getElementById('image-input');
+    const replaceInput = document.getElementById('replace-input');
+    const uploadTrigger = document.getElementById('upload-trigger');
+    const addMoreBtn = document.getElementById('add-more-btn');
+    const emptyDropZone = document.getElementById('empty-drop-zone');
+    const galleryBox = document.getElementById('gallery-box');
+    const previewGrid = document.getElementById('preview-grid');
+    const countLabel = document.getElementById('count-label');
+
+    const contentInput = document.getElementById('content-input');
+    const suggestBox = document.getElementById('suggest-box');
+    const suggestPane = document.getElementById('suggest-pane');
+
+    let filesArray = [];
+    let replaceIndex = null;
+    let suggestTimeout = null;
+
+    function syncInputFiles() {
+        const dt = new DataTransfer();
+        filesArray.forEach(file => dt.items.add(file));
+        imageInput.files = dt.files;
+        updateUI();
+    }
+
+    function updateUI() {
+        previewGrid.innerHTML = '';
+
+        if (filesArray.length === 0) {
+            emptyDropZone.classList.remove('hidden');
+            galleryBox.classList.add('hidden');
+            countLabel.textContent = '0 image(s)';
+            return;
+        }
+
+        emptyDropZone.classList.add('hidden');
+        galleryBox.classList.remove('hidden');
+        countLabel.textContent = filesArray.length + ' image(s)';
+
+        filesArray.forEach((file, index) => {
+            const card = document.createElement('div');
+            card.className = 'thumb-card-web';
+
+            const img = document.createElement('img');
+            img.className = 'thumb-image-web';
+            img.src = URL.createObjectURL(file);
+            img.alt = 'Preview';
+
+            const actions = document.createElement('div');
+            actions.className = 'thumb-actions-web';
+
+            const editBtn = document.createElement('button');
+            editBtn.type = 'button';
+            editBtn.className = 'thumb-action-btn';
+            editBtn.textContent = 'Modifier';
+            editBtn.addEventListener('click', () => {
+                replaceIndex = index;
+                replaceInput.click();
+            });
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.className = 'thumb-delete-btn';
+            deleteBtn.textContent = 'Supprimer';
+            deleteBtn.addEventListener('click', () => {
+                filesArray.splice(index, 1);
+                syncInputFiles();
+            });
+
+            const name = document.createElement('div');
+            name.className = 'thumb-name-web';
+            name.textContent = file.name;
+
+            actions.appendChild(editBtn);
+            actions.appendChild(deleteBtn);
+
+            card.appendChild(img);
+            card.appendChild(actions);
+            card.appendChild(name);
+
+            previewGrid.appendChild(card);
+        });
+    }
+
+    function addFiles(newFiles) {
+        for (const file of newFiles) {
+            if (file && file.type.startsWith('image/')) {
+                filesArray.push(file);
+            }
+        }
+        syncInputFiles();
+    }
+
+    function hideSuggestions() {
+        suggestPane.innerHTML = '';
+        suggestBox.classList.add('hidden');
+    }
+
+    function showSuggestions(list) {
+        suggestPane.innerHTML = '';
+
+        if (!list || list.length === 0) {
+            hideSuggestions();
+            return;
+        }
+
+        list.forEach(text => {
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = 'suggest-chip';
+            chip.textContent = text;
+
+            chip.addEventListener('click', () => {
+                contentInput.value = text;
+                hideSuggestions();
+                contentInput.focus();
+            });
+
+            suggestPane.appendChild(chip);
+        });
+
+        suggestBox.classList.remove('hidden');
+    }
+
+    async function loadSuggestions() {
+        const q = contentInput.value.trim();
+
+        if (q.length < 3) {
+            hideSuggestions();
+            return;
+        }
+
+        try {
+            const response = await fetch(`{{ path('app_post_suggestions') }}?q=${encodeURIComponent(q)}&limit=6`);
+            const data = await response.json();
+
+            if (data.success) {
+                showSuggestions(data.suggestions || []);
+            } else {
+                hideSuggestions();
+            }
+        } catch (e) {
+            console.error('Suggestions error:', e);
+            hideSuggestions();
+        }
+    }
+
+    uploadTrigger.addEventListener('click', () => imageInput.click());
+    addMoreBtn.addEventListener('click', () => imageInput.click());
+
+    imageInput.addEventListener('change', function () {
+        addFiles(Array.from(this.files));
+    });
+
+    replaceInput.addEventListener('change', function () {
+        const file = this.files[0];
+        if (file && replaceIndex !== null) {
+            filesArray[replaceIndex] = file;
+            syncInputFiles();
+        }
+        replaceIndex = null;
+        replaceInput.value = '';
+    });
+
+    emptyDropZone.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        emptyDropZone.classList.add('dragover');
+    });
+
+    emptyDropZone.addEventListener('dragleave', function () {
+        emptyDropZone.classList.remove('dragover');
+    });
+
+    emptyDropZone.addEventListener('drop', function (e) {
+        e.preventDefault();
+        emptyDropZone.classList.remove('dragover');
+        addFiles(Array.from(e.dataTransfer.files));
+    });
+
+    contentInput.addEventListener('input', function () {
+        clearTimeout(suggestTimeout);
+        suggestTimeout = setTimeout(loadSuggestions, 700);
+    });
+});
+</script>
+{% endblock %}
