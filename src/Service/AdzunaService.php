@@ -8,6 +8,7 @@ class AdzunaService
 {
     private $httpClient;
    
+    
 
     public function __construct(HttpClientInterface $httpClient)
     {
