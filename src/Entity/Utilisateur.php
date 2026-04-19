@@ -192,11 +192,19 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, 
      */
     public function getRoles(): array
     {
-        // On récupère le rôle de votre base de données
-        $roles = [$this->role];
-        
-        // Garantie que chaque utilisateur a au moins le rôle standard
-        if (!in_array('ROLE_USER', $roles)) {
+        // Normalise le role stocke en base (ex: "admin" -> "ROLE_ADMIN")
+        $rawRole = strtoupper(trim((string) $this->role));
+        if ($rawRole !== '' && !str_starts_with($rawRole, 'ROLE_')) {
+            $rawRole = 'ROLE_' . $rawRole;
+        }
+
+        $roles = [];
+        if ($rawRole !== '') {
+            $roles[] = $rawRole;
+        }
+
+        // Garantie que chaque utilisateur a au moins le role standard
+        if (!in_array('ROLE_USER', $roles, true)) {
             $roles[] = 'ROLE_USER';
         }
 
@@ -287,3 +295,4 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, 
         return $this;
     }
 }
+

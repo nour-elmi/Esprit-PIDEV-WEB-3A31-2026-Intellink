@@ -1,0 +1,355 @@
+{% extends 'emploi/base_emploi.html.twig' %}
+
+{% block title %}Postuler à une offre{% endblock %}
+
+{% block body %}
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-content">
+            <h1 id="job-title" data-category="{{ offre.titre }}">Déposer votre candidature</h1>
+            <p>Postulez pour l'offre : <strong>{{ offre.titre }}</strong> chez {{ offre.nomEntreprise }}</p>
+        </div>
+    </div>
+</section>
+
+<div class="main-content">
+    <div class="container">
+
+        <a href="{{ path('showoffre') }}" class="back-link">
+            <i class="lni lni-arrow-left"></i> Retour aux offres
+        </a>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="formation-form-wrapper" style="background: #fff; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                    <div class="section-title mb-4">
+                        <h2 style="font-size: 24px;">Formulaire de Participation</h2>
+                        <div class="title-line"></div>
+                    </div>
+
+                    {{ form_start(formOffre, {'attr': {'novalidate': 'novalidate'}}) }}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group-custom mb-3">
+                                    <label>Nom *</label>
+                                    {{ form_widget(formOffre.nom_p, {'attr': {'class': 'form-control-custom', 'placeholder': 'Votre nom'}}) }}
+                                    <div class="text-danger">{{ form_errors(formOffre.nom_p) }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group-custom mb-3">
+                                    <label>Prénom *</label>
+                                    {{ form_widget(formOffre.prenom_p, {'attr': {'class': 'form-control-custom', 'placeholder': 'Votre prénom'}}) }}
+                                    <div class="text-danger">{{ form_errors(formOffre.prenom_p) }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group-custom mb-3">
+                            <label>Déposer mon CV (Format PDF) *</label>
+                            <div class="cv-upload-wrapper">
+                                {{ form_widget(formOffre.cv, {'attr': {'class': 'form-control-custom', 'accept': '.pdf'}}) }}
+                                <div class="upload-hint mt-2" style="font-size: 12px; color: #64748b;">
+                                    <i class="lni lni-info-circle"></i> Taille max : 2Mo
+                                </div>
+                            </div>
+                            <div class="text-danger">{{ form_errors(formOffre.cv) }}</div>
+                        </div>
+
+                        <div class="form-group-custom mb-3">
+                            <label>Compétences (Skills) *</label>
+                            {{ form_widget(formOffre.skills, {'attr': {'class': 'form-control-custom', 'placeholder': 'Ex: Java, Symfony, SQL...', 'rows': '4'}}) }}
+                            <div class="text-danger">{{ form_errors(formOffre.skills) }}</div>
+                        </div>
+
+                        {{ form_rest(formOffre) }}
+
+                        <div class="form-actions mt-4 text-center">
+                            <div class="d-flex gap-2 mt-4 mb-2">
+                                <button type="button" id="btn-generate-cv" class="btn-liquid" style="flex: 1; justify-content: center; padding: 15px; border: 2px solid #2F80ED; background: transparent; color: #2F80ED; border-radius: 12px; cursor: pointer; font-weight: 600;">
+                                    <i class="lni lni-ai me-2"></i> Générer un CV avec l'IA
+                                </button>
+                            </div>
+                            <button type="submit" class="btn-liquid" style="width: 100%; justify-content: center; padding: 15px; border: none; background: #2F80ED; color: white; border-radius: 12px; cursor: pointer;">
+                                <i class="lni lni-checkmark-circle me-2"></i> Envoyer ma candidature
+                            </button>
+                        </div>
+
+                    {{ form_end(formOffre) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="cv-modal" class="custom-modal">
+    <div class="modal-content-wrapper">
+        <div class="modal-header-custom">
+            <h3><i class="lni lni-invention"></i> CV Généré par Cohere IA</h3>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body-custom">
+            <div id="cv-loading" style="display:none; text-align:center; padding: 20px;">
+                <p>Génération en cours...</p>
+            </div>
+            <div id="cv-result-container">
+                <textarea id="ai-cv-text" class="form-control-custom" rows="12"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer-custom mt-3">
+            <form id="form-pdf" action="{{ path('download_pdf') }}" method="POST" target="_blank">
+                <input type="hidden" name="cv_text" id="hidden-cv-text">
+                <button type="submit" id="btn-download-only" class="btn-liquid" style="background: #10b981; color: white; width: 100%; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">
+                    <i class="lni lni-download"></i> Telecharger pdf
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control-custom { width: 100%; padding: 12px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; transition: 0.3s; }
+    .form-control-custom:focus { border-color: #2F80ED; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(47, 128, 237, 0.1); }
+    .form-group-custom label { font-weight: 700; color: #1e293b; margin-bottom: 8px; display: block; font-size: 14px; }
+    .title-line { height: 4px; width: 50px; background: linear-gradient(90deg, #2F80ED, #56CCF2); border-radius: 2px; margin-top: 5px; }
+    .back-link { text-decoration: none; color: #64748b; display: inline-block; margin-bottom: 20px; font-weight: 600; }
+    
+    input[type=file]::file-selector-button {
+        background: #2F80ED; border: none; padding: 8px 15px; border-radius: 8px; color: white; cursor: pointer; margin-right: 15px;
+    }
+
+    .custom-modal {
+        display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+    }
+
+    .modal-content-wrapper {
+        background-color: #fefefe; margin: 5% auto; padding: 25px; border-radius: 20px; width: 60%;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.2); animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-header-custom { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
+    .close-modal { font-size: 28px; font-weight: bold; cursor: pointer; color: #64748b; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // AJOUT USER : pré-remplir le champ nom avec celui de l'utilisateur connecté (si disponible)
+    const userNom = '{{ app.user ? app.user.nom : '' }}';
+    const nomField = document.querySelector('[name*="nom_p"]');
+    if (nomField && userNom && !nomField.value) {
+        nomField.value = userNom;
+    }
+
+    const modal = document.getElementById("cv-modal");
+    const btnGenerate = document.getElementById("btn-generate-cv");
+    const btnClose = document.querySelector(".close-modal");
+    const formPdf = document.getElementById('form-pdf');
+
+    btnGenerate.onclick = function() {
+        const nom = document.querySelector('[name*="nom_p"]').value;
+        const prenom = document.querySelector('[name*="prenom_p"]').value;
+        const skills = document.querySelector('[name*="skills"]').value;
+
+        if(!nom || !prenom) {
+            alert("Veuillez saisir votre nom et prénom avant de générer.");
+            return;
+        }
+
+        modal.style.display = "block";
+        generateWithAI(nom, prenom, skills);
+    }
+
+    btnClose.onclick = () => modal.style.display = "none";
+    window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; }
+
+    function generateWithAI(nom, prenom, skills) {
+        document.getElementById('cv-loading').style.display = "block";
+        document.getElementById('cv-result-container').style.display = "none";
+
+        fetch('/cv/generate-ai', {
+            method: 'POST',
+            body: JSON.stringify({ nom, prenom, skills }),
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('cv-loading').style.display = "none";
+            document.getElementById('cv-result-container').style.display = "block";
+            document.getElementById('ai-cv-text').value = data.text;
+        });
+    }
+
+    formPdf.addEventListener('submit', function() {
+        const textFromAI = document.getElementById('ai-cv-text').value;
+        document.getElementById('hidden-cv-text').value = textFromAI;
+        setTimeout(() => {
+            modal.style.display = "none";
+        }, 800);
+    });
+});
+</script>
+
+{#le quiz#}
+<div id="quiz-modal" class="custom-modal">
+    <div class="modal-content-wrapper" style="max-width: 500px;">
+        <div class="modal-header-custom">
+            <h3><i class="lni lni-question-circle"></i> Quiz de Validation</h3>
+            <span class="close-quiz" style="cursor:pointer; font-size:24px;">&times;</span>
+        </div>
+        <div class="modal-body-custom" id="quiz-container">
+            <div id="quiz-loading-trivia" style="text-align:center;">
+                <p>Chargement des questions...</p>
+            </div>
+            <div id="quiz-content" style="display:none;">
+                <h4 id="question-text" class="mb-4" style="font-size: 18px; color: #1e293b;"></h4>
+                <div id="options-container" class="d-grid gap-2">
+                    </div>
+                <div class="mt-4 text-muted" style="font-size: 13px;">
+                    Question <span id="current-q-index">1</span>/5
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const quizModal = document.getElementById("quiz-modal");
+    const mainForm = document.querySelector('form[name*="participation"]');
+    const scoreInput = document.querySelector('[name*="score"]');
+    let currentQuestions = [];
+    let currentQuestionIndex = 0;
+    let userScore = 0;
+
+    function decodeHtml(html) {
+        const textarea = document.createElement('textarea');
+        textarea.innerHTML = html;
+        return textarea.value;
+    }
+
+    mainForm.onsubmit = function(e) {
+        if (scoreInput.value > 0 || userScore === -1) return true;
+        e.preventDefault();
+        quizModal.style.display = "block";
+        loadITQuestions();
+    };
+
+    function loadITQuestions() {
+        const url = 'https://opentdb.com/api.php?amount=5&category=18&type=multiple';
+        
+        fetch(url)
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                if (data.response_code !== 0) throw new Error('Aucune question reçue');
+                
+                currentQuestions = data.results.map(q => {
+                    const questionText = decodeHtml(q.question);
+                    const correctAnswer = decodeHtml(q.correct_answer);
+                    const incorrectAnswers = q.incorrect_answers.map(a => decodeHtml(a));
+                    
+                    const allAnswers = [correctAnswer, ...incorrectAnswers];
+                    for (let i = allAnswers.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [allAnswers[i], allAnswers[j]] = [allAnswers[j], allAnswers[i]];
+                    }
+                    
+                    return {
+                        question: questionText,
+                        answers: {
+                            answer_a: allAnswers[0],
+                            answer_b: allAnswers[1],
+                            answer_c: allAnswers[2],
+                            answer_d: allAnswers[3]
+                        },
+                        correct_answers: {
+                            answer_a_correct: (allAnswers[0] === correctAnswer) ? "true" : "false",
+                            answer_b_correct: (allAnswers[1] === correctAnswer) ? "true" : "false",
+                            answer_c_correct: (allAnswers[2] === correctAnswer) ? "true" : "false",
+                            answer_d_correct: (allAnswers[3] === correctAnswer) ? "true" : "false"
+                        }
+                    };
+                });
+                
+                currentQuestionIndex = 0;
+                userScore = 0;
+                showQuestion();
+            })
+            .catch(err => {
+                console.error("Erreur de chargement du quiz:", err);
+                document.getElementById('quiz-loading-trivia').innerHTML = `
+                    <div style="color: #e74c3c;">⚠️ Erreur de chargement du quiz (vérifiez votre connexion réseau)</div>
+                    <button id="retry-quiz" class="btn-liquid mt-3">🔄 Réessayer</button>
+                    <button id="skip-quiz" class="btn-liquid mt-3">⏩ Continuer sans quiz</button>
+                `;
+                const retryBtn = document.getElementById('retry-quiz');
+                const skipBtn = document.getElementById('skip-quiz');
+                if (retryBtn) retryBtn.onclick = () => loadITQuestions();
+                if (skipBtn) skipBtn.onclick = () => {
+                    scoreInput.value = 0;
+                    quizModal.style.display = "none";
+                    mainForm.submit();
+                };
+            });
+    }
+
+    function showQuestion() {
+        if (!currentQuestions.length) return;
+        const q = currentQuestions[currentQuestionIndex];
+        const loadingDiv = document.getElementById('quiz-loading-trivia');
+        const contentDiv = document.getElementById('quiz-content');
+        if (loadingDiv) loadingDiv.style.display = "none";
+        if (contentDiv) contentDiv.style.display = "block";
+        
+        const questionText = document.getElementById('question-text');
+        if (questionText) questionText.innerText = q.question;
+        const qIndexSpan = document.getElementById('current-q-index');
+        if (qIndexSpan) qIndexSpan.innerText = currentQuestionIndex + 1;
+
+        const container = document.getElementById('options-container');
+        if (!container) return;
+        container.innerHTML = '';
+        
+        Object.keys(q.answers).forEach(key => {
+            const answerText = q.answers[key];
+            if (answerText) {
+                const btn = document.createElement('button');
+                btn.className = 'btn-liquid';
+                btn.style = 'background: #f1f5f9; border: 1px solid #e2e8f0; color: #1e293b; padding: 10px; border-radius: 8px; cursor: pointer; text-align: left; margin-bottom: 8px; width: 100%;';
+                btn.innerHTML = answerText;
+                const isCorrect = q.correct_answers[key + '_correct'] === "true";
+                btn.onclick = () => handleAnswer(isCorrect);
+                container.appendChild(btn);
+            }
+        });
+    }
+
+    function handleAnswer(isCorrect) {
+        if (isCorrect) userScore += 20;
+        currentQuestionIndex++;
+        if (currentQuestionIndex < currentQuestions.length) {
+            showQuestion();
+        } else {
+            finishQuiz();
+        }
+    }
+
+    function finishQuiz() {
+        if (scoreInput) scoreInput.value = userScore;
+        alert(`Quiz terminé ! Votre score : ${userScore}/100. Envoi de la candidature...`);
+        if (quizModal) quizModal.style.display = "none";
+        userScore = -1;
+        mainForm.submit();
+    }
+
+    const closeBtn = document.querySelector(".close-quiz");
+    if (closeBtn) closeBtn.onclick = () => { if (quizModal) quizModal.style.display = "none"; };
+});
+</script>
+
+{% endblock %}

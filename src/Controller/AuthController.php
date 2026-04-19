@@ -391,7 +391,7 @@ class AuthController extends AbstractController
         
         if (in_array('ROLE_ADMIN', $roles)) return $this->redirectToRoute('app_admin_users'); 
         if (in_array('ROLE_FORMATEUR', $roles)) return $this->redirectToRoute('app_formation_index'); 
-        if (in_array('ROLE_RECRUTEUR', $roles)) return $this->redirectToRoute('app_recruteur_dashboard'); 
+        if (in_array('ROLE_RECRUTEUR', $roles)) return $this->redirectToRoute('showoffreRecruteur'); 
         if (in_array('ROLE_CHEF_PROJET', $roles)) return $this->redirectToRoute('app_back_projets'); 
         if (in_array('ROLE_USER', $roles)) return $this->redirectToRoute('app_home'); 
 

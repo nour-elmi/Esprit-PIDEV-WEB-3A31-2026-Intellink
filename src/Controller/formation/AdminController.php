@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/formation/admin')]
+
 final class AdminController extends AbstractController
 {
     #[Route('/formations', name: 'app_admin_formations')]

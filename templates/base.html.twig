@@ -344,8 +344,8 @@
                         <div class="notif-item reclamation-notif" id="rec-notif-{{ r.id }}" onclick="markRecAsRead({{ r.id }}, '{{ path('app_reclamation_show', {'id': r.id}) }}')">
                             <div class="icon-circle" style="background:#dcfce7; color:#059669;"><i class="lni lni-checkmark-circle"></i></div>
                             <div class="content">
-                                <h4>RÃ©clamation TraitÃ©e</h4>
-                                <p>Votre ticket "#{{ r.id }} - {{ r.objet|slice(0,15) }}..." a reÃ§u une rÃ©ponse.</p>
+                                <h4>Réclamation traitée</h4>
+                                <p>Votre ticket "#{{ r.id }} - {{ r.objet|slice(0,15) }}..." a reçu une réponse.</p>
                             </div>
                         </div>
                         {% endfor %}
@@ -965,7 +965,7 @@
                 if (conversationId === 'ai') {
                     chatBody.innerHTML = '<div class="date-stamp">Aujourd\'hui</div>';
                     // Emoji retirÃ©
-                    ajouterBulleAuChat("Bonjour ! Je suis IntelLink-AI. Comment puis-je vous aider Ã  propulser votre carriÃ¨re aujourd'hui ?", 'received');
+                    ajouterBulleAuChat("Bonjour ! Je suis IntelLink-AI. Comment puis-je vous aider Ã  propulser votre carrière aujourd'hui ?", 'received');
                     return; // On s'arrÃªte lÃ  (pas d'historique ni de Pusher pour l'IA)
                 }
 
@@ -983,7 +983,7 @@
                         }
 
                         if (messages.length === 0) {
-                            chatBody.innerHTML = '<div class="date-stamp">DÃ©but de la conversation</div>';
+                            chatBody.innerHTML = '<div class="date-stamp">Début de la conversation</div>';
                         } else {
                             messages.forEach(msg => {
                                 const type = (msg.expediteur_id === currentUserId) ? 'sent' : 'received';

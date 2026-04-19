@@ -10,18 +10,13 @@
         "api-platform/core": "^4.3",
         "doctrine/dbal": "^3",
         "doctrine/doctrine-bundle": "^2.18",
-
-
         "doctrine/doctrine-migrations-bundle": "^3.7",
-    "doctrine/orm": "^3.6",
-    "knplabs/knp-paginator-bundle": "^6.10",
-    "nucleos/dompdf-bundle": "^4.3",
-
-
-        
+        "doctrine/orm": "^3.6",
         "endroid/qr-code": "4.8",
+        "knplabs/knp-paginator-bundle": "^6.10",
+        "knplabs/knp-time-bundle": "^2.5",
         "nelmio/cors-bundle": "^2.6",
-
+        "nucleos/dompdf-bundle": "^4.3",
         "phpdocumentor/reflection-docblock": "^5.6",
         "phpstan/phpdoc-parser": "^2.3",
         "pusher/pusher-php-server": "^7.2",

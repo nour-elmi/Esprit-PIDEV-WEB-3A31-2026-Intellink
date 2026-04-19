@@ -1,0 +1,235 @@
+<?php
+
+namespace App\Entity;
+
+use App\Enum\Statut;
+use App\Enum\TypeContrat;
+use App\Repository\EmploiRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+
+#[ORM\Entity(repositoryClass: EmploiRepository::class)]
+#[ORM\Table(name: 'offre_emploi')]
+class Emploi
+{
+
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(name: "id_offre")]
+    private ?int $id_offre = null;
+
+    #[ORM\Column(length: 150)]
+    #[Assert\NotBlank(message: "Le titre de l'offre est obligatoire")]
+    private ?string $titre = null;
+
+    #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: "La description ne peut pas être vide")]
+    private ?string $description = null;
+
+    #[ORM\Column(enumType: TypeContrat::class)]
+    private ?TypeContrat $TypeContrat = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    #[Assert\Positive(message: "Le salaire doit être un nombre positif")]
+    #[Assert\Type(type: "numeric", message: "Le salaire doit être une valeur numérique")]
+    private ?string $salaire = null;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Assert\NotBlank(message: "La date de début est requise")]
+    private ?\DateTime $date_debut = null;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Assert\NotBlank(message: "La date d'expiration est requise")]
+    #[Assert\GreaterThan(
+        propertyPath: "date_debut",
+        message: "La date d'expiration doit être strictement supérieure à la date de début"
+    )]
+    private ?\DateTime $date_expiration = null;
+
+    #[ORM\Column( nullable: true, enumType: Statut::class)]
+    private ?Statut $statut = null;
+
+    #[ORM\Column(length: 150)]
+    #[Assert\NotBlank(message: "Le nom de l'entreprise est requis")]
+    private ?string $nom_entreprise = null;
+
+    #[ORM\Column]
+    private ?int $id_user = null;
+
+    /**
+     * @var Collection<int, ListeParticipation>
+     */
+    #[ORM\OneToMany(targetEntity: ListeParticipation::class, mappedBy: 'id_offre')]
+    private Collection $listeParticipations;
+
+    public function __construct()
+    {
+        $this->listeParticipations = new ArrayCollection();
+    }
+
+    public function getNbParticipations(): int
+    {
+        return $this->listeParticipations->count();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id_offre;
+    }
+
+    public function getIdOffre(): ?int
+    {
+        return $this->id_offre;
+    }
+
+    public function setIdOffre(int $id_offre): static
+    {
+        $this->id_offre = $id_offre;
+
+        return $this;
+    }
+
+    public function getTitre(): ?string
+    {
+        return $this->titre;
+    }
+
+    public function setTitre(string $titre): static
+    {
+        $this->titre = $titre;
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(string $description): static
+    {
+        $this->description = $description;
+
+        return $this;
+    }
+
+    public function getTypeContrat(): ?TypeContrat
+    {
+        return $this->TypeContrat;
+    }
+
+    public function setTypeContrat(TypeContrat $TypeContrat): static
+    {
+        $this->TypeContrat = $TypeContrat;
+
+        return $this;
+    }
+
+    public function getSalaire(): ?string
+    {
+        return $this->salaire;
+    }
+
+    public function setSalaire(?string $salaire): static
+    {
+        $this->salaire = $salaire;
+
+        return $this;
+    }
+
+    public function getDateDebut(): ?\DateTime
+    {
+        return $this->date_debut;
+    }
+
+    public function setDateDebut(?\DateTime $date_debut): static
+    {
+        $this->date_debut = $date_debut;
+
+        return $this;
+    }
+
+    public function getDateExpiration(): ?\DateTime
+    {
+        return $this->date_expiration;
+    }
+
+    public function setDateExpiration(?\DateTime $date_expiration): static
+    {
+        $this->date_expiration = $date_expiration;
+
+        return $this;
+    }
+
+    /*
+     * @return Statut[]|null
+     */
+    public function getStatut(): ?Statut
+    {
+        return $this->statut;
+    }
+
+    public function setStatut(?Statut $statut): static
+    {
+        $this->statut = $statut;
+
+        return $this;
+    }
+
+    public function getNomEntreprise(): ?string
+    {
+        return $this->nom_entreprise;
+    }
+
+    public function setNomEntreprise(string $nom_entreprise): static
+    {
+        $this->nom_entreprise = $nom_entreprise;
+
+        return $this;
+    }
+
+    public function getIdUser(): ?int
+    {
+        return $this->id_user;
+    }
+
+    public function setIdUser(int $id_user): static
+    {
+        $this->id_user = $id_user;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ListeParticipation>
+     */
+    public function getListeParticipations(): Collection
+    {
+        return $this->listeParticipations;
+    }
+
+    public function addListeParticipation(ListeParticipation $listeParticipation): static
+    {
+        if (!$this->listeParticipations->contains($listeParticipation)) {
+            $this->listeParticipations->add($listeParticipation);
+            $listeParticipation->setIdOffre($this);
+        }
+
+        return $this;
+    }
+
+    public function removeListeParticipation(ListeParticipation $listeParticipation): static
+    {
+        if ($this->listeParticipations->removeElement($listeParticipation)) {
+            // set the owning side to null (unless already changed)
+            if ($listeParticipation->getIdOffre() === $this) {
+                $listeParticipation->setIdOffre(null);
+            }
+        }
+
+        return $this;
+    }
+}
