@@ -47,11 +47,22 @@ final class ParticipationFormationController extends AbstractController
             6
         );
         
-        $participations = $participationRepo->findBy(['idUtilisateur' => $idUtilisateur]);
+        $participations = $participationRepo->findBy(
+            ['idUtilisateur' => $idUtilisateur],
+            ['dateInscription' => 'DESC', 'idParticipation' => 'DESC']
+        );
         $inscritIds = array_map(
             fn($p) => $p->getFormation()->getIdFormation(),
             $participations
         );
+        $formationEnCours = null;
+        foreach ($participations as $participation) {
+            $formation = $participation->getFormation();
+            if ($formation !== null) {
+                $formationEnCours = $formation;
+                break;
+            }
+        }
         $favoriIds = $favoriRepository->findFormationIdsByUtilisateur($idUtilisateur);
         $favoris = $favoriRepository->findBy(
             ['idUtilisateur' => $idUtilisateur],
@@ -121,6 +132,7 @@ final class ParticipationFormationController extends AbstractController
         return $this->render('formation/utilisateur_formation/formations.html.twig', [
             'formations' => $formations,
             'inscritIds' => $inscritIds,
+            'formationEnCours' => $formationEnCours,
             'favoriIds' => $favoriIds,
             'suggestedFormations' => $suggestedFormations,
             'techNews' => $techNews,
