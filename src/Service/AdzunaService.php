@@ -7,9 +7,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 class AdzunaService
 {
     private $httpClient;
-    private $appId = 'a509e1f2'; 
-    private $appKey = '9bb8a7e4e96a4ffcd06e71e35942ac70'; 
-    
+   
 
     public function __construct(HttpClientInterface $httpClient)
     {
