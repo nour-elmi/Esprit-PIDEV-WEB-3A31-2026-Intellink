@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
     <head>
         <meta charset="UTF-8">
@@ -6,16 +6,1417 @@
         
         <title>{% block title %}Intel_link{% endblock %}</title>
         
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🚀</text></svg>">
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>ðŸš€</text></svg>">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
         
-        {% block stylesheets %}
-        {% endblock %}
+        {% block stylesheets %}{% endblock %}
+
+        <style>
+            /* VARIABLES INTEL_LINK / iMESSAGE */
+            :root {
+                --intel-blue: #007AFF; 
+                --imessage-gray: #E9E9EB;
+                --text-dark: #000000;
+                --bg-panel: rgba(255, 255, 255, 0.85);
+            }
+
+            /* =========================================
+               1. LE BOUTON DE LA NAVBAR
+               ========================================= */
+            .navbar-chat-container {
+                position: fixed;
+                top: 20px;
+                right: 30px; /* Placée tout à fait à droite */
+                z-index: 999990; /* Juste sous le preloader */
+                list-style: none;
+                pointer-events: auto !important;
+                transform: translateZ(9999px);
+            }
+            .navbar-notif-container {
+                position: fixed;
+                top: 20px;
+                right: 80px; /* Poussée un peu vers la droite, à gauche de la messagerie */
+                z-index: 999990;
+                list-style: none;
+                pointer-events: auto !important;
+                transform: translateZ(9999px);
+            }
+
+            .nav-messenger-link {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 45px;
+                height: 45px;
+                background: rgba(255, 255, 255, 0.9);
+                border-radius: 50%;
+                color: #64748b;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+                transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                text-decoration: none;
+                pointer-events: auto !important;
+            }
+
+            .nav-messenger-link:hover {
+                color: var(--intel-blue);
+                transform: translateY(-3px) scale(1.05);
+                box-shadow: 0 8px 25px rgba(0, 122, 255, 0.2);
+            }
+
+            .messenger-icon-wrapper { position: relative; width: 24px; height: 24px; }
+            .messenger-svg { width: 100%; height: 100%; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.1)); }
+
+            /* Badge Global de Notifications (+99) */
+            .messenger-badge {
+                position: absolute; top: -5px; right: -5px; 
+                background-color: #FF3B30; color: white; 
+                font-size: 11px; font-weight: bold; 
+                min-width: 18px; height: 18px; padding: 0 4px;
+                display: flex; align-items: center; justify-content: center;
+                border-radius: 10px; border: 2px solid #ffffff;
+                box-shadow: 0 2px 4px rgba(255,59,48,0.3);
+                transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+            .messenger-badge.hidden { display: none !important; }
+            .messenger-badge.pop { transform: scale(1.3); }
+
+            /* =========================================
+               2. LE PANNEAU DE MESSAGERIE
+               ========================================= */
+            .imessage-panel { 
+                position: fixed; top: 80px; right: 30px; width: 360px; height: 550px; 
+                background: var(--bg-panel); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); 
+                border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); 
+                border: 1px solid rgba(255,255,255,0.5); z-index: 999990; overflow: hidden; display: flex; 
+                opacity: 0; pointer-events: none; transform: translateY(-20px) scale(0.95); 
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            }
+            .imessage-panel.is-active { opacity: 1; pointer-events: auto !important; transform: translateY(0) scale(1); }
+
+            /* Vues glissantes */
+            .imessage-view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1); background: transparent; }
+            .view-active { transform: translateX(0); }
+            .view-hidden-left { transform: translateX(-30%); opacity: 0; pointer-events: none; }
+            .view-hidden-right { transform: translateX(100%); pointer-events: none; }
+
+            /* En-tÃªtes et Recherche */
+            .imessage-header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+            .large-title h3 { margin: 10px 0 0 0; font-size: 28px; font-weight: 700; letter-spacing: -0.5px; color: var(--text-dark); }
+            .icon-btn { background: #E9E9EB; border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 14px; color: #8E8E93; cursor: pointer; transition: 0.2s;}
+            .icon-btn:hover { background: #d1d1d6; }
+            .blur-header { background: rgba(255,255,255,0.75); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.05); padding: 10px 15px; }
+            .back-btn { background: none; border: none; color: var(--intel-blue); font-size: 22px; cursor: pointer; padding: 0; display: flex; align-items: center; }
+            .center-profile { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+            .small-avatar { width: 40px; height: 40px; border-radius: 50%; margin-bottom: 2px; }
+            .center-profile .name { font-size: 11px; font-weight: 500; color: var(--text-dark); display: flex; align-items: center; gap: 4px; }
+            .details-arrow { font-size: 9px; color: #C7C7CC; }
+            .imessage-search { padding: 5px 20px 15px; position: relative; }
+            .imessage-search input { width: 100%; background: rgba(118, 118, 128, 0.12); border: none; border-radius: 10px; padding: 8px 10px 8px 30px; font-size: 15px; outline: none; }
+            .imessage-search i { position: absolute; left: 28px; top: 14px; color: #8E8E93; font-size: 14px; }
+
+            /* =========================================
+               3. SUGGESTIONS HORIZONTALES
+               ========================================= */
+            .section-title { font-size: 13px; font-weight: 700; padding: 10px 20px 5px; color: #8E8E93; text-transform: uppercase; letter-spacing: 0.5px; }
+            .imessage-suggestions-container { 
+                display: flex; 
+                overflow-x: auto; 
+                padding: 10px 20px 15px; 
+                gap: 15px; 
+                border-bottom: 1px solid rgba(0,0,0,0.05); 
+                -webkit-overflow-scrolling: touch; 
+            }
+            .imessage-suggestions-container::-webkit-scrollbar { height: 6px; }
+            .imessage-suggestions-container::-webkit-scrollbar-track { background: transparent; margin: 0 20px; }
+            .imessage-suggestions-container::-webkit-scrollbar-thumb { background: #d1d1d6; border-radius: 10px; }
+            .imessage-suggestions-container::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
+            
+            .suggestion-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; min-width: 65px; transition: transform 0.2s; }
+            .suggestion-item:hover { transform: scale(1.05); }
+            .suggestion-avatar-wrapper { position: relative; width: 55px; height: 55px; border-radius: 50%; padding: 2px; border: 2px solid var(--intel-blue); }
+            .suggestion-avatar-wrapper img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+            .suggestion-add-badge { position: absolute; bottom: -4px; right: -4px; background: var(--intel-blue); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; border: 2px solid white; transition: 0.3s; }
+            .suggestion-name { font-size: 12px; margin-top: 6px; color: var(--text-dark); font-weight: 500; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65px; }
+
+            /* =========================================
+               4. LISTE DES CONVERSATIONS ACTIVES
+               ========================================= */
+            .imessage-contact-list { flex: 1; overflow-y: auto; }
+            .imessage-contact-list::-webkit-scrollbar { width: 4px; }
+            .imessage-contact-list::-webkit-scrollbar-thumb { background: #d1d1d6; border-radius: 10px; }
+            .imessage-contact { display: flex; align-items: center; padding: 10px 20px; cursor: pointer; transition: 0.2s;}
+            .imessage-contact:hover { background: rgba(0,0,0,0.03); }
+            .imessage-contact .avatar { width: 45px; height: 45px; border-radius: 50%; margin-right: 12px; object-fit: cover;}
+            .contact-content { flex: 1; border-bottom: 0.5px solid rgba(60,60,67,0.15); padding-bottom: 12px; margin-top: 2px; }
+            .contact-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
+            .contact-top .name { font-weight: 600; font-size: 16px; color: var(--text-dark); }
+            .contact-top .time { font-size: 14px; color: #8E8E93; }
+            .contact-bottom { display: flex; justify-content: space-between; align-items: center; }
+            .contact-bottom .last-msg { font-size: 14px; color: #8E8E93; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+
+            /* Mettre en gras les conversations non lues */
+            .unread-bold .name { font-weight: 800 !important; color: var(--intel-blue) !important; }
+            .unread-bold .last-msg { font-weight: 700 !important; color: var(--text-dark) !important; }
+
+            /* =========================================
+               5. VUE DISCUSSION (BULLES)
+               ========================================= */
+            .imessage-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+            .imessage-body::-webkit-scrollbar { width: 4px; }
+            .imessage-body::-webkit-scrollbar-thumb { background: #d1d1d6; border-radius: 10px; }
+            .date-stamp { text-align: center; font-size: 11px; font-weight: 600; color: #8E8E93; margin: 15px 0; }
+            .message-wrapper { display: flex; flex-direction: column; max-width: 75%; margin-bottom: 8px; }
+            .message-wrapper.sent { align-self: flex-end; align-items: flex-end; }
+            .message-wrapper.received { align-self: flex-start; align-items: flex-start; }
+            .bubble { padding: 8px 14px; font-size: 15px; line-height: 1.35; position: relative; word-wrap: break-word; }
+            .sent .bubble { background: var(--intel-blue); color: white; border-radius: 18px 18px 4px 18px; }
+            .received .bubble { background: var(--imessage-gray); color: var(--text-dark); border-radius: 18px 18px 18px 4px; }
+            
+            /* =========================================
+               6. LA MAGIE iMESSAGE (Typing & Statuts)
+               ========================================= */
+            .typing-indicator {
+                background-color: var(--imessage-gray);
+                will-change: transform;
+                width: auto;
+                border-radius: 18px 18px 18px 4px;
+                padding: 12px 16px;
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                margin-bottom: 8px;
+                align-self: flex-start;
+                animation: fadeIn 0.3s ease-in-out;
+            }
+
+            .typing-indicator .dot {
+                height: 7px; width: 7px; border-radius: 50%;
+                background-color: #8E8E93;
+                animation: typingBounce 1.4s infinite ease-in-out both;
+            }
+            .typing-indicator .dot:nth-child(1) { animation-delay: -0.32s; }
+            .typing-indicator .dot:nth-child(2) { animation-delay: -0.16s; }
+
+            @keyframes typingBounce {
+                0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+                40% { transform: scale(1); opacity: 1; }
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            /* Bulle de statut (Distribué/Lu) */
+            .msg-info {
+                font-size: 11px; color: #8E8E93; font-weight: 500;
+                margin-top: 2px; text-align: right; margin-right: 5px;
+                display: flex; justify-content: flex-end; gap: 4px; align-items: center;
+            }
+
+            .imessage-footer { padding: 10px 15px; background: transparent; padding-bottom: 15px; }
+            .input-pill { display: flex; align-items: center; border: 1px solid rgba(0,0,0,0.15); border-radius: 20px; padding: 3px 4px 3px 15px; background: #ffffff; }
+            .input-pill input { flex: 1; border: none; outline: none; font-size: 15px; background: transparent; }
+            .send-circle-btn { width: 28px; height: 28px; border-radius: 50%; background: var(--intel-blue); color: white; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: opacity 0.2s; }
+            .send-circle-btn:active { opacity: 0.7; }
+
+            /* =========================================
+               7. DESIGN DU LOGO ANIMÃ‰ DE L'IA
+               ========================================= */
+            .ai-logo-container {
+                width: 45px;
+                height: 45px;
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: radial-gradient(circle, rgba(0, 122, 255, 0.1) 0%, transparent 70%);
+                border-radius: 50%;
+            }
+
+            .ai-svg-brain {
+                width: 32px;
+                height: 32px;
+                filter: drop-shadow(0 0 5px rgba(0, 122, 255, 0.5));
+            }
+
+            .brain-path {
+                stroke-dasharray: 100;
+                stroke-dashoffset: 100;
+                animation: dashDraw 3s infinite alternate ease-in-out;
+            }
+
+            .brain-dot {
+                animation: brainPulse 2s infinite ease-in-out;
+            }
+
+            @keyframes dashDraw {
+                to { stroke-dashoffset: 0; }
+            }
+
+            @keyframes brainPulse {
+                0%, 100% { opacity: 0.3; transform: scale(0.8); }
+                50% { opacity: 1; transform: scale(1.2); filter: brightness(1.5); }
+            }
+
+            .ai-aura {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                border-radius: 50%;
+                background: conic-gradient(from 0deg, transparent, var(--intel-blue), transparent);
+                animation: rotateAura 4s linear infinite;
+                opacity: 0.2;
+            }
+
+            @keyframes rotateAura {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+        </style>
     </head>
+    
     <body>
         {% block body %}
         {% endblock %}
 
+        {% if app.user %}
+        <!-- CHAT BUTTON (A Gauche du PDP) -->
+        <div class="navbar-chat-container" style="display: flex; align-items: center;">
+            <a href="#" id="navbarChatBtn" class="nav-messenger-link" onclick="document.getElementById('chatWidgetPanel').classList.toggle('is-active'); return false;">
+                <div class="messenger-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="messenger-svg">
+                        <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 13.5997 2.37562 15.1116 3.04348 16.4522L2 22L7.54783 20.9565C8.88837 21.6244 10.4003 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M8 9H16M8 13H13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </a>
+        </div>
+
+            <!-- NOTIFICATION BELL (A Droite du PDP) -->
+            {% set unreadRecs = [] %}
+            {% for r in app.user.reclamations %}
+                {% if r.statut == 'TRAITE' and not r.isRead %}
+                    {% set unreadRecs = unreadRecs|merge([r]) %}
+                {% endif %}
+            {% endfor %}
+            {% set pendingFriends = get_pending_friend_requests(app.user) %}
+            {% set totalNotifsCount = unreadRecs|length + pendingFriends|length %}
+
+        <div class="navbar-notif-container" style="display: flex; align-items: center;">
+            <div class="notification-dropdown-container" style="position: relative;">
+                <a href="#" id="navbarNotifBtn" class="nav-messenger-link" onclick="document.getElementById('notifDropdown').classList.toggle('show'); return false;">
+                    <div class="messenger-icon-wrapper">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="messenger-svg">
+                            <path d="M18 15v3H6v-3M12 2v2m-6 3l1.5 1.5M19.5 8.5L18 7m-6-3a5 5 0 0 0-5 5v5l-2 2v1h14v-1l-2-2v-5a5 5 0 0 0-5-5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M10 21h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="messenger-badge {% if totalNotifsCount == 0 %}hidden{% endif %}" id="notifBadge">{{ totalNotifsCount }}</span>
+                    </div>
+                </a>
+
+                <!-- DROPDOWN CONTENT -->
+                <div id="notifDropdown" class="notif-dropdown">
+                    <div class="notif-header">Notifications (<span id="totalNotifCount">{{ totalNotifsCount }}</span>)</div>
+                    <div class="notif-body">
+                        <!-- MESSENGER (Updated via JS) -->
+                        <div class="notif-item messenger-notif hidden" id="messagerieNotifItem" onclick="document.getElementById('chatWidgetPanel').classList.add('is-active'); document.getElementById('notifDropdown').classList.remove('show');">
+                            <div class="icon-circle" style="background:#e0f2fe; color:#2563eb;"><i class="lni lni-comments"></i></div>
+                            <div class="content">
+                                <h4>Messagerie</h4>
+                                <p>Vous avez <span id="txtGlobalUnread">0</span> nouveau(x) message(s).</p>
+                            </div>
+                        </div>
+
+                        <!-- AMIS: DEMANDES -->
+                        {% for fr in pendingFriends %}
+                        <div class="notif-item friend-request-notif" onclick="document.getElementById('chatWidgetPanel').classList.add('is-active'); document.getElementById('notifDropdown').classList.remove('show');">
+                            <div class="icon-circle" style="background:#fce7f3; color:#db2777;"><i class="lni lni-users"></i></div>
+                            <div class="content">
+                                <h4>Demande d'ami</h4>
+                                <p><strong>{{ fr.requester.nom }}</strong> vous a envoyÃ© une demande d'ami.</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <!-- RECLAMATIONS -->
+                        {% for r in unreadRecs %}
+                        <div class="notif-item reclamation-notif" id="rec-notif-{{ r.id }}" onclick="markRecAsRead({{ r.id }}, '{{ path('app_reclamation_show', {'id': r.id}) }}')">
+                            <div class="icon-circle" style="background:#dcfce7; color:#059669;"><i class="lni lni-checkmark-circle"></i></div>
+                            <div class="content">
+                                <h4>RÃ©clamation TraitÃ©e</h4>
+                                <p>Votre ticket "#{{ r.id }} - {{ r.objet|slice(0,15) }}..." a reÃ§u une rÃ©ponse.</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        {% if totalNotifsCount == 0 %}
+                        <div class="notif-empty" id="emptyNotifMsg">Aucune nouvelle notification.</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <style>
+                .notification-dropdown-container {
+                    display: inline-block;
+                }
+                .notif-dropdown {
+                    position: absolute;
+                    top: 60px;
+                    right: 0;
+                    width: 320px;
+                    background: rgba(255, 255, 255, 0.95);
+                    backdrop-filter: blur(10px);
+                    border-radius: 16px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                    border: 1px solid rgba(255,255,255,0.4);
+                    opacity: 0;
+                    visibility: hidden;
+                    transform: translateY(10px);
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    z-index: 100;
+                }
+                .notif-dropdown.show {
+                    opacity: 1;
+                    visibility: visible;
+                    transform: translateY(0);
+                }
+                .notif-header {
+                    padding: 15px 20px;
+                    font-weight: bold;
+                    border-bottom: 1px solid rgba(0,0,0,0.05);
+                    color: #0f172a;
+                }
+                .notif-body {
+                    max-height: 400px;
+                    overflow-y: auto;
+                }
+                .notif-item {
+                    display: flex;
+                    align-items: center;
+                    padding: 12px 20px;
+                    cursor: pointer;
+                    transition: background 0.2s;
+                    border-bottom: 1px solid rgba(0,0,0,0.03);
+                }
+                .notif-item:hover {
+                    background: rgba(0,0,0,0.02);
+                }
+                .notif-item.hidden {
+                    display: none;
+                }
+                .notif-item .icon-circle {
+                    width: 40px; height: 40px;
+                    border-radius: 50%;
+                    display: flex; align-items: center; justify-content: center;
+                    margin-right: 15px; font-size: 20px;
+                }
+                .notif-item .content h4 { margin: 0 0 3px 0; font-size: 14px; font-weight: 600; color: #1e293b; }
+                .notif-item .content p { margin: 0; font-size: 12px; color: #64748b; line-height: 1.3; }
+                .notif-empty { padding: 30px 20px; text-align: center; color: #94a3b8; font-size: 14px; }
+            </style>
+            
+            <script>
+                // Mark Reclamation as Read API call
+                function markRecAsRead(id, url) {
+                    fetch('/reclamation/' + id + '/read', { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+                        window.location.href = url;
+                    });
+                }
+                
+                // Hide dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    const dropdown = document.getElementById('notifDropdown');
+                    const btn = document.getElementById('navbarNotifBtn');
+                    if(dropdown && btn && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+                        dropdown.classList.remove('show');
+                    }
+                });
+            </script>
+        </div>
+        
+        <!-- BOUTON FLOTTANT INTELLINK AI (faÃ§on Meta d'Messenger) -->
+        <div style="position: fixed; bottom: 30px; right: 30px; z-index: 999990; cursor: pointer;">
+            <a href="#" id="floatingAiBtn" class="nav-messenger-link" style="width: 60px; height: 60px; background: white; border: 2px solid var(--intel-blue); box-shadow: 0 10px 25px rgba(0, 122, 255, 0.4); display: flex; align-items: center; justify-content: center;" onclick="document.getElementById('chatWidgetPanel').classList.toggle('is-active'); window.slideIntoDiscussion('IntelLink AI', 'ai-logo', 'ai'); return false;">
+                <div class="ai-logo-container" style="width: 100%; height: 100%; background: transparent;">
+                    <div class="ai-aura" style="opacity: 0.15;"></div>
+                    <svg class="ai-svg-brain" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 36px; height: 36px;">
+                        <path class="brain-path" d="M12 22C12 22 20 18 20 12C20 6 16 2 12 2C8 2 4 6 4 12C4 18 12 22 12 22Z" stroke="#007AFF" stroke-width="1.5"/>
+                        <path class="brain-path" d="M12 2V22" stroke="#007AFF" stroke-width="1" stroke-dasharray="2 2"/>
+                        <circle class="brain-dot" cx="12" cy="7" r="1.5" fill="#007AFF"/>
+                        <circle class="brain-dot" cx="16" cy="11" r="1" fill="#8b5cf6" style="animation-delay: 0.5s;"/>
+                        <circle class="brain-dot" cx="8" cy="13" r="1" fill="#007AFF" style="animation-delay: 1s;"/>
+                    </svg>
+                </div>
+            </a>
+        </div>
+
+        <div id="chatWidgetPanel" class="imessage-panel">
+            
+            <div id="viewContacts" class="imessage-view view-active">
+                <div class="imessage-header large-title">
+                    <h3>Messages</h3>
+                    <button id="closeChatBtn" class="icon-btn" onclick="document.getElementById('chatWidgetPanel').classList.remove('is-active'); return false;"><i class="fas fa-times"></i></button>
+                </div>
+                
+                <div class="imessage-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="chatSearchInput" placeholder="Rechercher">
+                </div>
+
+                {{ render(controller('App\\Controller\\MessengerController::contactList')) }}
+
+            </div>
+
+            <div id="viewDiscussion" class="imessage-view view-hidden-right">
+                <div class="imessage-header blur-header">
+                    <button id="backBtn" class="back-btn" onclick="document.getElementById('viewDiscussion').classList.remove('view-active'); document.getElementById('viewDiscussion').classList.add('view-hidden-right'); document.getElementById('viewContacts').classList.remove('view-hidden-left'); document.getElementById('viewContacts').classList.add('view-active'); return false;"><i class="fas fa-chevron-left"></i></button>
+                    <div class="center-profile">
+                        <img id="activeAvatar" src="" class="small-avatar">
+                        
+                        <div id="activeAvatarAi" class="ai-logo-container" style="display: none; width: 40px; height: 40px; margin-bottom: 2px;">
+                            <div class="ai-aura"></div>
+                            <svg class="ai-svg-brain" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 26px; height: 26px;">
+                                <path class="brain-path" d="M12 22C12 22 20 18 20 12C20 6 16 2 12 2C8 2 4 6 4 12C4 18 12 22 12 22Z" stroke="#007AFF" stroke-width="1.5"/>
+                                <path class="brain-path" d="M12 2V22" stroke="#007AFF" stroke-width="1" stroke-dasharray="2 2"/>
+                                <circle class="brain-dot" cx="12" cy="7" r="1.5" fill="#007AFF"/>
+                                <circle class="brain-dot" cx="16" cy="11" r="1" fill="#8b5cf6" style="animation-delay: 0.5s;"/>
+                                <circle class="brain-dot" cx="8" cy="13" r="1" fill="#007AFF" style="animation-delay: 1s;"/>
+                            </svg>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <div style="display: flex; align-items: center; justify-content: center;">
+                                <span id="activeName" class="name">Utilisateur</span>
+                                <i class="fas fa-chevron-right details-arrow" style="margin-left: 5px;"></i>
+                            </div>
+                            <span id="activeStatusStr" style="font-size: 11px; font-weight: 500; margin-top: -2px;"></span>
+                        </div>
+                    </div>
+                    <div style="width: 40px; display: flex; align-items: center; justify-content: center;">
+                        <button id="unfriendBtn" onclick="unfriendActiveUser()" style="background: rgba(255, 59, 48, 0.1); border: 1px solid rgba(255, 59, 48, 0.3); border-radius: 8px; color: #ff3b30; cursor: pointer; display: none; width: 34px; height: 34px; text-align: center; line-height: 32px; transition: all 0.2s ease;" title="Retirer des relations professionnelles" onmouseover="this.style.background='rgba(255, 59, 48, 0.2)'" onmouseout="this.style.background='rgba(255, 59, 48, 0.1)'">
+                            <i class="fas fa-user-times" style="font-size: 14px;"></i>
+                        </button>
+                    </div> 
+                </div>
+
+                <div id="sharedFilesPanel" style="display: none; background: rgba(245, 247, 250, 0.9); backdrop-filter: blur(8px); padding: 12px 15px; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 13px; box-shadow: inset 0 -4px 6px -6px rgba(0,0,0,0.1);">
+                    <div id="sharedFilesList" style="display: flex; flex-direction: column; overflow: hidden;"></div>
+                </div>
+
+                <div class="imessage-body" id="chatBody">
+                    </div>
+
+                <div class="imessage-footer" style="flex-direction: column;">
+                    <div id="filePreview" style="display: none; width: 100%; justify-content: space-between; align-items: center; padding: 6px 12px; margin-bottom: 8px; font-size: 13px; color: var(--intel-blue); background: rgba(0, 122, 255, 0.05); border: 1px solid rgba(0, 122, 255, 0.1); border-radius: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                        <div style="display: flex; align-items: center; gap: 8px; overflow: hidden;">
+                            <i class="fas fa-file-alt" style="font-size: 16px;"></i> 
+                            <span id="fileNameDisplay" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500;">Fichier sÃ©lectionnÃ©</span>
+                        </div>
+                        <button onclick="clearFileSelection()" style="background: rgba(255, 59, 48, 0.1); border: none; border-radius: 50%; color: #ff3b30; width: 22px; height: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(255, 59, 48, 0.2)'" onmouseout="this.style.background='rgba(255, 59, 48, 0.1)'">
+                            <i class="fas fa-times" style="font-size: 11px;"></i>
+                        </button>
+                    </div>
+                    <div class="input-pill" style="width: 100%;">
+                        <label for="chatFileInput" style="cursor: pointer; margin-right: 12px; color: var(--intel-blue); font-size: 18px; padding: 5px; display: inline-block; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Insérer un fichier professionnel"><i class="fas fa-paperclip"></i></label>
+                        <input type="file" id="chatFileInput" style="display: none;" onchange="handleChatFileSelect(this)">
+                        <input type="text" id="chatInput" placeholder="tapez votre message..." autocomplete="off">
+                        <button id="sendBtn" class="send-circle-btn"><i class="fas fa-arrow-up"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         {% block javascripts %}
         {% endblock %}
+
+        <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+
+        <script>
+            // ðŸ”´ VARIABLES GLOBALES POUR LE CHAT
+            let activeConversationId = null;
+            let currentUserId = {{ app.user ? app.user.id : 'null' }};
+            let pusher = null;
+            let activeChannel = null;
+            let typingTimer;
+            let isSending = false;
+            const TYPING_TIMEOUT = 2000;
+            let globalUnread = 0;
+
+            // ðŸ”´ 7. GESTION DES DEMANDES D'AMIS (MOVED TO TOP)
+            window.envoyerDemande = function(userId, el) {
+                const badge = el.querySelector('.suggestion-add-badge');
+                const icon = badge.querySelector('i');
+
+                badge.style.background = "#ccc";
+                badge.style.borderColor = "#ccc";
+                icon.className = "fas fa-spinner fa-spin";
+
+                fetch('/api/friend-request/send/' + userId, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                        badge.style.background = "var(--intel-blue)";
+                        badge.style.borderColor = "white";
+                        icon.className = "fas fa-plus";
+                    } else {
+                        badge.style.background = "#10b981";
+                        badge.style.borderColor = "white";
+                        icon.className = "fas fa-check";
+                    }
+                })
+                .catch(error => console.error('Erreur:', error));
+            };
+// Fonction pour animer le badge +99
+            function updateBadge() {
+    const badge = document.getElementById('notifBadge');
+    if (!badge) return;
+    
+    // Logique mixte : Messages non lus + Reclamations non lues
+    const unreadRecsEl = document.getElementById('totalNotifCount');
+    const recsCount = unreadRecsEl ? parseInt(unreadRecsEl.innerText || 0) : 0;
+    const msgNotifItem = document.getElementById('messagerieNotifItem');
+    const txtGlobalUnread = document.getElementById('txtGlobalUnread');
+    
+    if (globalUnread > 0 && msgNotifItem && txtGlobalUnread) {
+        msgNotifItem.classList.remove('hidden');
+        txtGlobalUnread.innerText = globalUnread;
+    } else if (msgNotifItem) {
+        msgNotifItem.classList.add('hidden');
+    }
+    
+    const total = globalUnread + recsCount;
+    
+    if (total <= 0) {
+        badge.classList.add('hidden');
+    } else {
+        badge.classList.remove('hidden');
+        badge.innerText = total > 99 ? '+99' : total;
+                }
+            }
+
+            // RÃ©cupÃ©rer le total au chargement de la page
+            setTimeout(() => {
+                const initSpan = document.getElementById('initTotalUnread');
+                if (initSpan) { globalUnread = parseInt(initSpan.innerText) || 0; updateBadge(); }
+            }, 500);
+
+            // Initialisation de Pusher
+            if (currentUserId) {
+                                pusher = new Pusher('185d0f65ec9745830a72', {
+                    cluster: 'eu',
+                    channelAuthorization: {
+                        endpoint: '/api/pusher/auth',
+                        transport: 'ajax'
+                    }
+                });
+
+                // Canal de présence pour l'état en ligne (Pusher v8+ utilise channelAuthorization)
+                const presenceChannel = pusher.subscribe('presence-messenger');
+
+                presenceChannel.bind('pusher:subscription_succeeded', (members) => {
+                    members.each((member) => {
+                        if (member.id != currentUserId) updatePresenceStatus(member.id, true);
+                    });
+                });
+
+                presenceChannel.bind('pusher:member_added', (member) => {
+                    updatePresenceStatus(member.id, true);
+                });
+
+                presenceChannel.bind('pusher:member_removed', (member) => {
+                    updatePresenceStatus(member.id, false);
+                });
+
+                function updatePresenceStatus(userId, isOnline) {
+                    const contactItems = document.querySelectorAll('.imessage-contact[data-user-id="' + userId + '"]');
+                    contactItems.forEach(item => {
+                        const timeSpan = item.querySelector('.time');
+                        if (timeSpan) {
+                            timeSpan.innerText = isOnline ? 'En ligne' : 'Il y a un instant';
+                            timeSpan.style.color = isOnline ? '#10B981' : '#9CA3AF';
+                        }
+                    });
+
+                    // Si la personne est la cible de la conversation active
+                    // Il faut récupérer le profil / targetUserId -> on va vérifier via l'ID actif
+                    // On ne l'a pas explicitement dans une variable, mais on peut vérifier l'ID de la conversation => _contact_list a data-user-id
+                    const activeContact = document.querySelector('.imessage-contact.active[data-user-id="' + userId + '"]');
+                    if (activeContact) {
+                        const activeStatusStr = document.getElementById('activeStatusStr');
+                        if (activeStatusStr) {
+                            activeStatusStr.innerText = isOnline ? 'En ligne' : 'Il y a un instant';
+                            // activeStatusStr.style.color = isOnline ? '#10B981' : '#9CA3AF'; // si applicable
+                        }
+                    }
+                }
+
+                // ðŸ”´ LE CANAL GLOBAL DES NOTIFICATIONS (Pour le Badge Navbar)
+                const globalChannel = pusher.subscribe('user-channel-' + currentUserId);
+                globalChannel.bind('notification', function(data) {
+                    const isChatPanelOpen = document.getElementById('chatWidgetPanel').classList.contains('is-active');
+                    const isViewingThisChat = (activeConversationId === data.conversation_id) && !document.getElementById('viewDiscussion').classList.contains('view-hidden-right');
+
+                    // Si on n'est pas DÉJÀ en train de lire cette conversation
+                    if (!(isChatPanelOpen && isViewingThisChat)) {
+                        globalUnread++;
+                        updateBadge();
+                        const convItem = document.getElementById('conv-item-' + data.conversation_id);
+                        if (convItem) {
+                            convItem.classList.add('unread-bold');
+                            let cur = parseInt(convItem.getAttribute('data-unread')) || 0;
+                            convItem.setAttribute('data-unread', cur + 1);
+                        }
+                    }
+                });
+
+                globalChannel.bind('unfriend-event', function(data) {
+                    const removedUserId = (data.removerId == currentUserId) ? data.removedId : data.removerId;
+                    
+                    let extractedName = "Utilisateur";
+                    let extractedAvatar = "https://ui-avatars.com/api/?name=User&background=f1f5f9&color=000";
+
+                    // Remove from Contact List and extract details
+                    const convItem = document.getElementById('conv-item-' + data.conversationId);
+                    if (convItem) {
+                        extractedName = convItem.getAttribute('data-name') || extractedName;
+                        extractedAvatar = convItem.getAttribute('data-avatar') || extractedAvatar;
+                        convItem.remove();
+                    }
+
+                    // Search by data-user-id fallback for Conv Item and Suggestions
+                    const allConvItems = document.querySelectorAll('.imessage-contact[data-user-id="'+removedUserId+'"]');
+                    allConvItems.forEach(item => {
+                        extractedName = item.getAttribute('data-name') || extractedName;
+                        extractedAvatar = item.getAttribute('data-avatar') || extractedAvatar;
+                        item.remove();
+                    });
+
+                    const allSuggestionItems = document.querySelectorAll('.suggestion-item[data-user-id="'+removedUserId+'"]');
+                    allSuggestionItems.forEach(item => item.remove());
+
+                    // Rebuild suggestion
+                    const suggestionsContainer = document.querySelector('.imessage-suggestions-container');
+                    if (suggestionsContainer) {
+                        const suggestionHtml = `
+                            <div class="suggestion-item" data-user-id="${removedUserId}" onclick="envoyerDemande(${removedUserId}, this)">
+                                <div class="suggestion-avatar-wrapper">
+                                    <img src="${extractedAvatar}" alt="${extractedName}" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=User&background=f1f5f9&color=000'">
+                                    <div class="suggestion-add-badge"><i class="fas fa-plus"></i></div>
+                                </div>
+                                <div class="suggestion-name">${extractedName}</div>
+                            </div>
+                        `;
+                        suggestionsContainer.insertAdjacentHTML('afterbegin', suggestionHtml);
+                    }
+
+                    // If currently viewing this chat, close it
+                    if (activeConversationId == data.conversationId) {
+                        const viewMain = document.getElementById('viewMain');
+                        const viewDiscussion = document.getElementById('viewDiscussion');
+                        if (viewMain && viewDiscussion) {
+                            viewMain.classList.remove('view-hidden-left');
+                            viewDiscussion.classList.add('view-hidden-right');
+                        }
+                        activeConversationId = null;
+                        
+                        const unfriendBtn = document.getElementById('unfriendBtn');
+                        if(unfriendBtn) unfriendBtn.style.display = 'none';
+                    }
+                });
+
+                globalChannel.bind('friend-accepted-event', function(data) {
+                    const allSuggestionItems = document.querySelectorAll('.suggestion-item[data-user-id="'+data.friendId+'"]');
+                    allSuggestionItems.forEach(item => item.remove());
+
+                    const demandeBlock = document.getElementById('demande-' + data.requestId);
+                    if (demandeBlock) demandeBlock.remove();
+
+                    const listContacts = document.querySelector('.imessage-contact-list');
+                    if (listContacts && !document.getElementById('conv-item-' + data.conversationId)) {
+                        const strName = data.friendName.replace(/'/g, "\\'");
+                        const strAvatar = data.friendImage.replace(/'/g, "\\'");
+                        
+                        const newContactHtml = `
+                            <div class="imessage-contact" 
+                                id="conv-item-${data.conversationId}" 
+                                data-user-id="${data.friendId}"
+                                data-unread="0"
+                                data-name="${strName}"
+                                data-avatar="${strAvatar}"
+                                data-conversation-id="${data.conversationId}"
+                                data-status="En ligne"
+                                data-status-color="#10B981">
+                                
+                                <div style="position: relative; margin-right: 12px; height: 45px;">
+                                    <img src="${data.friendImage}" class="avatar" style="margin-right: 0;" alt="PDP" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=User&background=f1f5f9&color=000'">
+                                    <div style="position: absolute; bottom: 0px; right: 2px; width: 13px; height: 13px; background: #10B981; border-radius: 50%; border: 2px solid white;"></div>
+                                </div>
+                                
+                                <div class="contact-content">
+                                    <div class="contact-top">
+                                        <span class="name">${data.friendName}</span>
+                                        <span class="time">À l'instant</span>
+                                    </div>
+                                    <div class="contact-bottom">
+                                        <span class="last-msg" style="font-style: italic; color: var(--intel-blue);">Nouvelle relation</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        const searchBox = document.querySelector('.imessage-search');
+                        if (searchBox) {
+                            searchBox.insertAdjacentHTML('afterend', newContactHtml);
+                        } else {
+                            listContacts.insertAdjacentHTML('afterbegin', newContactHtml);
+                        }
+                    }
+                });
+
+                globalChannel.bind('reclamation-treated', function(data) {
+                    const badge = document.getElementById('notifBadge');
+                    const totalCountCountSpan = document.getElementById('totalNotifCount');
+                    const container = document.querySelector('.notif-body');
+                    const emptyMsg = document.getElementById('emptyNotifMsg');
+                    
+                    if (badge) {
+                        badge.classList.remove('hidden');
+                        badge.innerText = parseInt(badge.innerText || 0) + 1;
+                    }
+                    if (totalCountCountSpan) {
+                        totalCountCountSpan.innerText = parseInt(totalCountCountSpan.innerText || 0) + 1;
+                    }
+                    if (emptyMsg) emptyMsg.classList.add('hidden');
+                    
+                    if (container) {
+                        const newRecHtml = `
+                            <div class="notif-item reclamation-notif" id="rec-notif-${data.reclamationId}" onclick="markRecAsRead(${data.reclamationId}, '/reclamation/${data.reclamationId}')">
+                                <div class="icon-circle" style="background:#dcfce7; color:#059669;"><i class="lni lni-checkmark-circle"></i></div>
+                                <div class="content">
+                                    <h4>Réclamation Traitée</h4>
+                                    <p>${data.message}</p>
+                                </div>
+                            </div>
+                        `;
+                        container.insertAdjacentHTML('afterbegin', newRecHtml);
+                    }
+                });
+                
+                globalChannel.bind('friend-request-received', function(data) {
+                    const badge = document.getElementById('notifBadge');
+                    const totalCountCountSpan = document.getElementById('totalNotifCount');
+                    const emptyMsg = document.getElementById('emptyNotifMsg');
+                    
+                    if (badge) {
+                        badge.classList.remove('hidden');
+                        badge.innerText = parseInt(badge.innerText || 0) + 1;
+                    }
+                    if (totalCountCountSpan) {
+                        totalCountCountSpan.innerText = parseInt(totalCountCountSpan.innerText || 0) + 1;
+                    }
+                    if (emptyMsg) emptyMsg.classList.add('hidden');
+                    
+                    const dropdownBody = document.querySelector('.notif-body');
+                    if (dropdownBody) {
+                        const newHtml = `
+                        <div class="notif-item friend-request-notif" onclick="document.getElementById('chatWidgetPanel').classList.add('is-active'); document.getElementById('notifDropdown').classList.remove('show');">
+                            <div class="icon-circle" style="background:#fce7f3; color:#db2777;"><i class="lni lni-users"></i></div>
+                            <div class="content">
+                                <h4>Demande d'ami</h4>
+                                <p><strong>${data.requesterName}</strong> vous a envoyé une demande d'ami.</p>
+                            </div>
+                        </div>`;
+                        dropdownBody.insertAdjacentHTML('afterbegin', newHtml);
+
+                    const demandesContainer = document.getElementById('demandesContainer');
+                    const demandesAttenteList = document.getElementById('demandesAttenteList');
+                    if (demandesContainer && demandesAttenteList) {
+                        demandesContainer.style.display = 'block';
+                        
+                        const suggItem = document.querySelector('.suggestion-item[data-user-id="'+data.requesterId+'"]');
+                        if(suggItem) suggItem.remove();
+                        
+                        const newRequestHtml = `
+                        <div class="imessage-contact" id="demande-${data.requestId}" style="cursor: default; padding: 10px 20px;">
+                            <img src="${data.requesterImage}" class="avatar" alt="PDP" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=User&background=f1f5f9&color=000'">
+                            <div class="contact-content" style="display: flex; justify-content: space-between; align-items: center; border-bottom: none; padding-bottom: 0;">
+                                <div class="contact-top" style="flex-direction: column; align-items: flex-start;">
+                                    <span class="name" style="font-size: 15px; margin-bottom: 2px;">${data.requesterName}</span>
+                                    <span class="last-msg" style="font-size: 12px; color: #8E8E93;">Veut se connecter</span>
+                                </div>
+                                
+                                <button onclick="accepterDemande(${data.requestId}, this)" 
+                                        style="background: var(--intel-blue); color: white; border: none; padding: 6px 14px; border-radius: 15px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s;">
+                                    Accepter
+                                </button>
+                            </div>
+                        </div>`;
+                        demandesAttenteList.insertAdjacentHTML('beforeend', newRequestHtml);
+                    }
+                    }
+                });
+            }
+
+            // LA TECHNIQUE DE DÃ‰LÃ‰GATION (Navigation dans le widget)
+            document.addEventListener('click', function(e) {
+                const chatPanel = document.getElementById('chatWidgetPanel');
+                if (!chatPanel) return; 
+
+                // Les boutons d'ouverture (navbar et IA) ainsi que retour/fermer 
+                // sont maintenant gÃ©rÃ©s nativement par leurs attributs onclick="...".
+                // Cela Ã©vite les doublons d'ouverture/fermeture !
+
+                const sendBtn = e.target.closest('#sendBtn');
+                if (sendBtn) { envoyerMessage(); return; }
+
+                const contactItem = e.target.closest('.imessage-contact');
+                if (contactItem) {
+                    const convId = contactItem.getAttribute('data-conversation-id');
+                    if (convId) {
+                        const name = contactItem.getAttribute('data-name');
+                        const avatar = contactItem.getAttribute('data-avatar');
+                        window.slideIntoDiscussion(name, avatar, convId);
+                    }
+                    return;
+                }
+            });
+
+            // ðŸ”´ 1. OUVRIR UNE DISCUSSION (Avec historique, Pusher, et IA)
+            window.slideIntoDiscussion = function(name, avatarUrl, conversationId) {
+                // --- DEBUG: Validation des Ã©lÃ©ments ---
+                const viewContacts = document.getElementById('viewContacts');
+                const viewDiscussion = document.getElementById('viewDiscussion');
+                const activeNameEl = document.getElementById('activeName');
+                const activeAvatarImg = document.getElementById('activeAvatar');
+                const activeAvatarAi = document.getElementById('activeAvatarAi');
+                const chatBody = document.getElementById('chatBody');
+
+                if (!viewContacts || !viewDiscussion || !activeNameEl || !activeAvatarImg || !activeAvatarAi || !chatBody) {
+                    console.error("--- ERREUR MESSAGERIE ---");
+                    console.error("Un ou plusieurs Ã©lÃ©ments du DOM sont manquants. VÃ©rification :");
+                    console.log("viewContacts:", !!viewContacts);
+                    console.log("viewDiscussion:", !!viewDiscussion);
+                    console.log("activeNameEl:", !!activeNameEl);
+                    console.log("activeAvatarImg:", !!activeAvatarImg);
+                    console.log("activeAvatarAi:", !!activeAvatarAi);
+                    console.log("chatBody:", !!chatBody);
+                    alert("Erreur critique: L'interface de chat n'a pas pu se charger correctement. VÃ©rifiez la console (F12).");
+                    return;
+                }
+                // --- FIN DEBUG ---
+
+                activeConversationId = conversationId;
+
+                let lastActivityStr = '';
+                let statusColor = '';
+
+                // Enlever le gras et mettre Ã  jour le badge quand on ouvre !
+                const convItem = document.getElementById('conv-item-' + conversationId);
+                if (convItem) {
+                    lastActivityStr = convItem.getAttribute('data-status') || '';
+                    statusColor = convItem.getAttribute('data-status-color') || '';
+
+                    let unread = parseInt(convItem.getAttribute('data-unread')) || 0;
+                    if (unread > 0) {
+                        globalUnread = Math.max(0, globalUnread - unread);
+                        convItem.setAttribute('data-unread', '0');
+                        convItem.classList.remove('unread-bold');
+                        updateBadge();
+                        fetch('/api/message/read/' + conversationId, { method: 'POST' });
+                    }
+                }
+
+                activeNameEl.innerText = name;
+                
+                const activeStatusStrSpan = document.getElementById('activeStatusStr');
+                if (activeStatusStrSpan) {
+                    if (avatarUrl === 'ai-logo') {
+                        activeStatusStrSpan.innerText = 'Toujours en ligne';
+                        activeStatusStrSpan.style.color = '#10B981';
+                    } else if (lastActivityStr) {
+                        activeStatusStrSpan.innerText = lastActivityStr;
+                        activeStatusStrSpan.style.color = statusColor;
+                    } else {
+                        activeStatusStrSpan.innerText = '';
+                    }
+                }
+                
+                // GESTION DU LOGO (Avatar normal ou Animation SVG pour l'IA)
+                if (avatarUrl === 'ai-logo') {
+                    activeAvatarImg.style.display = 'none';
+                    activeAvatarAi.style.display = 'flex';
+                } else {
+                    activeAvatarImg.style.display = 'block';
+                    activeAvatarAi.style.display = 'none';
+                    activeAvatarImg.src = avatarUrl;
+                }
+
+                viewContacts.classList.remove('view-active');
+                viewContacts.classList.add('view-hidden-left');
+                viewDiscussion.classList.remove('view-hidden-right');
+                viewDiscussion.classList.add('view-active');
+                
+                // ðŸ¤– SI ON OUVRE LE CHAT DE L'IA
+                if (conversationId === 'ai') {
+                    chatBody.innerHTML = '<div class="date-stamp">Aujourd\'hui</div>';
+                    // Emoji retirÃ©
+                    ajouterBulleAuChat("Bonjour ! Je suis IntelLink-AI. Comment puis-je vous aider Ã  propulser votre carriÃ¨re aujourd'hui ?", 'received');
+                    return; // On s'arrÃªte lÃ  (pas d'historique ni de Pusher pour l'IA)
+                }
+
+                chatBody.innerHTML = '<div style="text-align: center; margin-top: 20px; color: #8E8E93;"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>'; 
+                
+                // ðŸŸ¢ FETCH DE L'HISTORIQUE (Pour les vrais utilisateurs) ðŸŸ¢
+                fetch('/api/message/history/' + conversationId)
+                    .then(response => response.json())
+                    .then(messages => {
+                        chatBody.innerHTML = ''; 
+
+                        if (messages.error) {
+                            chatBody.innerHTML = `<div class="date-stamp">${messages.error}</div>`;
+                            return;
+                        }
+
+                        if (messages.length === 0) {
+                            chatBody.innerHTML = '<div class="date-stamp">DÃ©but de la conversation</div>';
+                        } else {
+                            messages.forEach(msg => {
+                                const type = (msg.expediteur_id === currentUserId) ? 'sent' : 'received';
+                                ajouterBulleAuChat(msg.contenu, type, msg.heure, msg.attachment);
+                            });
+                            marquerMessagesCommeLus();
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Erreur d'historique:", error);
+                        chatBody.innerHTML = '<div class="date-stamp" style="color:red;">Erreur de connexion</div>';
+                    });
+                
+                // Fetch shared files
+                const sharedFilesPanel = document.getElementById('sharedFilesPanel');
+                const sharedFilesList = document.getElementById('sharedFilesList');
+
+                window.rafraichirFichiersPartages = function(convId) {
+                      const sfPanel = document.getElementById('sharedFilesPanel');
+                      const sfList = document.getElementById('sharedFilesList');
+                      if(!sfPanel || !sfList || convId === 'ai') return;
+                      
+                      fetch('/api/messenger/shared-files/' + convId)
+                          .then(r => r.json())
+                          .then(data => {
+                              if (data.files && data.files.length > 0) {
+                                  sfPanel.style.display = 'block';
+                                  sfPanel.style.padding = '5px 15px';
+                                  
+                                  let wasOpen = false;
+                                  let wasSharedFilesContainer = document.getElementById('sharedFilesContainer');
+                                  if(wasSharedFilesContainer && wasSharedFilesContainer.style.display !== 'none') {
+                                    wasOpen = true;
+                                  }
+
+                                  let htmlContent = `<div onclick="var c=document.getElementById('sharedFilesContainer'); var v=document.getElementById('sharedFilesChevron'); if(c.style.display==='none'){c.style.display='flex';v.style.transform='rotate(180deg)';}else{c.style.display='none';v.style.transform='rotate(0deg)';}" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding: 8px 0; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.02)'" onmouseout="this.style.background='none'">
+                                      <strong style="color:#050505;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;">
+                                          Contenu multimédia et fichiers
+                                      </strong> 
+                                      <span style="font-size:13px;color:#65676B;display:flex;align-items:center;gap:8px;">
+                                          ${data.files.length} fichiers <i class="fas fa-chevron-down" id="sharedFilesChevron" style="transition: transform 0.3s; transform: ${wasOpen ? 'rotate(180deg)' : 'rotate(0deg)'};"></i>
+                                      </span>
+                                  </div>
+                                  <div id="sharedFilesContainer" style="display:${wasOpen ? 'flex' : 'none'}; gap:10px; overflow-x:auto; padding:10px 0; border-top: 1px solid #E4E6EB;">`;
+                                  
+                                  data.files.forEach(f => {
+                                      let fUrl = f.url;
+                                      if (!fUrl.startsWith('/') && !fUrl.startsWith('http')) { fUrl = '/uploads/messenger/' + fUrl; }
+                                      const isImg = fUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null;
+                                      
+                                      if (isImg) {
+                                          htmlContent += `<a href="${fUrl}" target="_blank" style="flex-shrink:0; border-radius:10px; overflow:hidden; border:1px solid #E4E6EB; display:block; width: 60px; height: 60px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'"><img src="${fUrl}" style="width:100%; height:100%; object-fit:cover; display:block;" /></a>`;
+                                      } else {
+                                          htmlContent += `<a href="${fUrl}" target="_blank" style="flex-shrink:0; background:#E4E6EB; padding:8px 12px; border-radius:10px; text-decoration:none; color:#050505; font-weight:500; display:inline-flex; flex-direction: column; align-items:center; gap:6px; transition:background 0.2s; width: 60px; height: 60px; justify-content:center;" onmouseover="this.style.background='#D8DADF'" onmouseout="this.style.background='#E4E6EB'"><i class="fas fa-file-alt" style="font-size:20px; color:#555;"></i> <span style="font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width: 100%; text-align: center;">${f.fileName}</span></a>`;
+                                      }
+                                  });
+                                  htmlContent += `</div>`;
+                                  
+                                  sfList.innerHTML = htmlContent;
+                              } else {
+                                  sfPanel.style.display = 'none';
+                              }
+                          }).catch(() => sfPanel.style.display = 'none');
+                  };
+
+                  if (conversationId !== 'ai') {
+                      window.rafraichirFichiersPartages(conversationId);
+                        
+                    // Show unfriend button
+                    document.getElementById('unfriendBtn').style.display = 'block';
+                } else {
+                    sharedFilesPanel.style.display = 'none';
+                    document.getElementById('unfriendBtn').style.display = 'none';
+                }
+                
+                // Connexion au temps rÃ©el Pusher
+                if (pusher && conversationId) {
+                    if (activeChannel) { pusher.unsubscribe(activeChannel.name); }
+                    activeChannel = pusher.subscribe('chat-conversation-' + conversationId);
+                    
+                                            activeChannel.bind('nouveau-message', function(data) {
+                            if (data.expediteur_id !== currentUserId) {
+                                removeTypingIndicator(); 
+                                ajouterBulleAuChat(data.contenu, 'received', data.heure, data.attachment);
+                                marquerMessagesCommeLus();
+                                fetch('/api/message/read/' + conversationId, { method: 'POST' });
+                                
+                                // Rafraîchir les fichiers partagés si un fichier est attaché
+                                if (data.attachment) {
+                                    rafraichirFichiersPartages(conversationId);
+                                }
+                            }
+                        });
+
+                    activeChannel.bind('user-typing', function(data) {
+                        if (data.user_id !== currentUserId) {
+                            showTypingIndicator();
+                        }
+                    });
+
+                    activeChannel.bind('messages-read', function(data) {
+                        if (data.reader_id !== currentUserId) {
+                            marquerMessagesCommeLus();
+                        }
+                    });
+                }
+            };
+
+            // ðŸ”´ 2. Ã‰COUTER LE CLAVIER (Pour lancer les "...")
+            document.addEventListener('input', function(e) {
+                if (e.target.id === 'chatInput') {
+                    if (!activeConversationId) return;
+                    
+                    // On n'envoie pas de "Typing" Ã  Pusher si on parle Ã  l'IA
+                    if (activeConversationId !== 'ai') {
+                        fetch('/api/message/typing/' + activeConversationId, { method: 'POST' });
+                    }
+                    
+                    clearTimeout(typingTimer);
+                    typingTimer = setTimeout(() => {}, TYPING_TIMEOUT);
+                }
+            });
+
+            document.addEventListener('keypress', function(e) {
+                if (e.target.id === 'chatInput' && e.key === 'Enter') { 
+                    e.preventDefault(); 
+                    envoyerMessage(); 
+                }
+            });
+
+            window.handleChatFileSelect = function(input) {
+                if (input.files && input.files[0]) {
+                    window.selectedChatFile = input.files[0];
+                    document.getElementById('fileNameDisplay').innerText = window.selectedChatFile.name;
+                    document.getElementById('filePreview').style.display = 'flex';
+                }
+            }
+
+            window.clearFileSelection = function() {
+                window.selectedChatFile = null;
+                document.getElementById('chatFileInput').value = '';
+                document.getElementById('filePreview').style.display = 'none';
+            }
+
+            window.unfriendActiveUser = function() {
+                if (!activeConversationId || activeConversationId === 'ai') return;
+                if (confirm('Voulez-vous vraiment retirer cette personne de vos amis ?')) {
+                    fetch('/api/messenger/unfriend/' + activeConversationId, { method: 'POST' })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success) {
+                                window.location.reload();
+                            } else {
+                                alert(data.message || 'Erreur serveur');
+                            }
+                        });
+                }
+            }
+
+            // ðŸ”´ 3. ENVOYER UN MESSAGE (Humain ou IA)
+            function envoyerMessage() {
+                if (!activeConversationId) return;
+
+                const chatInput = document.getElementById('chatInput');
+                const texte = chatInput.value.trim();
+                if (texte === '' && !window.selectedChatFile) return;
+                
+                const heureActuelle = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                let sentFileUrl = null;
+                  if (window.selectedChatFile) { sentFileUrl = URL.createObjectURL(window.selectedChatFile); }
+                  ajouterBulleAuChat(texte, 'sent', heureActuelle, sentFileUrl);
+                chatInput.value = ''; 
+                
+                // ðŸ¤– SI ON PARLE Ã€ L'IA
+                if (activeConversationId === 'ai') {
+                    showTypingIndicator(); 
+                    
+                    fetch('/api/ai/chat', {
+                        method: 'POST',
+                        body: (function(){ const fd = new FormData(); fd.append('contenu', texte); if(window.selectedChatFile) fd.append('attachment', window.selectedChatFile); return fd; })()
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        removeTypingIndicator(); 
+                        const heureIA = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                        // Emojis retirÃ©s potentiellement dans la rÃ©ponse via backend, sinon on affiche la data.
+                        ajouterBulleAuChat(data.reponse, 'received', heureIA);
+                    })
+                    .catch(err => {
+                        removeTypingIndicator();
+                        // Emoji retirÃ©
+                        ajouterBulleAuChat("Erreur technique. Mes circuits sont actuellement occupÃ©s.", 'received');
+                    });
+                    
+                    return;
+                }
+
+                // ðŸ‘¨â€ðŸ’» SI ON PARLE Ã€ UN HUMAIN (Pusher)
+                let hasFile = !!window.selectedChatFile;
+                  fetch('/api/message/send/' + activeConversationId, {
+                    method: 'POST',
+                    body: (function(){ const fd = new FormData(); fd.append('contenu', texte); if(window.selectedChatFile) fd.append('attachment', window.selectedChatFile); return fd; })()
+                })
+                .then(() => {
+                      if (hasFile) window.rafraichirFichiersPartages(activeConversationId);
+                    if (window.selectedChatFile) { clearFileSelection(); }
+                })
+                .catch(error => console.error("Erreur d'envoi:", error));
+            }
+
+            // ðŸ”´ 4. GÃ‰NÃ‰RATEUR DE BULLES INTELLIGENT
+            function ajouterBulleAuChat(texte, type, heure = null, attachmentHtml = null) {
+                const chatBody = document.getElementById('chatBody');
+                const wrapper = document.createElement('div'); 
+                wrapper.className = 'message-wrapper ' + type;
+                
+                const bubble = document.createElement('div'); 
+                bubble.className = 'bubble'; 
+                bubble.innerText = texte;
+                wrapper.appendChild(bubble); 
+                
+                if (attachmentHtml) {
+                    let fileUrl = attachmentHtml;
+                    if (!fileUrl.startsWith('/') && !fileUrl.startsWith('http') && !fileUrl.startsWith('blob:') && !fileUrl.startsWith('data:')) {
+                        fileUrl = '/uploads/messenger/' + fileUrl;
+                    }
+                    
+                    const attachDiv = document.createElement('div');
+                    attachDiv.style.marginTop = '8px';
+                    
+                    if (type === 'received') {
+                        attachDiv.innerHTML = `<a href="${fileUrl}" target="_blank" style="color: var(--intel-blue); background: #ffffff; border: 1px solid rgba(0, 122, 255, 0.15); padding: 8px 12px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; font-size: 0.85rem; text-decoration: none; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.2s, background 0.2s;" onmouseover="this.style.background='#f0f4ff'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#ffffff'; this.style.transform='translateY(0)'"><i class="fas fa-file-download" style="font-size: 1.1rem;"></i> <span>Ouvrir la pièce jointe</span></a>`;
+                    } else {
+                        attachDiv.innerHTML = `<a href="${fileUrl}" target="_blank" style="color: #ffffff; background: rgba(255, 255, 255, 0.2); padding: 8px 12px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; font-size: 0.85rem; text-decoration: none; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'"><i class="fas fa-file-download" style="font-size: 1.1rem;"></i> <span>Ouvrir</span></a>`;
+                    }
+                    
+                    bubble.appendChild(attachDiv);
+                }
+
+                if (type === 'sent') {
+                    const info = document.createElement('div');
+                    info.className = 'msg-info';
+                    info.innerHTML = `${heure || 'Ã€ l\'instant'} <span class="status-text">Distribué</span>`;
+                    wrapper.appendChild(info);
+                } else if (type === 'received' && heure) {
+                    const info = document.createElement('div');
+                    info.className = 'msg-info';
+                    info.style.justifyContent = 'flex-start';
+                    info.innerHTML = heure;
+                    wrapper.appendChild(info);
+                }
+
+                chatBody.appendChild(wrapper);
+                chatBody.scrollTop = chatBody.scrollHeight;
+                
+                return wrapper;
+            }
+
+            // ðŸ”´ 5. GESTION DE L'ANIMATION DES 3 POINTS
+            function showTypingIndicator() {
+                const chatBody = document.getElementById('chatBody');
+                if (document.getElementById('typing-anim')) return; 
+
+                const typingDiv = document.createElement('div');
+                typingDiv.id = 'typing-anim';
+                typingDiv.className = 'typing-indicator';
+                typingDiv.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+                
+                chatBody.appendChild(typingDiv);
+                chatBody.scrollTop = chatBody.scrollHeight;
+
+                clearTimeout(window.hideTypingTimer);
+                window.hideTypingTimer = setTimeout(removeTypingIndicator, 2500);
+            }
+
+            function removeTypingIndicator() {
+                const typingDiv = document.getElementById('typing-anim');
+                if (typingDiv) {
+                    typingDiv.style.opacity = '0';
+                    setTimeout(() => typingDiv.remove(), 300);
+                }
+            }
+
+            // ðŸ”´ 6. SIMULATION DU "VU"
+            function marquerMessagesCommeLus() {
+                const statusTexts = document.querySelectorAll('.status-text');
+                statusTexts.forEach(span => {
+                    span.innerText = 'Lu';
+                    span.style.color = '#34D399'; 
+                });
+            }
+
+            window.accepterDemande = function(requestId, btnElement) {
+                const originalText = btnElement.innerText;
+                btnElement.innerText = "...";
+                btnElement.style.background = "#ccc";
+
+                fetch('/api/friend-request/accept/' + requestId, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                        btnElement.innerText = originalText;
+                        btnElement.style.background = "var(--intel-blue)";
+                    } else {
+                        const demandeDiv = document.getElementById('demande-' + requestId);
+                        if(demandeDiv) {
+                            demandeDiv.style.transition = "opacity 0.4s ease";
+                            demandeDiv.style.opacity = '0';
+                            setTimeout(() => {
+                                demandeDiv.remove();
+                            }, 400);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error("Erreur:", error);
+                    btnElement.innerText = "Erreur";
+                    btnElement.style.background = "#ef4444";
+                });
+            };
+
+            window.refuserDemande = function(requestId, btnElement) {
+                const originalText = btnElement.innerText;
+                btnElement.innerText = "...";
+                btnElement.style.background = "#ccc";
+
+                fetch('/api/friend-request/reject/' + requestId, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                        btnElement.innerText = originalText;
+                        btnElement.style.background = "#ef4444";
+                    } else {
+                        const demandeDiv = document.getElementById('demande-' + requestId);
+                        if(demandeDiv) {
+                            demandeDiv.style.transition = "opacity 0.4s ease";
+                            demandeDiv.style.opacity = '0';
+                            setTimeout(() => {
+                                demandeDiv.remove();
+                            }, 400);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error("Erreur:", error);
+                    btnElement.innerText = "Erreur";
+                    btnElement.style.background = "#ef4444";
+                });
+            };
+
+            // =========================================
+            // ðŸ”´ 8. RECHERCHE INSTANTANÃ‰E (Style iMessage)
+            // =========================================
+            const chatSearchInput = document.getElementById('chatSearchInput');
+            if (chatSearchInput) {
+                chatSearchInput.addEventListener('input', function(e) {
+                    const query = e.target.value.toLowerCase().trim();
+
+                    const contacts = document.querySelectorAll('.imessage-contact-list .imessage-contact');
+                    contacts.forEach(contact => {
+                        const nameElem = contact.querySelector('.name');
+                        if(nameElem) {
+                            const name = nameElem.innerText.toLowerCase();
+                            contact.style.display = name.includes(query) ? 'flex' : 'none';
+                        }
+                    });
+
+                    const suggestions = document.querySelectorAll('.imessage-suggestions-container .suggestion-item');
+                    suggestions.forEach(suggestion => {
+                        const nameElem = suggestion.querySelector('.suggestion-name');
+                        if(nameElem) {
+                            const name = nameElem.innerText.toLowerCase();
+                            suggestion.style.display = name.includes(query) ? 'flex' : 'none';
+                        }
+                    });
+
+                    const sectionTitles = document.querySelectorAll('.section-title');
+                    sectionTitles.forEach(title => {
+                        title.style.display = query.length > 0 ? 'none' : 'block';
+                    });
+                });
+            }
+            // =========================================
+            //  9. POLICE D'ETAT TEMPS-REEL (AJAX)
+            // =========================================
+            setInterval(() => {
+                fetch('/api/notifications/poll')
+                    .then(r => {
+                        if (r.ok) return r.json();
+                        throw new Error('Non authentifiÃ©');
+                    })
+                    .then(data => {
+                        if (data.totalNotifs !== undefined) {
+                            const badge = document.getElementById('notifBadge');
+                            const totalBadge = document.getElementById('totalNotifCount');
+                            
+                            if (badge && totalBadge) {
+                                // Add messenger count to the backend total (chat sets globalUnread via its own script)
+                                const globalUnreadSpan = document.getElementById('txtGlobalUnread');
+                                const messengerCount = globalUnreadSpan ? parseInt(globalUnreadSpan.innerText) || 0 : 0;
+                                const grandTotal = data.totalNotifs + messengerCount;
+
+                                totalBadge.innerText = grandTotal;
+                                badge.innerText = grandTotal;
+
+                                if (grandTotal > 0) {
+                                    badge.classList.remove('hidden');
+                                } else {
+                                    badge.classList.add('hidden');
+                                }
+                            }
+                        }
+                    })
+                    .catch(err => console.log('Poll inactif:', err));
+            }, 10000); // Check every 10 seconds
+
+        </script>
     </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

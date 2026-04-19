@@ -3,36 +3,60 @@
 {% block title %}Vérification Email - Intel_link{% endblock %}
 
 {% block stylesheets %}
+<link href="https://cdn.lineicons.com/2.0/LineIcons.css" rel="stylesheet">
 <style>
+    /* =========================================================================
+       1. FOND BLUEPRINT (Synchronisé avec l'Accueil et le Profil)
+       ========================================================================= */
     body {
-        background-color: #f5f7fa;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f8fafc;
+        background-image: 
+            radial-gradient(rgba(47, 128, 237, 0.1) 1px, transparent 1px),
+            radial-gradient(rgba(47, 128, 237, 0.1) 1px, transparent 1px);
+        background-position: 0 0, 20px 20px;
+        background-size: 40px 40px;
+        display: flex; justify-content: center; align-items: center;
+        height: 100vh; margin: 0; font-family: 'Heebo', 'Segoe UI', Tahoma, sans-serif;
+        overflow: hidden;
     }
 
-    .verify-container {
-        background-color: #fff;
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        padding: 40px;
-        width: 500px;
-        text-align: center;
+    body::before { content: ''; position: fixed; top: -10%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(86,204,242,0.12) 0%, transparent 60%); z-index: -1; }
+    body::after { content: ''; position: fixed; bottom: -10%; right: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(47,128,237,0.08) 0%, transparent 60%); z-index: -1; }
+
+    /* =========================================================================
+       2. LE CONTENEUR PRINCIPAL (ULTRA GLASSMORPHISM 3D ORIGINAL)
+       ========================================================================= */
+    .auth-container {
+        background-color: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15), 0 0 40px rgba(47, 128, 237, 0.1);
+        position: relative; overflow: hidden;
+        width: 500px; max-width: 95%; min-height: 400px;
+        transform-style: preserve-3d;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        padding: 40px; box-sizing: border-box; text-align: center;
     }
 
-    h1 { color: #0598ff; margin-bottom: 10px; }
-    p { color: #64748b; font-size: 14px; margin-bottom: 30px; }
+    .auth-container::after {
+        content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(86, 204, 242, 0.1), transparent 40%);
+        pointer-events: none; z-index: 99; transition: opacity 0.3s; opacity: 0;
+    }
+    .auth-container:hover::after { opacity: 1; }
+
+    h1 { font-family: 'Fira Sans', sans-serif; font-weight: 900; margin: 0 0 10px 0; color: #323450; font-size: 28px; letter-spacing: -1px; }
+    p { font-size: 14px; margin: 0 0 25px 0; color: #585978; }
     
-    .email-highlight { font-weight: bold; color: #2c3e50; }
+    .email-highlight { font-weight: bold; color: #0598ff; }
 
     .otp-container {
         display: flex;
         justify-content: center;
         gap: 10px;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
+        width: 100%;
     }
 
     .otp-input {
@@ -41,84 +65,131 @@
         font-size: 24px;
         font-weight: bold;
         text-align: center;
-        border: 2px solid #cbd5e1;
-        border-radius: 8px;
-        outline: none;
-        transition: border-color 0.3s;
-    }
-
-    .otp-input:focus { border-color: #0598ff; }
-
-    .btn-primary {
-        border-radius: 20px;
-        background-color: #0598ff;
-        color: #FFFFFF;
+        background-color: rgba(255,255,255,0.5);
         border: none;
-        font-size: 14px;
-        font-weight: bold;
-        padding: 12px 0;
-        width: 250px;
-        cursor: pointer;
-        transition: transform 80ms ease-in;
+        border-bottom: 2px solid #e8edf5;
+        border-radius: 8px 8px 0 0;
+        outline: none;
+        color: #323450;
+        transition: all 0.4s ease;
     }
 
-    .btn-primary:active { transform: scale(0.95); }
+    .otp-input:focus {
+        background-color: #ffffff; 
+        border-bottom-color: #0598ff;
+        box-shadow: 0px 4px 15px -5px rgba(5, 152, 255, 0.4);
+    }
+
+    button.btn-primary {
+        border-radius: 30px; border: 2px solid transparent; background: linear-gradient(90deg, #0598ff, #2F80ED);
+        color: #FFFFFF; font-size: 14px; font-weight: bold; padding: 12px 45px;
+        letter-spacing: 1px; cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        width: 280px; margin-top: 5px; box-shadow: 0 8px 20px rgba(5, 152, 255, 0.3);
+    }
+    button.btn-primary:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 25px rgba(5, 152, 255, 0.4); }
+    button.btn-primary:active { transform: scale(0.95); }
 
     .back-link {
-        display: inline-block;
-        margin-top: 20px;
-        color: #64748b;
-        text-decoration: underline;
-        font-size: 13px;
+        display: inline-block; margin-top: 25px; color: #a0a4b8; font-size: 13px; font-weight: bold;
+        text-decoration: none; transition: 0.3s; cursor: pointer;
     }
+    .back-link:hover { color: #0598ff; transform: translateX(-3px); }
 
-    .error-msg { color: #e74c3c; font-size: 13px; margin-bottom: 15px; }
+    .error-msg { background: rgba(235, 87, 87, 0.1); border: 1px solid rgba(235, 87, 87, 0.3); color: #eb5757; padding: 10px; border-radius: 8px; font-size: 12px; font-weight:bold; text-align: center; width: 100%; margin-bottom: 20px; }
+
+    .avatar-modal { display: flex; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(15px); z-index: 100000; justify-content: center; align-items: center; }
+    .avatar-grid { background: white; padding: 40px; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); animation: scaleIn 0.3s ease-out; position: relative; overflow: hidden; width: 450px; display: flex; flex-direction: column; text-align: center; }
+    @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    /* Fix icon container */
+    .icon-container { width: 60px; height: 60px; background: rgba(47, 128, 237, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px auto; color: #2F80ED; font-size: 28px; }
+    
+    h3 { font-family: 'Fira Sans', sans-serif; margin-bottom: 5px; color: #323450; font-weight: 900; font-size: 24px; }
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="verify-container">
-    <h1>Vérification de l'email</h1>
-    <p>Saisissez le code à 6 chiffres envoyé à<br><span class="email-highlight">{{ email }}</span></p>
+<div id="tsparticles"></div>
 
-    {% for message in app.flashes('error') %}
-        <div class="error-msg">{{ message }}</div>
-    {% endfor %}
-
-    <form method="POST">
-        <div class="otp-container">
-            <input type="text" name="code1" class="otp-input" maxlength="1" required autocomplete="off">
-            <input type="text" name="code2" class="otp-input" maxlength="1" required autocomplete="off">
-            <input type="text" name="code3" class="otp-input" maxlength="1" required autocomplete="off">
-            <input type="text" name="code4" class="otp-input" maxlength="1" required autocomplete="off">
-            <input type="text" name="code5" class="otp-input" maxlength="1" required autocomplete="off">
-            <input type="text" name="code6" class="otp-input" maxlength="1" required autocomplete="off">
+<div class="avatar-modal" id="email2faModal">
+    <div class="avatar-grid">
+        <div class="icon-container">
+            <i class="lni lni-envelope"></i>
         </div>
+        <h3>Vérification de l'email</h3>
+        <p id="email-2fa-desc" style="color: #585978; font-size: 13px;">Saisissez le code à 6 chiffres envoyé à <br><strong style="color: #0598ff;">{{ email }}</strong></p>
 
-        <button type="submit" class="btn-primary">Confirmer mon inscription</button>
-    </form>
+        {% for message in app.flashes('error') %}
+            <div class="error-msg">{{ message }}</div>
+        {% endfor %}
 
-    <a href="{{ path('app_login') }}" class="back-link">← Modifier l'adresse email</a>
+        <form method="POST" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+            <div class="otp-container" style="margin-top: 10px; margin-bottom: 20px; width: 100%; justify-content: space-between;">
+                <input type="text" name="code1" class="otp-input" maxlength="1" required autocomplete="off" style="width: 45px; height: 55px; border-radius: 12px; border: 2px solid #e8edf5; background: transparent;">
+                <input type="text" name="code2" class="otp-input" maxlength="1" required autocomplete="off" style="width: 45px; height: 55px; border-radius: 12px; border: 2px solid #e8edf5; background: transparent;">
+                <input type="text" name="code3" class="otp-input" maxlength="1" required autocomplete="off" style="width: 45px; height: 55px; border-radius: 12px; border: 2px solid #e8edf5; background: transparent;">
+                <input type="text" name="code4" class="otp-input" maxlength="1" required autocomplete="off" style="width: 45px; height: 55px; border-radius: 12px; border: 2px solid #e8edf5; background: transparent;">
+                <input type="text" name="code5" class="otp-input" maxlength="1" required autocomplete="off" style="width: 45px; height: 55px; border-radius: 12px; border: 2px solid #e8edf5; background: transparent;">
+                <input type="text" name="code6" class="otp-input" maxlength="1" required autocomplete="off" style="width: 45px; height: 55px; border-radius: 12px; border: 2px solid #e8edf5; background: transparent;">
+            </div>
+
+            <button type="submit" class="btn-primary" style="width: 100%;">Confirmer mon inscription</button>
+        </form>
+
+        <button class="back-link" style="width: 100%; border: none; background: transparent; color: #8b92a5; margin-top: 15px;" onclick="window.location.href='{{ path('app_login') }}'">
+            <i class="lni lni-arrow-left"></i> Modifier l'adresse email
+        </button>
+    </div>
 </div>
 {% endblock %}
 
 {% block javascripts %}
 <script>
-    // Le même comportement qu'en Java : on passe automatiquement à la case suivante
+    // Logique de passage automatique au champ OTP suivant et gestion du "paste"
     const inputs = document.querySelectorAll('.otp-input');
 
     inputs.forEach((input, index) => {
-        input.addEventListener('keyup', (e) => {
-            // Passe au suivant si on tape un chiffre
-            if (e.key >= 0 && e.key <= 9) {
-                if (index < inputs.length - 1) {
-                    inputs[index + 1].focus();
+        // Sélectionne le contenu quand on clique dessus (pour effacer direct)
+        input.addEventListener('focus', () => {
+            input.select();
+        });
+
+        // Gérer le collage d'un code de 6 chiffres d'un coup
+        input.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const pastedData = e.clipboardData.getData('text').slice(0, inputs.length).replace(/[^0-9]/g, '');
+            if (pastedData) {
+                for (let i = 0; i < pastedData.length; i++) {
+                    if (inputs[i]) {
+                        inputs[i].value = pastedData[i];
+                        if (i < inputs.length - 1) {
+                            inputs[i + 1].focus();
+                        } else {
+                            inputs[i].blur();
+                        }
+                    }
                 }
-            } 
-            // Revient en arrière si on efface (Backspace)
-            else if (e.key === 'Backspace') {
+            }
+        });
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace') {
+                input.value = '';
                 if (index > 0) {
                     inputs[index - 1].focus();
+                }
+            } else if (e.key === 'ArrowLeft') {
+                if (index > 0) inputs[index - 1].focus();
+            } else if (e.key === 'ArrowRight') {
+                if (index < inputs.length - 1) inputs[index + 1].focus();
+            }
+        });
+
+        input.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            if (this.value !== '') {
+                if (index < inputs.length - 1) {
+                    inputs[index + 1].focus();
                 }
             }
         });

@@ -69,10 +69,93 @@
         .form-control-custom { width: 100%; padding: 13px 18px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 15px; color: #0f172a; background: #ffffff; transition: all 0.3s ease; outline: none; }
         .form-control-custom:focus { border-color: #2F80ED; box-shadow: 0 0 0 4px rgba(47, 128, 237, 0.1); }
         .form-control-custom:disabled { background-color: rgba(241, 245, 249, 0.6); color: #94a3b8; border-color: transparent;}
+
+        /* =========================================
+           AI GOD TIER MODAL STYLES 
+           ========================================= */
+        .ai-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px);
+            z-index: 105000; display: flex; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden; transition: 0.4s ease;
+        }
+        .ai-modal-overlay.active { opacity: 1; visibility: visible; }
+        
+        .ai-modal-content {
+            background: rgba(255, 255, 255, 0.95); box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 40px rgba(59, 130, 246, 0.3);
+            border-radius: 28px; padding: 40px; max-width: 550px; width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transform: scale(0.85) translateY(30px); transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative; overflow: hidden;
+        }
+        .ai-modal-overlay.active .ai-modal-content { transform: scale(1) translateY(0); }
+        .ai-modal-content::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 6px;
+            background: linear-gradient(90deg, #8b5cf6, #3b82f6, #06b6d4);
+        }
+        
+        .ai-brand { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 30px; }
+        
+        .ai-logo-container { position: relative; width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; background: rgba(59,130,246,0.05); border-radius: 50%; }
+        .ai-aura { position: absolute; width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 0 25px rgba(59, 130, 246, 0.6); animation: pulse-aura 2s infinite alternate; }
+        .ai-svg-brain { width: 40px; height: 40px; z-index: 1; }
+        .brain-dot { animation: blink-dot 1.5s infinite alternate; }
+        @keyframes pulse-aura { 0% { transform: scale(0.95); opacity: 0.4;} 100% { transform: scale(1.15); opacity: 1;} }
+        @keyframes blink-dot { 0% { opacity: 0.2; } 100% { opacity: 1; filter: drop-shadow(0 0 5px currentColor); } }
+        
+        .ai-title { font-family: "Fira Sans", sans-serif; font-size: 1.8rem; font-weight: 900; background: linear-gradient(90deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .ai-response-area {
+            font-size: 1.05rem; color: #1e293b; line-height: 1.7; font-weight: 500;
+            background: #f8fafc; padding: 25px; border-radius: 16px; border: 1px dashed #cbd5e1;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
+            max-height: 350px; overflow-y: auto;
+        }
+        .ai-response-area::-webkit-scrollbar { width: 6px; }
+        .ai-response-area::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .ai-close-btn {
+            margin-top: 30px; width: 100%; background: #0f172a; color: white; border: none;
+            padding: 14px; border-radius: 14px; font-weight: bold; transition: 0.3s; font-size: 1.1rem;
+        }
+        .ai-close-btn:hover { background: #1e293b; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(15,23,42,0.2); }
+
+        .btn-ai-trigger {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: white !important; border: none; border-radius: 50px;
+            padding: 6px 18px; font-size: 13px; font-weight: bold; letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            transition: all 0.3s ease; float: right; margin-top: -6px; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-ai-trigger:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(139, 92, 246, 0.6); }
+        .btn-ai-trigger i { animation: blink-dot 2s infinite alternate; }
     </style>
 {% endblock %}
 
 {% block body %}
+    <!-- AI GOD TIER MODAL -->
+    <div class="ai-modal-overlay" id="aiModal">
+        <div class="ai-modal-content">
+            <div class="ai-brand">
+                <div class="ai-logo-container">
+                    <div class="ai-aura"></div>
+                    <svg class="ai-svg-brain" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path class="brain-path" d="M12 22C12 22 20 18 20 12C20 6 16 2 12 2C8 2 4 6 4 12C4 18 12 22 12 22Z" stroke="#3b82f6" stroke-width="1.5"/>
+                        <path class="brain-path" d="M12 2V22" stroke="#3b82f6" stroke-width="1" stroke-dasharray="2 2"/>
+                        <circle class="brain-dot" cx="12" cy="7" r="1.5" fill="#3b82f6"/>
+                        <circle class="brain-dot" cx="16" cy="11" r="1" fill="#8b5cf6" style="animation-delay: 0.5s;"/>
+                        <circle class="brain-dot" cx="8" cy="13" r="1" fill="#3b82f6" style="animation-delay: 1s;"/>
+                    </svg>
+                </div>
+                <div class="ai-title">IntelLink-AI</div>
+            </div>
+            <div class="ai-response-area" id="ai-suggestion-content">
+                <!-- Content goes here -->
+            </div>
+            <button type="button" class="ai-close-btn" id="btn-ai-close">Compris, merci !</button>
+        </div>
+    </div>
+
     <div class="scroll-progress-bar" id="scrollBar"></div>
     
     <div id="preloader">
@@ -157,30 +240,24 @@
                             <input type="text" name="objet" class="form-control-custom" value="{{ reclamation.objet }}" {{ isReadOnly }} required>
                         </div>
 
-                        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                            <div class="form-group-custom" style="flex: 1; min-width: 200px;">
-                                <label>TYPE</label>
-                                <select name="type" class="form-control-custom" {{ isReadOnly }} required>
-                                    {% for t in ['Technique', 'Facturation', 'Service Client', 'Autre'] %}
-                                        <option value="{{ t }}" {% if reclamation.type == t %}selected{% endif %}>{{ t }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="form-group-custom" style="flex: 1; min-width: 200px;">
-                                <label>PRIORITÉ</label>
-                                <select name="priorite" class="form-control-custom" {{ isReadOnly }} required>
-                                    {% for p in ['FAIBLE', 'MOYENNE', 'ELEVEE'] %}
-                                        <option value="{{ p }}" {% if reclamation.priorite == p %}selected{% endif %}>
-                                            {% if p == 'FAIBLE' %}🟢 {% elseif p == 'MOYENNE' %}🟡 {% else %}🔴 {% endif %}{{ p }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
+                        <div class="form-group-custom">
+                            <label>TYPE</label>
+                            <select name="type" class="form-control-custom" {{ isReadOnly }} required>
+                                {% for t in ['Technique', 'Facturation', 'Service Client', 'Autre'] %}
+                                    <option value="{{ t }}" {% if reclamation.type == t %}selected{% endif %}>{{ t }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
 
                         <div class="form-group-custom">
-                            <label>DESCRIPTION</label>
-                            <textarea name="description" class="form-control-custom" rows="6" {{ isReadOnly }} required>{{ reclamation.description }}</textarea>
+                            <label>DESCRIPTION 
+                                {% if isReadOnly == '' %}
+                                <button type="button" id="btn-ai-suggest" class="btn-ai-trigger">
+                                    <i class="lni lni-sprout"></i> IntelLink-AI
+                                </button>
+                                {% endif %}
+                            </label>
+                            <textarea id="description" name="description" class="form-control-custom" rows="6" {{ isReadOnly }} required>{{ reclamation.description }}</textarea>
                         </div>
 
                         {% if reclamation.pieceJointe %}
@@ -252,5 +329,70 @@
 
         // Activation de la 3D Tilt sur les panneaux
         VanillaTilt.init(document.querySelectorAll(".formation-form-wrapper"), { max: 2, speed: 400, glare: true, "max-glare": 0.05 });
+
+        // =========================================================================
+        // INTEGRATION IA - SUGGESTION DE SOLUTION (GEMINI)
+        // =========================================================================
+        const btnAiSuggest = document.getElementById('btn-ai-suggest');
+        const aiModal = document.getElementById('aiModal');
+        const aiSuggestionContent = document.getElementById('ai-suggestion-content');
+        const btnAiClose = document.getElementById('btn-ai-close');
+        const inputDesc = document.getElementById('description');
+
+        if (btnAiSuggest) {
+            btnAiSuggest.addEventListener('click', async function() {
+                const descText = inputDesc.value.trim();
+                
+                if (descText.length < 10) {
+                    alert('Veuillez écrire une description d\'au moins 10 caractères avant de demander à l\'IA.');
+                    return;
+                }
+
+                // Animation du bouton
+                const originalText = btnAiSuggest.innerHTML;
+                btnAiSuggest.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> IA au travail...';
+                btnAiSuggest.disabled = true;
+
+                try {
+                    const response = await fetch('/reclamation/ai/analyze', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({ description: descText })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        aiSuggestionContent.innerHTML = data.suggestion || "L'IA n'a pu générer de suggestion précise pour cette requête.";
+                        aiModal.classList.add('active');
+                    } else {
+                        aiSuggestionContent.textContent = "Un dysfonctionnement est survenu avec l'IA. Merci de réessayer plus tard.";
+                        aiModal.classList.add('active');
+                    }
+                } catch (error) {
+                    console.error('Erreur IA:', error);
+                    aiSuggestionContent.textContent = "Erreur fatale de connexion avec le service IA.";
+                    aiModal.classList.add('active');
+                } finally {
+                    btnAiSuggest.innerHTML = originalText;
+                    btnAiSuggest.disabled = false;
+                }
+            });
+        }
+
+        if (btnAiClose) {
+            btnAiClose.addEventListener('click', function() {
+                aiModal.classList.remove('active');
+            });
+        }
+        
+        // Fermer le modal en cliquant en dehors
+        if (aiModal) {
+            aiModal.addEventListener('click', function(e) {
+                if (e.target === aiModal) aiModal.classList.remove('active');
+            });
+        }
     </script>
 {% endblock %}

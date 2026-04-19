@@ -20,13 +20,10 @@
         overflow: hidden;
     }
 
-    /* Lumière d'ambiance subtile en arrière-plan */
     body::before { content: ''; position: fixed; top: -10%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(86,204,242,0.12) 0%, transparent 60%); z-index: -1; }
     body::after { content: ''; position: fixed; bottom: -10%; right: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(47,128,237,0.08) 0%, transparent 60%); z-index: -1; }
 
-    #tsparticles {
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none;
-    }
+    #tsparticles { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
 
     /* =========================================================================
        2. LE CONTENEUR PRINCIPAL (ULTRA GLASSMORPHISM 3D ORIGINAL)
@@ -39,10 +36,9 @@
         box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15), 0 0 40px rgba(47, 128, 237, 0.1);
         position: relative; overflow: hidden;
         width: 850px; max-width: 95%; min-height: 600px;
-        transform-style: preserve-3d; /* Pour l'effet Tilt 3D */
+        transform-style: preserve-3d;
     }
 
-    /* Le halo de lumière qui suit la souris sur la carte */
     .auth-container::after {
         content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
         background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(86, 204, 242, 0.1), transparent 40%);
@@ -63,7 +59,6 @@
     .sign-in-container { left: 0; z-index: 2; background-color: transparent;}
     .sign-up-container { left: 0; opacity: 0; z-index: 1; background-color: transparent;}
 
-    /* OVERLAY ORIGINAL BLEU VIF */
     .overlay-container {
         position: absolute; top: 0; left: 50%; width: 50%; height: 100%;
         overflow: hidden; transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100;
@@ -81,7 +76,6 @@
     .overlay-left { transform: translateX(-20%); }
     .overlay-right { right: 0; transform: translateX(0); }
 
-    /* ANIMATION CSS */
     .auth-container.right-panel-active .sign-in-container { transform: translateX(100%); opacity: 0; z-index: 1; }
     .auth-container.right-panel-active .overlay-container { transform: translateX(-100%); }
     .auth-container.right-panel-active .sign-up-container { transform: translateX(100%); opacity: 1; z-index: 5; }
@@ -90,7 +84,7 @@
     .auth-container.right-panel-active .overlay-right { transform: translateX(20%); }
 
     /* =========================================================================
-       4. TYPOGRAPHIE & INPUTS (Néon effect original)
+       4. TYPOGRAPHIE & INPUTS
        ========================================================================= */
     h1 { font-family: 'Fira Sans', sans-serif; font-weight: 900; margin: 0 0 10px 0; color: #323450; font-size: 32px; letter-spacing: -1px; }
     h1.white-text { color: white; font-size: 36px; text-shadow: 0 4px 10px rgba(0,0,0,0.2); }
@@ -101,41 +95,26 @@
     input[type="text"], input[type="email"], input[type="password"], select {
         background-color: rgba(255,255,255,0.5); border: none; border-bottom: 2px solid #e8edf5;
         padding: 10px 5px 10px 35px; width: 100%; outline: none; font-size: 14px;
-        color: #323450; transition: all 0.4s ease; border-radius: 8px 8px 0 0;
+        color: #323450; transition: all 0.4s ease; border-radius: 8px 8px 0 0; box-sizing: border-box;
     }
     
-    /* L'effet Néon au focus */
     input:focus, select:focus { 
         background-color: #ffffff; border-bottom-color: #0598ff;
         box-shadow: 0px 4px 15px -5px rgba(5, 152, 255, 0.4);
     }
 
-    /* Indications de validation HTML5 */
     input:valid:not(:placeholder-shown) { border-bottom-color: #2ecc71; }
     input:invalid:not(:placeholder-shown) { border-bottom-color: #e74c3c; }
 
-    /* 🛠️ LE FIX POUR MASQUER L'ŒIL NATIF DE EDGE/CHROME 🛠️ */
-    input[type="password"]::-ms-reveal,
-    input[type="password"]::-ms-clear {
-        display: none;
-    }
-    input[type="password"]::-webkit-contacts-auto-fill-button,
-    input[type="password"]::-webkit-credentials-auto-fill-button {
-        visibility: hidden;
-        display: none !important;
-        pointer-events: none;
-    }
+    input[type="password"]::-ms-reveal, input[type="password"]::-ms-clear { display: none; }
+    input[type="password"]::-webkit-contacts-auto-fill-button, input[type="password"]::-webkit-credentials-auto-fill-button { visibility: hidden; display: none !important; pointer-events: none; }
     
     .input-group > i.icon-left { position: absolute; left: 10px; top: 12px; color: #a0a4b8; font-size: 16px; transition: 0.4s;}
     input:focus + i.icon-left, select:focus + i.icon-left { color: #0598ff; transform: scale(1.1); }
 
     select { appearance: none; cursor: pointer; color: #585978; }
 
-    /* NOTRE PROPRE ŒIL MAGIQUE */
-    .toggle-password {
-        position: absolute; right: 10px; top: 8px; cursor: pointer;
-        color: #a0a4b8; background: none; border: none; font-size: 16px; padding: 5px; outline: none; transition: 0.3s;
-    }
+    .toggle-password { position: absolute; right: 10px; top: 8px; cursor: pointer; color: #a0a4b8; background: none; border: none; font-size: 16px; padding: 5px; outline: none; transition: 0.3s; }
     .toggle-password:hover { color: #0598ff; transform: scale(1.1); }
 
     /* =========================================================================
@@ -149,15 +128,12 @@
     }
     button.btn-primary:hover:not(:disabled) { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 25px rgba(5, 152, 255, 0.4); }
     button.btn-primary:active:not(:disabled) { transform: scale(0.95); }
-    
     button.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); box-shadow: none; transform: none; }
     
     button.btn-ghost { background: transparent; border: 2px solid #FFFFFF; box-shadow: none; }
     button.btn-ghost:hover { background-color: #ffffff; color: #0598ff; }
 
-    button.btn-github {
-        background: #24292e; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 8px 20px rgba(36, 41, 46, 0.3);
-    }
+    button.btn-github { background: #24292e; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 8px 20px rgba(36, 41, 46, 0.3); }
     button.btn-github:hover { background: #1b1f23; box-shadow: 0 12px 25px rgba(36, 41, 46, 0.4); }
 
     /* =========================================================================
@@ -168,10 +144,11 @@
     .file-upload-label:hover { background-color: #d5dbdb; transform: translateY(-1px); }
     .file-name { font-size: 11px; color: gray; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500;}
     
-    .strength-bar-container { width: 100%; max-width: 320px; height: 4px; background: #e8edf5; border-radius: 5px; overflow: hidden; margin-top: -5px; }
+    .strength-bar-container { width: 100%; max-width: 320px; height: 4px; background: #e8edf5; border-radius: 5px; overflow: hidden; margin-top: -5px; margin-bottom: 5px; }
     .strength-bar { height: 100%; width: 0%; background: #e74c3c; transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.4s ease; }
 
     .error-msg { background: rgba(235, 87, 87, 0.1); border: 1px solid rgba(235, 87, 87, 0.3); color: #eb5757; padding: 10px; border-radius: 8px; font-size: 12px; font-weight:bold; text-align: center; max-width: 320px; width: 100%; margin-bottom: 15px; }
+    .success-msg { background: rgba(47, 128, 237, 0.1); border: 1px solid rgba(47, 128, 237, 0.3); color: #2F80ED; padding: 10px; border-radius: 8px; font-size: 12px; font-weight:bold; text-align: center; max-width: 320px; width: 100%; margin-bottom: 15px; }
     .match-error { color: #e74c3c; font-size: 11px; font-weight: 700; width: 100%; max-width: 320px; text-align: left; display: none; margin-top: -10px; }
 
     /* =========================================================================
@@ -181,15 +158,33 @@
     .avatar-preview-img.pop { animation: avatarPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     @keyframes avatarPop { 0% { transform: scale(1); } 50% { transform: scale(1.2); box-shadow: 0 10px 25px rgba(5,152,255,0.4); border-color: #0598ff; } 100% { transform: scale(1); } }
 
-    .avatar-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 100000; justify-content: center; align-items: center; }
-    .avatar-grid { background: white; padding: 35px; border-radius: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); text-align: center; animation: scaleIn 0.3s ease-out; }
+    .avatar-modal, .forgot-pwd-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 100000; justify-content: center; align-items: center; }
+    .avatar-grid, .forgot-pwd-box { background: white; padding: 35px; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); animation: scaleIn 0.3s ease-out; position: relative; overflow: hidden; }
+    .avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; width: 450px; text-align: center; }
     @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     .avatar-grid img { width: 75px; height: 75px; cursor: pointer; transition: 0.3s; border-radius: 50%; border: 3px solid transparent; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
     .avatar-grid img:hover { transform: scale(1.15) rotate(5deg); box-shadow: 0 10px 20px rgba(5,152,255,0.2); border-color: #0598ff; }
+
+    /* CSS POUR LES 6 CASES (Code Verification) */
+    .code-inputs { display: flex; justify-content: space-between; gap: 10px; margin: 20px 0; width: 100%;}
+    .code-inputs input { width: 45px; height: 55px; font-size: 24px; text-align: center; border: 2px solid #e8edf5; border-radius: 12px; outline: none; transition: 0.3s; font-weight: 800; color: #323450; padding: 0;}
+    .code-inputs input:focus { border-color: #2F80ED; box-shadow: 0 5px 15px rgba(47, 128, 237, 0.2); }
+
+    /* =========================================================================
+       8. FACE ID & SCANNER CSS
+       ========================================================================= */
+    .scanner-container { position: relative; width: 280px; height: 280px; margin: 20px auto; border-radius: 50%; overflow: hidden; border: 4px solid #2F80ED; box-shadow: 0 0 30px rgba(47, 128, 237, 0.4); background: #0f172a; }
+    #face-webcam { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    .laser-beam { position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: #56CCF2; box-shadow: 0 0 15px 5px rgba(86, 204, 242, 0.6); animation: scan 2s infinite linear; }
+    @keyframes scan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
+
+    /* ANIMATION PULSE POUR LE MICROPHONE (VOICE ID) */
+    @keyframes pulseShadow { 0% { box-shadow: 0 0 0 0 rgba(47, 128, 237, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(47, 128, 237, 0); } 100% { box-shadow: 0 0 0 0 rgba(47, 128, 237, 0); } }
 </style>
 {% endblock %}
 
 {% block body %}
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <div id="tsparticles"></div>
 
 <div class="auth-container" id="auth-container" data-tilt data-tilt-max="2" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.1">
@@ -201,6 +196,9 @@
             
             {% for message in app.flashes('error_login') %}
                 <div class="error-msg">{{ message }}</div>
+            {% endfor %}
+            {% for message in app.flashes('success') %}
+                <div class="success-msg">{{ message }}</div>
             {% endfor %}
             {% if error %}
                 <div class="error-msg">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
@@ -220,9 +218,15 @@
             </div>
             
             <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+            
+            <div style="margin-top: 10px; margin-bottom: 5px; width: 100%; max-width: 320px; display: flex; justify-content: center; overflow: hidden; border-radius: 10px; background: transparent;">
+                <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}" style="transform: scale(0.72); transform-origin: center; margin: -15px 0;"></div>
+            </div>
 
             <div style="width: 100%; text-align: right; margin-top: -5px; max-width: 320px;">
-                <a href="#" style="color: #8b92a5; font-size: 12px; text-decoration: none; font-weight:600; transition: 0.3s;" onmouseover="this.style.color='#0598ff'" onmouseout="this.style.color='#8b92a5'">Mot de passe oublié ?</a>
+                <button type="button" onclick="openForgotPasswordModal()" style="background: none; border: none; padding: 0; color: #8b92a5; font-size: 12px; text-decoration: none; font-weight: 600; transition: 0.3s; cursor: pointer; outline: none;" onmouseover="this.style.color='#0598ff'" onmouseout="this.style.color='#8b92a5'">
+                    Mot de passe oublié ?
+                </button>
             </div>
 
             <button type="submit" class="btn-primary">Accéder à mon espace</button>
@@ -233,9 +237,13 @@
                 <hr style="flex: 1; border: 0; border-top: 1px solid #e8edf5;">
             </div>
 
-            <button type="button" class="btn-primary btn-github" onclick="window.location.href='#'">
-                <i class="lni lni-github-original" style="font-size: 20px;"></i> Continuer avec GitHub
+            <button type="button" class="btn-primary btn-github" onclick="window.location.href='{{ path('app_github_connect') }}'">
+                <svg height="20" width="20" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+                </svg>
+                Continuer avec GitHub
             </button>
+
         </form>
     </div>
 
@@ -326,7 +334,7 @@
 </div>
 
 <div class="avatar-modal" id="avatarModal" onclick="closeModal(event)">
-    <div class="avatar-grid">
+    <div class="avatar-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
         <h3 style="grid-column: span 4; font-family: 'Fira Sans'; margin-bottom: 10px; color: #323450; font-weight: 900;">Choisir un avatar</h3>
         {% set avatars = [
             "https://cdn-icons-png.flaticon.com/512/4140/4140047.png", "https://cdn-icons-png.flaticon.com/512/1144/1144709.png",
@@ -335,9 +343,126 @@
             "https://cdn-icons-png.flaticon.com/512/147/147142.png", "https://cdn-icons-png.flaticon.com/512/147/147129.png"
         ] %}
         {% for url in avatars %}
-            <img src="{{ url }}" alt="Avatar" onclick="selectAvatar('{{ url }}')">
+            <img src="{{ url }}" alt="Avatar" onclick="selectAvatar('{{ url }}')" style="width:75px; height:75px; border-radius:50%; cursor:pointer;">
         {% endfor %}
         <button type="button" class="btn-primary" style="grid-column: span 4; width: 100%;" onclick="document.getElementById('avatarModal').style.display='none'">Fermer</button>
+    </div>
+</div>
+
+<div class="avatar-modal" id="forgotPwdModal" onclick="if(event.target.id === 'forgotPwdModal') this.style.display='none'">
+    <div class="avatar-grid" style="display: flex; flex-direction: column; width: 450px; padding: 40px; text-align: center; border-radius: 24px;">
+        <div style="width: 60px; height: 60px; background: rgba(47, 128, 237, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px auto; color: #2F80ED; font-size: 28px;">
+            <i class="lni lni-lock" id="forgot-icon"></i>
+        </div>
+        <h3 id="forgot-title" style="font-family: 'Fira Sans'; margin-bottom: 10px; color: #323450; font-weight: 900;">Mot de passe oublié ?</h3>
+        <p id="forgot-desc" style="color: #585978; font-size: 13px; margin-bottom: 25px;">Saisissez votre e-mail pour commencer la récupération sécurisée.</p>
+
+        <div id="forgot-error" style="display: none; background: rgba(235, 87, 87, 0.1); color: #eb5757; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 12px; margin-bottom: 15px;"></div>
+
+        <div id="forgot-step-1">
+            <div class="input-group" style="max-width: 100%;">
+                <input type="email" id="reset_email_input" placeholder="Entrez votre e-mail..." style="width: 100%; border: 2px solid #e8edf5; padding-left: 40px; border-radius: 8px; margin-bottom: 10px;" required onfocus="this.style.borderColor='#2F80ED'" onblur="this.style.borderColor='#e8edf5'">
+                <i class="lni lni-envelope icon-left" style="top: 10px;"></i>
+            </div>
+            <button type="button" id="btn-step-1" class="btn-primary" style="width: 100%;" onclick="submitForgotStep1()">Rechercher mon compte</button>
+            <button type="button" class="btn-ghost" style="width: 100%; border-radius: 50px; margin-top: 10px; color: #8b92a5; border: none;" onclick="document.getElementById('forgotPwdModal').style.display='none'">Annuler</button>
+        </div>
+
+        <div id="forgot-step-2" style="display: none;">
+            <div class="code-inputs">
+                <input type="text" id="fc1" maxlength="1" onkeyup="moveToNext(this, 'fc2')">
+                <input type="text" id="fc2" maxlength="1" onkeyup="moveToNext(this, 'fc3')">
+                <input type="text" id="fc3" maxlength="1" onkeyup="moveToNext(this, 'fc4')">
+                <input type="text" id="fc4" maxlength="1" onkeyup="moveToNext(this, 'fc5')">
+                <input type="text" id="fc5" maxlength="1" onkeyup="moveToNext(this, 'fc6')">
+                <input type="text" id="fc6" maxlength="1">
+            </div>
+            <button type="button" id="btn-step-2" class="btn-primary" style="width: 100%;" onclick="submitForgotStep2()">Vérifier le code</button>
+        </div>
+
+        <div id="forgot-step-3" style="display: none;">
+            <div class="input-group" style="max-width: 100%; margin-bottom: 15px;">
+                <input type="password" id="reset_new_pwd" placeholder="Nouveau mot de passe" style="width: 100%; border: 2px solid #e8edf5; border-radius: 8px; padding-left: 40px;" onkeyup="checkResetStrength()">
+                <i class="lni lni-lock icon-left" style="top: 10px;"></i>
+                <button type="button" class="toggle-password" style="top: 6px;" onclick="togglePassword('reset_new_pwd', this)"><i class="lni lni-eye"></i></button>
+            </div>
+            <div class="strength-bar-container" style="max-width: 100%;"><div class="strength-bar" id="reset-strength-bar"></div></div>
+
+            <div class="input-group" style="max-width: 100%; margin-top: 10px;">
+                <input type="password" id="reset_confirm_pwd" placeholder="Confirmez le mot de passe" style="width: 100%; border: 2px solid #e8edf5; border-radius: 8px; padding-left: 40px;" onkeyup="checkResetStrength()">
+                <i class="lni lni-checkmark-circle icon-left" style="top: 10px;"></i>
+                <button type="button" class="toggle-password" style="top: 6px;" onclick="togglePassword('reset_confirm_pwd', this)"><i class="lni lni-eye"></i></button>
+            </div>
+            <div id="reset-match-error" class="match-error" style="max-width: 100%;">Les mots de passe ne correspondent pas.</div>
+
+            <button type="button" id="btn-step-3" class="btn-primary" style="width: 100%; margin-top: 15px;" onclick="submitForgotStep3()" disabled>Mettre à jour le mot de passe</button>
+        </div>
+    </div>
+</div>
+
+<div class="avatar-modal" id="face2faModal" style="backdrop-filter: blur(15px);">
+    <div class="avatar-grid" style="display: flex; flex-direction: column; width: 500px; padding: 40px; text-align: center; border-radius: 24px; position: relative; overflow: hidden;">
+        <div style="width: 60px; height: 60px; background: rgba(47, 128, 237, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px auto; color: #2F80ED; font-size: 28px;">
+            <i class="lni lni-camera"></i>
+        </div>
+        <h3 style="font-family: 'Fira Sans'; margin-bottom: 5px; color: #323450; font-weight: 900;">Reconnaissance Faciale</h3>
+        <p style="color: #585978; font-size: 13px;">Veuillez regarder la caméra pour confirmer votre identité.</p>
+        
+        <div class="scanner-container">
+            <video id="face-webcam" autoplay playsinline></video>
+            <div class="laser-beam" id="laser-beam" style="display:none;"></div>
+        </div>
+        <canvas id="face-canvas" style="display:none;"></canvas>
+
+        <div id="face-status" style="font-weight: 800; font-size: 14px; color: #64748b; min-height: 20px; margin-top: 15px;">Caméra en cours d'activation...</div>
+
+        <button id="btn-face-scan" class="btn-primary" style="width: 100%; margin-top: 20px;" onclick="startFaceScan()" disabled>Lancer l'analyse biométrique</button>
+        <button class="btn-ghost" style="width: 100%; border: none; color: #8b92a5; margin-top: 10px;" onclick="cancelFaceLogin()">← Annuler la connexion</button>
+    </div>
+</div>
+
+<div class="avatar-modal" id="voice2faModal" style="backdrop-filter: blur(15px);">
+    <div class="avatar-grid" style="display: flex; flex-direction: column; width: 500px; padding: 40px; text-align: center; border-radius: 24px; position: relative; overflow: hidden;">
+        <div style="width: 60px; height: 60px; background: rgba(47, 128, 237, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px auto; color: #2F80ED; font-size: 28px;">
+            <i class="lni lni-mic"></i>
+        </div>
+        <h3 style="font-family: 'Fira Sans'; margin-bottom: 5px; color: #323450; font-weight: 900;">Reconnaissance Vocale</h3>
+        <p style="color: #585978; font-size: 13px;">Veuillez prononcer la phrase secrète : <strong>"...."</strong>.</p>
+
+        <div style="display:flex; justify-content:center; align-items:center; margin: 20px 0;">
+            <div id="mic-animation" style="width: 100px; height: 100px; background: #2F80ED; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 40px; transition: 0.3s;">
+                <i class="lni lni-mic"></i>
+            </div>
+        </div>
+
+        <div id="voice-status" style="font-weight: 800; font-size: 14px; color: #64748b; min-height: 20px; margin-top: 15px;">Micro en cours d'activation...</div>
+
+        <button id="btn-voice-scan" class="btn-primary" style="width: 100%; margin-top: 20px;" onclick="startVoiceScan()" disabled>🎤 Commencer l'enregistrement (4s)</button>
+        <button class="btn-ghost" style="width: 100%; border: none; color: #8b92a5; margin-top: 10px;" onclick="cancelVoiceLogin()">← Annuler la connexion</button>
+    </div>
+</div>
+
+<div class="avatar-modal" id="email2faModal">
+    <div class="avatar-grid" style="display: flex; flex-direction: column; width: 450px; padding: 40px; text-align: center; border-radius: 24px; position: relative; overflow: hidden;">
+        <div style="width: 60px; height: 60px; background: rgba(47, 128, 237, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px auto; color: #2F80ED; font-size: 28px;">
+            <i class="lni lni-shield"></i>
+        </div>
+        <h3 style="font-family: 'Fira Sans'; margin-bottom: 5px; color: #323450; font-weight: 900;">Vérification de sécurité</h3>
+        <p id="email-2fa-desc" style="color: #585978; font-size: 13px;">Un code de sécurité a été envoyé à votre adresse email.</p>
+        
+        <div id="email-2fa-error" class="error-msg" style="display:none;"></div>
+
+        <div class="code-inputs" style="margin-top: 20px; width: 100%;">
+            <input type="text" id="lc1" maxlength="1" onkeyup="moveToNext(this, 'lc2')">
+            <input type="text" id="lc2" maxlength="1" onkeyup="moveToNext(this, 'lc3')">
+            <input type="text" id="lc3" maxlength="1" onkeyup="moveToNext(this, 'lc4')">
+            <input type="text" id="lc4" maxlength="1" onkeyup="moveToNext(this, 'lc5')">
+            <input type="text" id="lc5" maxlength="1" onkeyup="moveToNext(this, 'lc6')">
+            <input type="text" id="lc6" maxlength="1">
+        </div>
+
+        <button id="btn-email-2fa" class="btn-primary" style="width: 100%; margin-top: 20px;" onclick="submitEmail2fa()">Valider le code</button>
+        <button class="btn-ghost" style="width: 100%; border: none; color: #8b92a5; margin-top: 10px;" onclick="window.location.href='{{ path('app_login') }}'">← Annuler la connexion</button>
     </div>
 </div>
 
@@ -360,14 +485,8 @@
     function togglePassword(inputId, buttonElement) {
         const input = document.getElementById(inputId);
         const icon = buttonElement.querySelector('i');
-        
-        if (input.type === "password") {
-            input.type = "text";
-            icon.className = "lni lni-eye-crossed";
-        } else {
-            input.type = "password";
-            icon.className = "lni lni-eye";
-        }
+        if (input.type === "password") { input.type = "text"; icon.className = "lni lni-eye-crossed"; } 
+        else { input.type = "password"; icon.className = "lni lni-eye"; }
     }
 
     // 3. BARRE DE FORCE ET VALIDATION MOT DE PASSE
@@ -376,12 +495,10 @@
         const len = password.length;
         let percentage = Math.min((len / 8.0) * 100, 100);
         bar.style.width = percentage + "%";
-
-        if (len >= 8) { bar.style.backgroundColor = "#2ecc71"; } 
-        else if (len >= 5) { bar.style.backgroundColor = "#f39c12"; } 
+        if (len >= 8) { bar.style.backgroundColor = "#2F80ED"; } 
+        else if (len >= 5) { bar.style.backgroundColor = "#56CCF2"; } 
         else { bar.style.backgroundColor = "#e74c3c"; }
-        
-        validateRegistration(); // Vérifier la correspondance après chaque frappe
+        validateRegistration();
     }
 
     function validateRegistration() {
@@ -389,92 +506,405 @@
         const confirm = document.getElementById('confirm-password').value;
         const submitBtn = document.getElementById('regSubmitBtn');
         const errorMsg = document.getElementById('match-error');
-
         const isMatch = (password === confirm && password !== "");
-        
-        if (confirm !== "" && !isMatch) {
-            errorMsg.style.display = "block";
-        } else {
-            errorMsg.style.display = "none";
-        }
-
-        // Le mot de passe doit faire 8 caractères ET correspondre
-        if (isMatch && password.length >= 8) {
-            submitBtn.disabled = false;
-        } else {
-            submitBtn.disabled = true;
-        }
+        if (confirm !== "" && !isMatch) { errorMsg.style.display = "block"; } else { errorMsg.style.display = "none"; }
+        if (isMatch && password.length >= 8) { submitBtn.disabled = false; } else { submitBtn.disabled = true; }
     }
 
     // 4. ANIMATION POP DE L'AVATAR
     function triggerAvatarPop() {
         const img = document.getElementById('avatar-preview');
-        img.classList.remove('pop');
-        void img.offsetWidth; // Trigger reflow
-        img.classList.add('pop');
+        img.classList.remove('pop'); void img.offsetWidth; img.classList.add('pop');
     }
-
-    // 5. PREVIEW DE L'IMAGE LOCALE
     function previewImage(input) {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
-            reader.onload = function(e) { 
-                document.getElementById('avatar-preview').src = e.target.result; 
-                document.getElementById('avatar_url_input').value = ""; 
-                triggerAvatarPop();
-            }
+            reader.onload = function(e) { document.getElementById('avatar-preview').src = e.target.result; document.getElementById('avatar_url_input').value = ""; triggerAvatarPop(); }
             reader.readAsDataURL(input.files[0]);
         }
     }
-
-    // 6. SÉLECTION D'UN AVATAR DE LA MODALE
     function selectAvatar(url) {
-        document.getElementById('avatar-preview').src = url; 
-        document.getElementById('avatar_url_input').value = url; 
-        document.getElementById('image_profil').value = ''; 
-        document.getElementById('avatarModal').style.display = 'none'; 
-        triggerAvatarPop();
+        document.getElementById('avatar-preview').src = url; document.getElementById('avatar_url_input').value = url; 
+        document.getElementById('image_profil').value = ''; document.getElementById('avatarModal').style.display = 'none'; triggerAvatarPop();
     }
-
-    function closeModal(event) {
-        if (event.target.id === 'avatarModal') { document.getElementById('avatarModal').style.display = 'none'; }
-    }
-
-    // 7. UPDATE NOM FICHIER CV
+    function closeModal(event) { if (event.target.id === 'avatarModal') { document.getElementById('avatarModal').style.display = 'none'; } }
     function updateFileName(input) {
         const label = document.getElementById('pdf-file-name');
-        if (input.files && input.files[0]) {
-            label.textContent = input.files[0].name;
-            label.style.color = "#0598ff";
-            label.style.fontWeight = "bold";
-        } else {
-            label.textContent = "Aucun fichier";
-            label.style.color = "gray";
-            label.style.fontWeight = "normal";
-        }
+        if (input.files && input.files[0]) { label.textContent = input.files[0].name; label.style.color = "#0598ff"; label.style.fontWeight = "bold"; } 
+        else { label.textContent = "Aucun fichier"; label.style.color = "gray"; label.style.fontWeight = "normal"; }
     }
 
-    // 8. EFFET LUMINEUX MOUSE HOVER SUR LE CONTAINER
+    // 5. MOUSE TILT & PARTICULES
     container.addEventListener("mousemove", (e) => {
         const rect = container.getBoundingClientRect();
         container.style.setProperty("--mouse-x", `${e.clientX - rect.left}px`);
         container.style.setProperty("--mouse-y", `${e.clientY - rect.top}px`);
     });
-
-    // 9. RÉSEAU NEURONAL EN ARRIÈRE-PLAN
     tsParticles.load("tsparticles", {
-        fpsLimit: 60,
-        interactivity: { events: { onHover: { enable: true, mode: "grab" }, onClick: { enable: true, mode: "push" } }, modes: { grab: { distance: 150, links: { opacity: 0.5 } } } },
-        particles: {
-            color: { value: "#0598ff" },
-            links: { color: "#2F80ED", distance: 150, enable: true, opacity: 0.3, width: 1 },
-            move: { enable: true, speed: 1.2, direction: "none", random: false, straight: false, outModes: { default: "bounce" } },
-            number: { density: { enable: true, area: 800 }, value: 50 },
-            opacity: { value: 0.5 },
-            shape: { type: "circle" },
-            size: { value: { min: 1, max: 3 } }
-        },
-        detectRetina: true
+        fpsLimit: 60, interactivity: { events: { onHover: { enable: true, mode: "grab" }, onClick: { enable: true, mode: "push" } }, modes: { grab: { distance: 150, links: { opacity: 0.5 } } } },
+        particles: { color: { value: "#0598ff" }, links: { color: "#2F80ED", distance: 150, enable: true, opacity: 0.3, width: 1 }, move: { enable: true, speed: 1.2, direction: "none", random: false, straight: false, outModes: { default: "bounce" } }, number: { density: { enable: true, area: 800 }, value: 50 }, opacity: { value: 0.5 }, shape: { type: "circle" }, size: { value: { min: 1, max: 3 } } }, detectRetina: true
     });
+
+    // =========================================================================
+    // DÉCLENCHEURS INTELLIGENTS DE MODALS DE CONNEXION (Générés par PHP)
+    // =========================================================================
+    {% if require_face_2fa is defined and require_face_2fa %}
+        document.addEventListener("DOMContentLoaded", function() { openFace2faModal(); });
+    {% endif %}
+
+    {% if require_voice_2fa is defined and require_voice_2fa %}
+        document.addEventListener("DOMContentLoaded", function() { openVoice2faModal(); });
+    {% endif %}
+
+    {% if require_email_2fa is defined and require_email_2fa %}
+        document.addEventListener("DOMContentLoaded", function() { openEmail2faModal("{{ user_email|default('') }}"); });
+    {% endif %}
+
+
+    // =========================================================================
+    // LOGIQUE DE LA RECONNAISSANCE VOCALE (VOICE ID) - SANS FALLBACK
+    // =========================================================================
+    let mediaRecorder;
+    let audioChunks = [];
+
+    async function convertToWav(blob) {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const arrayBuffer = await blob.arrayBuffer();
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        
+        const numOfChan = audioBuffer.numberOfChannels;
+        const length = audioBuffer.length * numOfChan * 2 + 44;
+        const buffer = new ArrayBuffer(length);
+        const view = new DataView(buffer);
+        const channels = [];
+        let sample = 0, offset = 0, pos = 0;
+
+        const setUint16 = (data) => { view.setUint16(pos, data, true); pos += 2; };
+        const setUint32 = (data) => { view.setUint32(pos, data, true); pos += 4; };
+
+        // Write WAV Header
+        setUint32(0x46464952); // "RIFF"
+        setUint32(length - 8); // file length - 8
+        setUint32(0x45564157); // "WAVE"
+        setUint32(0x20746d66); // "fmt " chunk
+        setUint32(16);         // length = 16
+        setUint16(1);          // PCM (uncompressed)
+        setUint16(numOfChan);
+        setUint32(audioBuffer.sampleRate);
+        setUint32(audioBuffer.sampleRate * 2 * numOfChan); // avg. bytes/sec
+        setUint16(numOfChan * 2); // block-align
+        setUint16(16);         // 16-bit
+        setUint32(0x61746164); // "data" - chunk
+        setUint32(length - pos - 4); // chunk length
+
+        // Write interleaved data
+        for (let i = 0; i < audioBuffer.numberOfChannels; i++) {
+            channels.push(audioBuffer.getChannelData(i));
+        }
+
+        while (pos < length) {
+            for (let i = 0; i < numOfChan; i++) {
+                sample = Math.max(-1, Math.min(1, channels[i][offset])); // clamp
+                sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767)|0; // array to int16
+                view.setInt16(pos, sample, true); pos += 2;
+            }
+            offset++; 
+        }
+
+        return new Blob([buffer], {type: "audio/wav"});
+    }
+
+    function openVoice2faModal() {
+        document.getElementById('voice2faModal').style.display = 'flex';
+        const status = document.getElementById('voice-status');
+        const btn = document.getElementById('btn-voice-scan');
+
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = e => { audioChunks.push(e.data); };
+                mediaRecorder.onstop = async () => {
+                    const actualMime = mediaRecorder.mimeType;
+                    const audioBlob = new Blob(audioChunks, { type: actualMime });
+                    
+                    // Convertir le webm/ogg en vrai WAV PCM (que Wit.ai comprend parfaitement)
+                    const convertedBlob = await convertToWav(audioBlob);
+
+                    let formData = new FormData();
+                    formData.append("audio", convertedBlob, "voice.wav");
+                    formData.append("mimeType", "audio/wav");
+                    
+                    sendAudioToServer(formData);
+                };
+                status.innerText = "Micro prêt. Cliquez pour enregistrer.";
+                btn.disabled = false;
+            }).catch(err => {
+                status.innerText = "Micro bloqué. Veuillez autoriser le microphone ou annuler.";
+                status.style.color = "#e74c3c";
+            });
+        } else {
+            status.innerText = "Micro non supporté par votre navigateur.";
+            status.style.color = "#e74c3c";
+        }
+    }
+
+    function startVoiceScan() {
+        audioChunks = [];
+        const status = document.getElementById('voice-status');
+        const btn = document.getElementById('btn-voice-scan');
+        const micAnim = document.getElementById('mic-animation');
+
+        btn.disabled = true;
+        micAnim.style.transform = "scale(1.2)";
+        micAnim.style.backgroundColor = "#e74c3c";
+        micAnim.style.animation = "pulseShadow 1s infinite";
+        status.innerText = "🔴 Enregistrement... Prononcez le secret !";
+        status.style.color = "#e74c3c";
+
+        mediaRecorder.start();
+
+        // Arrêt automatique après 4 secondes
+        setTimeout(() => {
+            mediaRecorder.stop();
+            micAnim.style.transform = "scale(1)";
+            micAnim.style.backgroundColor = "#2F80ED";
+            micAnim.style.animation = "none";
+            status.innerText = "🧠 Analyse de la voix en cours... Patientez.";
+            status.style.color = "#3498db";
+        }, 4000);
+    }
+
+    function sendAudioToServer(formData) {
+        const status = document.getElementById('voice-status');
+        const btn = document.getElementById('btn-voice-scan');
+
+        fetch('{{ path('app_verify_voice_ajax') }}', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: formData
+        }).then(res => res.json()).then(data => {
+            if(data.success) {
+                status.innerText = "✅ Identité confirmée ! Redirection...";
+                status.style.color = "#2ecc71";
+                window.location.href = '{{ path('app_admin_users') }}';
+            } else {
+                // PAS DE FALLBACK : On affiche l'erreur et on permet de réessayer
+                status.innerText = "❌ " + data.message;
+                status.style.color = "#e74c3c";
+                btn.disabled = false;
+                btn.innerText = "🎤 Réessayer (4s)";
+            }
+        }).catch(err => {
+            status.innerText = "❌ Erreur réseau. Veuillez réessayer.";
+            status.style.color = "#e74c3c";
+            btn.disabled = false;
+            btn.innerText = "🎤 Réessayer (4s)";
+        });
+    }
+
+    function cancelVoiceLogin() {
+        window.location.href = '{{ path('app_login') }}';
+    }
+
+
+    // =========================================================================
+    // LOGIQUE DE LA RECONNAISSANCE FACIALE (FACE ID) - AVEC FALLBACK
+    // =========================================================================
+    function openFace2faModal() {
+        document.getElementById('face2faModal').style.display = 'flex';
+        const video = document.getElementById('face-webcam');
+        const status = document.getElementById('face-status');
+        const btn = document.getElementById('btn-face-scan');
+
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+                video.srcObject = stream;
+                video.play();
+                status.innerText = "Caméra prête. Regardez l'objectif.";
+                btn.disabled = false;
+            }).catch(err => {
+                status.innerText = "Caméra bloquée. Basculement sur l'email dans 2s...";
+                status.style.color = "#e74c3c";
+                setTimeout(() => fallbackToEmail(), 2000);
+            });
+        } else {
+            status.innerText = "Caméra non supportée. Basculement sur l'email...";
+            setTimeout(() => fallbackToEmail(), 2000);
+        }
+    }
+
+    function startFaceScan() {
+        const video = document.getElementById('face-webcam');
+        const canvas = document.getElementById('face-canvas');
+        const status = document.getElementById('face-status');
+        const btn = document.getElementById('btn-face-scan');
+        const laser = document.getElementById('laser-beam');
+
+        btn.disabled = true;
+        laser.style.display = 'block'; 
+        status.innerText = "Analyse biométrique en cours... Patientez.";
+        status.style.color = "#f39c12";
+
+        canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+        const base64Image = canvas.toDataURL('image/jpeg');
+
+        fetch('{{ path('app_verify_face_ajax') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ image: base64Image })
+        }).then(res => res.json()).then(data => {
+            laser.style.display = 'none'; 
+            if(data.success) {
+                status.innerText = "Identité confirmée ! Redirection...";
+                status.style.color = "#2ecc71";
+                if(video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+                window.location.href = '{{ path('app_redirect_user') }}';
+            } else {
+                status.innerText = "Visage non reconnu. Basculement sur l'email dans 2s...";
+                status.style.color = "#e74c3c";
+                setTimeout(() => fallbackToEmail(), 2500);
+            }
+        }).catch(err => {
+            laser.style.display = 'none';
+            status.innerText = "Erreur réseau. Basculement sur l'email...";
+            status.style.color = "#e74c3c";
+            setTimeout(() => fallbackToEmail(), 2500);
+        });
+    }
+
+    function fallbackToEmail() {
+        const video = document.getElementById('face-webcam');
+        if(video && video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+        
+        fetch('{{ path('app_fallback_2fa_email_ajax') }}', { method: 'POST', headers: {'X-Requested-With': 'XMLHttpRequest'}  })
+        .then(res => res.json()).then(data => {
+            document.getElementById('face2faModal').style.display = 'none';
+            if(data.success) {
+                openEmail2faModal(data.email);
+            } else {
+                window.location.href = '{{ path('app_login') }}';
+            }
+        }).catch(err => {
+            window.location.href = '{{ path('app_login') }}';
+        });
+    }
+
+    function cancelFaceLogin() {
+        const video = document.getElementById('face-webcam');
+        if(video && video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+        window.location.href = '{{ path('app_login') }}';
+    }
+
+
+    // =========================================================================
+    // LOGIQUE DE LA VÉRIFICATION EMAIL 2FA
+    // =========================================================================
+    function openEmail2faModal(email) {
+        document.getElementById('email2faModal').style.display = 'flex';
+        if (email) {
+            document.getElementById('email-2fa-desc').innerHTML = "Un code de sécurité a été envoyé à <strong>" + email + "</strong>.";
+        }
+        setTimeout(() => { document.getElementById('lc1').focus(); }, 100);
+    }
+
+    function submitEmail2fa() {
+        const code = document.getElementById('lc1').value + document.getElementById('lc2').value + document.getElementById('lc3').value + document.getElementById('lc4').value + document.getElementById('lc5').value + document.getElementById('lc6').value;
+        const err = document.getElementById('email-2fa-error');
+        const btn = document.getElementById('btn-email-2fa');
+        if(code.length !== 6) { err.style.display = 'block'; err.innerText = "Saisissez les 6 chiffres."; return; }
+        btn.innerText = "Vérification..."; btn.disabled = true; err.style.display = 'none';
+
+        fetch('{{ path('app_verify_email_2fa_ajax') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ code: code })
+        }).then(res => res.json()).then(data => {
+            if(data.success) {
+                btn.innerText = "Succès ! Redirection...";
+                window.location.href = '{{ path('app_redirect_user') }}';
+            } else {
+                err.style.display = 'block'; err.innerText = data.message || "Code incorrect.";
+                btn.innerText = "Valider le code"; btn.disabled = false;
+                document.getElementById('lc1').focus();
+            }
+        }).catch(err => {
+            err.style.display = 'block'; err.innerText = "Erreur réseau.";
+            btn.innerText = "Valider le code"; btn.disabled = false;
+        });
+    }
+
+    // =========================================================================
+    // LOGIQUE DU MOT DE PASSE OUBLIÉ
+    // =========================================================================
+    function moveToNext(current, nextFieldID) { if (current.value.length >= 1) { document.getElementById(nextFieldID).focus(); } }
+    function openForgotPasswordModal() {
+        document.getElementById('forgotPwdModal').style.display = 'flex';
+        document.getElementById('forgot-step-1').style.display = 'block'; document.getElementById('forgot-step-2').style.display = 'none'; document.getElementById('forgot-step-3').style.display = 'none';
+        document.getElementById('forgot-title').innerText = "Mot de passe oublié ?"; document.getElementById('forgot-desc').innerText = "Saisissez votre e-mail pour commencer la récupération sécurisée.";
+        document.getElementById('forgot-icon').className = "lni lni-lock"; document.getElementById('reset_email_input').value = ""; document.getElementById('forgot-error').style.display = 'none';
+    }
+    function submitForgotStep1() {
+        const email = document.getElementById('reset_email_input').value;
+        const btn = document.getElementById('btn-step-1'); const err = document.getElementById('forgot-error');
+        if(!email) { err.innerText = "Veuillez saisir une adresse email."; err.style.display = 'block'; return; }
+        btn.innerText = "Recherche..."; btn.disabled = true; err.style.display = 'none';
+        fetch('{{ path('app_forgot_password_request_ajax') }}', { method: 'POST', body: JSON.stringify({ email: email }) })
+        .then(res => res.json()).then(data => {
+            btn.innerText = "Rechercher mon compte"; btn.disabled = false;
+            if(data.success) {
+                document.getElementById('forgot-step-1').style.display = 'none'; document.getElementById('forgot-step-2').style.display = 'block';
+                document.getElementById('forgot-title').innerText = "Vérification de sécurité"; document.getElementById('forgot-icon').className = "lni lni-shield";
+                document.getElementById('forgot-desc').innerHTML = (data.type === '2FA') ? "Ouvrez <strong>Google Authenticator</strong>." : "Code envoyé à <strong>"+data.email+"</strong>.";
+            }
+        });
+    }
+    function submitForgotStep2() {
+        const code = document.getElementById('fc1').value+document.getElementById('fc2').value+document.getElementById('fc3').value+document.getElementById('fc4').value+document.getElementById('fc5').value+document.getElementById('fc6').value;
+        const btn = document.getElementById('btn-step-2'); const err = document.getElementById('forgot-error');
+        btn.innerText = "Vérification..."; btn.disabled = true; err.style.display = 'none';
+        fetch('{{ path('app_forgot_password_verify_ajax') }}', { method: 'POST', body: JSON.stringify({ code: code }) })
+        .then(res => res.json()).then(data => {
+            btn.innerText = "Vérifier le code"; btn.disabled = false;
+            if(data.success) {
+                document.getElementById('forgot-step-2').style.display = 'none'; document.getElementById('forgot-step-3').style.display = 'block';
+                document.getElementById('forgot-title').innerText = "Nouveau départ"; document.getElementById('forgot-desc').innerText = "Créez un nouveau mot de passe."; document.getElementById('forgot-icon').className = "lni lni-key";
+            } else { err.innerText = "Code incorrect."; err.style.display = 'block'; }
+        });
+    }
+    function submitForgotStep3() {
+        const pwd = document.getElementById('reset_new_pwd').value;
+        fetch('{{ path('app_forgot_password_new_ajax') }}', { method: 'POST', body: JSON.stringify({ password: pwd }) })
+        .then(res => res.json()).then(data => { if(data.success) location.reload(); });
+    }
+
+    function checkResetStrength() {
+        const password = document.getElementById('reset_new_pwd').value;
+        const confirm = document.getElementById('reset_confirm_pwd').value;
+        const bar = document.getElementById('reset-strength-bar');
+        const submitBtn = document.getElementById('btn-step-3');
+        const errorMsg = document.getElementById('reset-match-error');
+        
+        const len = password.length;
+        let percentage = Math.min((len / 8.0) * 100, 100);
+        bar.style.width = percentage + "%";
+        
+        if (len >= 8) { bar.style.backgroundColor = "#2F80ED"; } 
+        else if (len >= 5) { bar.style.backgroundColor = "#56CCF2"; } 
+        else { bar.style.backgroundColor = "#e74c3c"; }
+
+        const isMatch = (password === confirm && password !== "");
+        if (confirm !== "" && !isMatch) { 
+            errorMsg.style.display = "block"; 
+        } else { 
+            errorMsg.style.display = "none"; 
+        }
+        
+        if (isMatch && password.length >= 8) { 
+            submitBtn.disabled = false; 
+        } else { 
+            submitBtn.disabled = true; 
+        }
+    }
 </script>
 {% endblock %}
