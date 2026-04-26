@@ -20,6 +20,8 @@ use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Nucleos\DompdfBundle\Factory\DompdfFactoryInterface;
+use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\Process;
 
 final class ListeParticipationController extends AbstractController
 {
@@ -28,15 +30,26 @@ final class ListeParticipationController extends AbstractController
     {
         $user = $this->getUser();
         // Si c'est un candidat, on ne montre que ses propres participations
-        if ($user instanceof Utilisateur) {
-            $data = $offre 
-                ? $repo->findBy(['id_offre' => $offre, 'id_user' => $user->getId()])
-                : $repo->findBy(['id_user' => $user->getId()]);
-        } else {
-            // Pas connecté : on ne montre rien
-            $data = [];
+        if ($this->isGranted('ROLE_RECRUTEUR')) {
+        // On utilise createQueryBuilder pour envoyer une requête propre au paginateur
+        $queryBuilder = $repo->createQueryBuilder('p');
+        if ($offre) {
+            $queryBuilder->andWhere('p.id_offre = :offre')
+                        ->setParameter('offre', $offre);
         }
-
+        $data = $queryBuilder->getQuery(); // On envoie la QUERY, pas le résultat
+        } 
+        else if ($user instanceof Utilisateur) {
+            $queryBuilder = $repo->createQueryBuilder('p')
+                ->andWhere('p.id_user = :user')
+                ->setParameter('user', $user->getId());
+            
+            if ($offre) {
+                $queryBuilder->andWhere('p.id_offre = :offre')
+                            ->setParameter('offre', $offre);
+            }
+            $data = $queryBuilder->getQuery();
+        }
         $participations = $paginator->paginate(
             $data,
             $request->query->getInt('page', 1),
@@ -260,4 +273,51 @@ final class ListeParticipationController extends AbstractController
             'Content-Disposition' => 'attachment; filename="Mon_CV_IA.pdf"'
         ]);
     }
+
+    #[Route('/api/recommendations/{id}', name: 'api_recommendations')]
+    public function getRecommendations(Emploi $emploi, ListeParticipationRepository $participationRepo): JsonResponse
+    {
+        // 1. Récupération des données
+        $participations = $participationRepo->findAll();
+        
+        if (empty($participations)) {
+            return new JsonResponse(['score' => 0, 'message' => 'Aucun candidat à comparer']);
+        }
+    
+        $dataCandidats = [];
+        foreach ($participations as $p) {
+            $dataCandidats[] = [
+                'id' => $p->getIdParticipation(), // On utilise 'id' pour correspondre au script Python
+                'skills' => $p->getSkills() ?? '' // On évite le null
+            ];
+        }
+    
+        // 2. Chemins vers Python et le Script
+        // Utilise le chemin vers ton .venv que nous avons trouvé tout à l'heure
+        $rootDir = $this->getParameter('kernel.project_dir');
+
+        // Dans ton contrôleur
+        $pythonPath = $this->getParameter('kernel.project_dir') . '/.venv/Scripts/python.exe';
+        $scriptPath = $this->getParameter('kernel.project_dir') . '/src/scripts/analyse.py';
+
+        $process = new Process([
+            $pythonPath, 
+            $scriptPath, 
+            json_encode($dataCandidats, JSON_UNESCAPED_UNICODE), 
+            $emploi->getDescription()
+        ]);
+
+        try {
+            $process->mustRun();
+            $output = trim($process->getOutput());
+            
+            // On transforme la réponse de Python en tableau PHP
+            $result = json_decode($output, true);
+            
+            return new JsonResponse($result);
+        } catch (ProcessFailedException $exception) {
+            return new JsonResponse(['error' => $exception->getMessage()], 500);
+        }
+    }
+
 }

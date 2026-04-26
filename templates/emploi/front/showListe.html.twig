@@ -51,6 +51,7 @@
                                 <span style="font-weight: 600; color: #2F80ED;">
                                     <i class="lni lni-target"></i> Score : {{ p.score }} pts
                                 </span>
+                                <div class="ai-score-container" data-id="{{ p.idParticipation }}"></div>
                                 <div class="d-flex gap-2">
                                     {# On utilise le vrai nom de ton getter id_participation #}
                                     <a href="{{ path('addListe', {'id_offre': p.idOffre.idOffre}) }}" class="btn-liquid px-3 py-2" style="font-size: 14px; background: #64748b; color: white; border-radius: 8px; text-decoration: none;">
@@ -91,4 +92,43 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const scoreContainers = document.querySelectorAll('.ai-score-container');
+    
+    // On suppose que tous les containers appartiennent à la même offre sur cette page
+    // On récupère l'ID de l'offre depuis un attribut data sur un élément parent ou l'URL
+    const idOffre = window.location.pathname.split('/').pop(); 
+
+    fetch(`/api/recommendations/${idOffre}`)
+        .then(response => response.json())
+        .then(data => {
+            // data est un tableau : [{id: 1, score: 49, level: "Moyenne"}, ...]
+            scoreContainers.forEach(container => {
+                const participantId = parseInt(container.getAttribute('data-id'));
+                
+                // On trouve les datas correspondant à CE participant
+                const match = data.find(item => item.id === participantId);
+
+                if (match) {
+                    let badgeClass = 'bg-danger'; // Par défaut : Faible
+                    if (match.score >= 75) badgeClass = 'bg-success';
+                    else if (match.score >= 50) badgeClass = 'bg-primary';
+                    else if (match.score >= 25) badgeClass = 'bg-warning';
+
+                    container.innerHTML = `
+                        <div class="mt-2">
+                            <span class="badge ${badgeClass} p-2 shadow-sm animate__animated animate__fadeIn">
+                                <i class="fas fa-robot"></i> Compatibilité ${match.level} : ${match.score}%
+                            </span>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `<span class="badge bg-secondary">Analyse en attente</span>`;
+                }
+            });
+        })
+        .catch(error => console.error('Erreur IA:', error));
+});
+</script>
 {% endblock %}
