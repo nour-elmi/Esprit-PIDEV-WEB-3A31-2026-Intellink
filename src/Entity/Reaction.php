@@ -14,7 +14,7 @@ class Reaction
     private ?int $id = null;
 
     #[ORM\Column(name: "type", length: 100)]
-    private ?string $type = null;
+    private string $type;
 
     #[ORM\ManyToOne(inversedBy: 'reactions')]
     #[ORM\JoinColumn(name: "postid", referencedColumnName: "postId", nullable: false)]
@@ -31,7 +31,7 @@ class Reaction
         return $this->id;
     }
 
-    public function getType(): ?string
+    public function getType(): string
     {
         return $this->type;
     }

@@ -51,28 +51,36 @@ class CommentRepository extends ServiceEntityRepository
 
         if ($search !== null && trim($search) !== '') {
             $qb->andWhere('LOWER(c.content) LIKE :search')
-               ->setParameter('search', '%' . mb_strtolower(trim($search)) . '%');
+                ->setParameter('search', '%' . mb_strtolower(trim($search)) . '%');
         }
 
-        $qb->orderBy('c.createdAt', strtoupper($sort) === 'ASC' ? 'ASC' : 'DESC');
-
-        return $qb->getQuery()->getResult();
+        return $qb
+            ->orderBy('c.createdAt', strtoupper($sort) === 'ASC' ? 'ASC' : 'DESC')
+            ->getQuery()
+            ->getResult();
     }
+
     public function findAdminByPost(int $postId, ?string $search = null): array
-{
-    $qb = $this->createQueryBuilder('c')
-        ->leftJoin('c.author', 'a')->addSelect('a')
-        ->leftJoin('c.parent', 'p')->addSelect('p')
-        ->andWhere('c.post = :postId')
-        ->setParameter('postId', $postId);
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->leftJoin('c.author', 'a')->addSelect('a')
+            ->leftJoin('c.parent', 'p')->addSelect('p')
+            ->andWhere('c.post = :postId')
+            ->setParameter('postId', $postId);
 
-    if ($search !== null && trim($search) !== '') {
-        $qb->andWhere('LOWER(c.content) LIKE :search')
-           ->setParameter('search', '%' . mb_strtolower(trim($search)) . '%');
+        if ($search !== null && trim($search) !== '') {
+            $qb->andWhere('LOWER(c.content) LIKE :search')
+                ->setParameter('search', '%' . mb_strtolower(trim($search)) . '%');
+        }
+
+        return $qb
+            ->orderBy('c.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 
-    $qb->orderBy('c.createdAt', 'DESC');
-
-    return $qb->getQuery()->getResult();
-}
+    public function searchActiveCommentsByPost(int $postId, string $search): array
+    {
+        return $this->findThreadByPost($postId, 'DESC', $search);
+    }
 }

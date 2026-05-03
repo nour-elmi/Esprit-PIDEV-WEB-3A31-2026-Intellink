@@ -10,6 +10,8 @@
 {% block body %}
 <div class="page-content">
 
+    <div id="ajax-message-box"></div>
+
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <h2 class="mb-0">Admin • Forum</h2>
 
@@ -60,9 +62,9 @@
         </div>
     </div>
 
-    <div class="d-flex flex-column gap-3">
+    <div class="d-flex flex-column gap-3" id="admin-posts-container">
         {% for post in posts %}
-            <div class="card shadow-sm border-0">
+            <div class="card shadow-sm border-0 admin-post-card" data-post-id="{{ post.id }}">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
                         <div>
@@ -74,16 +76,12 @@
                             </div>
                         </div>
 
-                        <div class="d-flex gap-2 flex-wrap">
-                            {% if post.isPinned %}
-                                <span class="badge bg-primary">📌 PINNÉ</span>
-                            {% endif %}
-                            {% if post.isLocked %}
-                                <span class="badge bg-dark">🔒 LOCK</span>
-                            {% endif %}
-                            {% if post.status and post.status != 'ACTIVE' %}
-                                <span class="badge bg-secondary">{{ post.status }}</span>
-                            {% endif %}
+                        <div class="d-flex gap-2 flex-wrap post-badges">
+                            <span class="badge bg-primary badge-pinned {{ post.isPinned ? '' : 'd-none' }}">📌 PINNÉ</span>
+                            <span class="badge bg-dark badge-locked {{ post.isLocked ? '' : 'd-none' }}">🔒 LOCK</span>
+                            <span class="badge bg-secondary badge-status {{ post.status and post.status != 'ACTIVE' ? '' : 'd-none' }}">
+                                {{ post.status }}
+                            </span>
                         </div>
                     </div>
 
@@ -112,36 +110,134 @@
                             💬 commentaires
                         </a>
 
-                        <form method="post" action="{{ path('app_admin_post_toggle_pin', {id: post.id}) }}" style="display:inline;">
-                            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                        <form method="post" action="{{ path('app_admin_post_toggle_pin', {id: post.id}) }}" class="ajax-admin-action" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary btn-pin">
                                 {{ post.isPinned ? 'Désépingler' : 'Épingler' }}
                             </button>
                         </form>
 
-                        <form method="post" action="{{ path('app_admin_post_toggle_lock', {id: post.id}) }}" style="display:inline;">
-                            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                        <form method="post" action="{{ path('app_admin_post_toggle_lock', {id: post.id}) }}" class="ajax-admin-action" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary btn-lock">
                                 {{ post.isLocked ? 'Déverrouiller' : 'Verrouiller' }}
                             </button>
                         </form>
 
-                        <form method="post" action="{{ path('app_admin_post_toggle_hide', {id: post.id}) }}" style="display:inline;">
-                            <button type="submit" class="btn btn-sm btn-outline-warning">
+                        <form method="post" action="{{ path('app_admin_post_toggle_hide', {id: post.id}) }}" class="ajax-admin-action" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-outline-warning btn-hide">
                                 {{ post.status == 'HIDDEN' ? 'Afficher' : 'Masquer' }}
                             </button>
                         </form>
 
-                        <form method="post" action="{{ path('app_admin_post_delete', {id: post.id}) }}" style="display:inline;" onsubmit="return confirm('Supprimer ce post ?')">
+                        <form method="post" action="{{ path('app_admin_post_delete', {id: post.id}) }}" class="ajax-admin-action ajax-delete-action" style="display:inline;">
                             <button type="submit" class="btn btn-sm btn-outline-danger">🗑 Supprimer</button>
                         </form>
                     </div>
                 </div>
             </div>
         {% else %}
-            <div class="card">
+            <div class="card" id="empty-admin-posts">
                 <div class="card-body text-muted">Aucun post trouvé.</div>
             </div>
         {% endfor %}
     </div>
 
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+$(document).ready(function () {
+    function showAjaxMessage(message, success = true) {
+        const box = $('#ajax-message-box');
+
+        box.html(`
+            <div class="alert ${success ? 'alert-success' : 'alert-danger'} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `);
+
+        setTimeout(function () {
+            box.html('');
+        }, 3000);
+    }
+
+    function refreshBadges(card, data) {
+        const pinnedBadge = card.find('.badge-pinned');
+        const lockedBadge = card.find('.badge-locked');
+        const statusBadge = card.find('.badge-status');
+
+        if (typeof data.pinned !== 'undefined') {
+            pinnedBadge.toggleClass('d-none', !data.pinned);
+            card.find('.btn-pin').text(data.pinned ? 'Désépingler' : 'Épingler');
+        }
+
+        if (typeof data.locked !== 'undefined') {
+            lockedBadge.toggleClass('d-none', !data.locked);
+            card.find('.btn-lock').text(data.locked ? 'Déverrouiller' : 'Verrouiller');
+        }
+
+        if (typeof data.status !== 'undefined') {
+            if (data.status !== 'ACTIVE') {
+                statusBadge.text(data.status);
+                statusBadge.removeClass('d-none');
+            } else {
+                statusBadge.addClass('d-none');
+            }
+
+            card.find('.btn-hide').text(data.status === 'HIDDEN' ? 'Afficher' : 'Masquer');
+        }
+    }
+
+    $(document).on('submit', '.ajax-admin-action', function (e) {
+        e.preventDefault();
+
+        const form = $(this);
+        const card = form.closest('.admin-post-card');
+        const isDelete = form.hasClass('ajax-delete-action');
+
+        if (isDelete && !confirm('Supprimer ce post ?')) {
+            return;
+        }
+
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function (response) {
+                if (!response.success) {
+                    showAjaxMessage(response.message || 'Erreur.', false);
+                    return;
+                }
+
+                showAjaxMessage(response.message || 'Action effectuée.', true);
+
+                if (isDelete) {
+                    card.fadeOut(250, function () {
+                        $(this).remove();
+
+                        if ($('.admin-post-card').length === 0) {
+                            $('#admin-posts-container').html(`
+                                <div class="card" id="empty-admin-posts">
+                                    <div class="card-body text-muted">Aucun post trouvé.</div>
+                                </div>
+                            `);
+                        }
+                    });
+
+                    return;
+                }
+
+                refreshBadges(card, response);
+            },
+            error: function (xhr) {
+                const response = xhr.responseJSON;
+                showAjaxMessage(response && response.message ? response.message : 'Erreur serveur.', false);
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

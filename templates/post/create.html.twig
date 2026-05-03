@@ -273,5 +273,28 @@ document.addEventListener('DOMContentLoaded', function () {
         suggestTimeout = setTimeout(loadSuggestions, 700);
     });
 });
+document.getElementById('create-post-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const form = this;
+    const formData = new FormData(form);
+
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = data.redirect;
+        } else {
+            alert(data.message || "Erreur");
+        }
+    })
+    .catch(() => alert("Erreur serveur"));
+});
 </script>
 {% endblock %}

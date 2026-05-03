@@ -16,7 +16,7 @@
             <img src="{{ asset('images/logo-bg.png') }}" alt="Logo" class="top-logo">
         </div>
 
-        <form method="get" action="{{ path('app_comments', {id: post.id}) }}" class="search-form">
+        <form method="get" action="{{ path('app_comments', {id: post.id}) }}" class="search-form" id="comment-search-form">
             <div class="search-wrap">
                 <span class="search-icon">🔎</span>
                 <input
@@ -25,9 +25,10 @@
                     value="{{ search }}"
                     placeholder="Rechercher des commentaires"
                     class="search-dark"
+                    id="comment-search-input"
                 >
             </div>
-            <input type="hidden" name="sort" value="{{ sort }}">
+            <input type="hidden" name="sort" value="{{ sort }}" id="comment-sort-hidden">
         </form>
     </div>
 
@@ -65,11 +66,7 @@
             {% endif %}
         </div>
 
-        {% for message in app.flashes('error') %}
-            <div class="post error-box">
-                <p class="error-text">{{ message }}</p>
-            </div>
-        {% endfor %}
+        <div id="comment-message-box"></div>
 
         <div class="post">
             <p class="muted">Rejoindre la conversation</p>
@@ -77,7 +74,7 @@
             {% if post.isLocked %}
                 <p class="error-text">Ce post est verrouillé. Vous ne pouvez plus commenter.</p>
             {% else %}
-                <form method="post" action="{{ path('app_comment_add', {id: post.id}) }}">
+                <form method="post" action="{{ path('app_comment_add', {id: post.id}) }}" class="ajax-comment-form" id="main-comment-form">
                     <textarea
                         name="content"
                         rows="3"
@@ -97,14 +94,14 @@
                 <input type="hidden" name="q" value="{{ search }}">
 
                 <label class="muted">Trier par :</label>
-                <select name="sort" class="combo-dark" onchange="this.form.submit()">
+                <select name="sort" class="combo-dark" id="comment-sort-select">
                     <option value="Nouveau" {{ sort == 'Nouveau' ? 'selected' : '' }}>Nouveau</option>
                     <option value="Ancien" {{ sort == 'Ancien' ? 'selected' : '' }}>Ancien</option>
                 </select>
             </form>
         </div>
 
-        <div class="feedBox">
+        <div class="feedBox" id="comments-container">
             {% for comment in rootComments %}
                 {% include 'comment/_comment.html.twig' with {
                     comment: comment,
@@ -121,40 +118,176 @@
         </div>
     </div>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script>
-document.addEventListener('click', function (e) {
-    const toggleBtn = e.target.closest('.reply-toggle-btn, .edit-toggle-btn');
-    if (toggleBtn) {
-        e.preventDefault();
+document.addEventListener('DOMContentLoaded', function () {
+    const commentsAjaxUrl = "{{ path('app_comments_ajax', {id: post.id}) }}";
+    const searchInput = document.getElementById('comment-search-input');
+    const sortSelect = document.getElementById('comment-sort-select');
+    const sortHidden = document.getElementById('comment-sort-hidden');
+    let searchTimeout = null;
 
-        const targetId = toggleBtn.getAttribute('data-target');
-        const hideId = toggleBtn.getAttribute('data-hide');
+    function showMessage(message, success = true) {
+        const box = document.getElementById('comment-message-box');
 
-        const targetBox = document.getElementById(targetId);
-        const hideBox = hideId ? document.getElementById(hideId) : null;
+        box.innerHTML = `
+            <div class="post ${success ? '' : 'error-box'}" style="margin-bottom:12px;">
+                <p class="${success ? '' : 'error-text'}" style="margin:0; font-weight:700;">
+                    ${message}
+                </p>
+            </div>
+        `;
 
-        if (hideBox) {
-            hideBox.classList.add('hidden');
-        }
-
-        if (targetBox) {
-            targetBox.classList.toggle('hidden');
-        }
-
-        return;
+        setTimeout(function () {
+            box.innerHTML = '';
+        }, 2500);
     }
 
-    const cancelBtn = e.target.closest('.cancel-toggle-btn');
-    if (cancelBtn) {
+    function refreshComments() {
+        $.ajax({
+            url: commentsAjaxUrl,
+            method: 'GET',
+            dataType: 'json',
+            data: {
+                q: searchInput ? searchInput.value : '',
+                sort: sortSelect ? sortSelect.value : 'Nouveau'
+            },
+            success: function (response) {
+                if (response.success) {
+                    $('#comments-container').html(response.html);
+                }
+            },
+            error: function () {
+                showMessage('Erreur lors du chargement des commentaires.', false);
+            }
+        });
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            clearTimeout(searchTimeout);
+
+            searchTimeout = setTimeout(function () {
+                refreshComments();
+            }, 400);
+        });
+    }
+
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function () {
+            if (sortHidden) {
+                sortHidden.value = sortSelect.value;
+            }
+
+            refreshComments();
+        });
+    }
+
+    document.addEventListener('submit', function (e) {
+        const form = e.target.closest('.ajax-comment-form');
+
+        if (!form) {
+            return;
+        }
+
         e.preventDefault();
 
-        const targetId = cancelBtn.getAttribute('data-target');
-        const box = document.getElementById(targetId);
+        $.ajax({
+            url: form.getAttribute('action'),
+            method: 'POST',
+            data: $(form).serialize(),
+            dataType: 'json',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function (response) {
+                showMessage(response.message || 'Action effectuée.', true);
+                form.reset();
 
-        if (box) {
-            box.classList.add('hidden');
+                document.querySelectorAll('.hidden').forEach(function (box) {
+                    if (box.id && (box.id.startsWith('reply-box-') || box.id.startsWith('edit-box-'))) {
+                        box.classList.add('hidden');
+                    }
+                });
+
+                refreshComments();
+            },
+            error: function (xhr) {
+                const response = xhr.responseJSON;
+                showMessage(response && response.message ? response.message : 'Erreur.', false);
+            }
+        });
+    });
+
+    document.addEventListener('submit', function (e) {
+        const form = e.target.closest('.ajax-comment-delete');
+
+        if (!form) {
+            return;
         }
-    }
+
+        e.preventDefault();
+
+        if (!confirm('Supprimer ce commentaire ?')) {
+            return;
+        }
+
+        $.ajax({
+            url: form.getAttribute('action'),
+            method: 'POST',
+            dataType: 'json',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function (response) {
+                showMessage(response.message || 'Commentaire supprimé.', true);
+                refreshComments();
+            },
+            error: function (xhr) {
+                const response = xhr.responseJSON;
+                showMessage(response && response.message ? response.message : 'Erreur.', false);
+            }
+        });
+    });
+
+    document.addEventListener('click', function (e) {
+        const toggleBtn = e.target.closest('.reply-toggle-btn, .edit-toggle-btn');
+
+        if (toggleBtn) {
+            e.preventDefault();
+
+            const targetId = toggleBtn.getAttribute('data-target');
+            const hideId = toggleBtn.getAttribute('data-hide');
+
+            const targetBox = document.getElementById(targetId);
+            const hideBox = hideId ? document.getElementById(hideId) : null;
+
+            if (hideBox) {
+                hideBox.classList.add('hidden');
+            }
+
+            if (targetBox) {
+                targetBox.classList.toggle('hidden');
+            }
+
+            return;
+        }
+
+        const cancelBtn = e.target.closest('.cancel-toggle-btn');
+
+        if (cancelBtn) {
+            e.preventDefault();
+
+            const targetId = cancelBtn.getAttribute('data-target');
+            const box = document.getElementById(targetId);
+
+            if (box) {
+                box.classList.add('hidden');
+            }
+        }
+    });
 });
 </script>
 {% endblock %}

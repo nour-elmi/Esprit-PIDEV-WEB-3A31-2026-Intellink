@@ -10,7 +10,7 @@
             </div>
         </div>
 
-        <div class="translated-text" style="font-style: normal;">
+        <div class="translated-text" style="font-style: normal;" id="comment-content-{{ comment.id }}">
             {{ comment.content }}
         </div>
 
@@ -36,7 +36,7 @@
                     ✏ Modifier
                 </button>
 
-                <form method="post" action="{{ path('app_comment_delete', {id: comment.id}) }}" style="display:inline;">
+                <form method="post" action="{{ path('app_comment_delete', {id: comment.id}) }}" class="ajax-comment-delete" style="display:inline;">
                     <button type="submit" class="chip">🗑 Supprimer</button>
                 </form>
             {% else %}
@@ -46,7 +46,7 @@
 
         {% if not post.isLocked %}
             <div id="reply-box-{{ comment.id }}" class="hidden" style="margin-top: 10px;">
-                <form method="post" action="{{ path('app_comment_reply', {id: comment.id}) }}">
+                <form method="post" action="{{ path('app_comment_reply', {id: comment.id}) }}" class="ajax-comment-form">
                     <textarea
                         name="content"
                         rows="2"
@@ -70,7 +70,7 @@
 
         {% if comment.author and comment.author.id == currentUserId %}
             <div id="edit-box-{{ comment.id }}" class="hidden" style="margin-top: 10px;">
-                <form method="post" action="{{ path('app_comment_edit', {id: comment.id}) }}">
+                <form method="post" action="{{ path('app_comment_edit', {id: comment.id}) }}" class="ajax-comment-form">
                     <textarea
                         name="content"
                         rows="2"

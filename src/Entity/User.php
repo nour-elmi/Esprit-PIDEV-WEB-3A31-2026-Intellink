@@ -14,22 +14,23 @@ class User
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: "id")]
+    /** @phpstan-ignore-next-line */
     private ?int $id = null;
 
     #[ORM\Column(name: "nom", length: 20)]
-    private ?string $nom = null;
+    private string $nom;
 
     #[ORM\Column(name: "email", length: 255)]
-    private ?string $email = null;
+    private string $email;
 
     #[ORM\Column(name: "mdp", length: 255)]
-    private ?string $mdp = null;
+    private string $mdp;
 
     #[ORM\Column(name: "role", length: 20)]
-    private ?string $role = null;
+    private string $role;
 
     #[ORM\Column(name: "skills", length: 1000)]
-    private ?string $skills = null;
+    private string $skills;
 
     #[ORM\Column(name: "image", length: 255, nullable: true)]
     private ?string $image = null;
@@ -55,7 +56,7 @@ class User
         return $this->id;
     }
 
-    public function getNom(): ?string
+    public function getNom(): string
     {
         return $this->nom;
     }
@@ -66,7 +67,7 @@ class User
         return $this;
     }
 
-    public function getEmail(): ?string
+    public function getEmail(): string
     {
         return $this->email;
     }
@@ -77,7 +78,7 @@ class User
         return $this;
     }
 
-    public function getMdp(): ?string
+    public function getMdp(): string
     {
         return $this->mdp;
     }
@@ -88,7 +89,7 @@ class User
         return $this;
     }
 
-    public function getRole(): ?string
+    public function getRole(): string
     {
         return $this->role;
     }
@@ -99,7 +100,7 @@ class User
         return $this;
     }
 
-    public function getSkills(): ?string
+    public function getSkills(): string
     {
         return $this->skills;
     }

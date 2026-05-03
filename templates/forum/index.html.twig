@@ -79,7 +79,7 @@
             </div>
         {% endfor %}
 
-        <div class="feedBox">
+        <div class="feedBox" id="posts-container">
             {% for post in posts %}
                 <div class="post">
                     <div class="post-header">
@@ -185,95 +185,314 @@
     </div>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // search auto submit
     const searchInput = document.getElementById('search-input');
-    const searchForm = document.getElementById('search-form');
-    let searchTimeout;
+    let searchTimeout = null;
 
-    if (searchInput && searchForm) {
-        searchInput.addEventListener('input', function () {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                searchForm.submit();
-            }, 500);
+    const ajaxSearchUrl = "{{ path('app_forum_ajax_search') }}";
+    const translateUrl = "{{ path('app_translate') }}";
+    const reportUrl = "{{ path('app_report_create') }}";
+    const commentsUrlTemplate = "{{ path('app_comments', {id: 'POST_ID'}) }}";
+    const voteUpUrlTemplate = "{{ path('app_reaction_vote', {id: 'POST_ID', type: 'UP'}) }}";
+    const voteDownUrlTemplate = "{{ path('app_reaction_vote', {id: 'POST_ID', type: 'DOWN'}) }}";
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+
+    function buildUrl(template, postId) {
+        return template.replace('POST_ID', postId);
+    }
+
+    function buildImagesHtml(post) {
+        if (!post.images || post.images.length === 0) {
+            return '';
+        }
+
+        let html = `
+            <div class="reddit-media-slider" data-slider-id="slider-${post.id}">
+                <div class="reddit-media">
+        `;
+
+        post.images.forEach(function (image, index) {
+            html += `
+                <img
+                    src="${escapeHtml(image)}"
+                    alt="Post image"
+                    class="post-image slider-image ${index === 0 ? 'active' : ''}"
+                    data-slider-image="slider-${post.id}"
+                >
+            `;
+        });
+
+        if (post.images.length > 1) {
+            html += `
+                <button type="button" class="reddit-nav left" data-slider-prev="slider-${post.id}">❮</button>
+                <button type="button" class="reddit-nav right" data-slider-next="slider-${post.id}">❯</button>
+            `;
+        }
+
+        html += `
+                </div>
+        `;
+
+        if (post.images.length > 1) {
+            html += `<div class="reddit-dots-row">`;
+
+            post.images.forEach(function (image, index) {
+                html += `
+                    <span
+                        class="dot-indicator ${index === 0 ? 'active-dot' : ''}"
+                        data-slider-dot="slider-${post.id}"
+                        data-index="${index}"
+                    ></span>
+                `;
+            });
+
+            html += `</div>`;
+        }
+
+        html += `</div>`;
+
+        return html;
+    }
+
+    function buildPostHtml(post) {
+        const content = escapeHtml(post.content);
+        const author = escapeHtml(post.author);
+        const createdAt = escapeHtml(post.createdAt);
+
+        return `
+            <div class="post">
+                <div class="post-header">
+                    <div>
+                        <span class="subreddit">u/${author}</span>
+                        <span class="muted">
+                            • ${createdAt}
+                            ${post.isEdited ? ' • (modifié)' : ''}
+                            ${post.isPinned ? ' • 📌' : ''}
+                            ${post.isLocked ? ' • 🔒' : ''}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="post-title-dark" id="post-content-${post.id}">
+                    ${content}
+                </div>
+
+                <div class="translate-row">
+                    <span class="muted">Traduire:</span>
+                    <button type="button" class="translate-chip" data-post-id="${post.id}" data-lang="fr">FR</button>
+                    <button type="button" class="translate-chip" data-post-id="${post.id}" data-lang="en">EN</button>
+                    <button type="button" class="translate-chip" data-post-id="${post.id}" data-lang="ar">AR</button>
+                    <button type="button" class="translate-chip hidden" id="hide-translation-${post.id}">✖</button>
+                </div>
+
+                <div class="translated-text hidden" id="translated-text-${post.id}"></div>
+
+                ${buildImagesHtml(post)}
+
+                <div class="post-actions">
+                    <div class="vote-inline">
+                        <a href="${buildUrl(voteUpUrlTemplate, post.id)}" class="vote-btn">▲</a>
+                        <span class="vote-count-dark">${post.score ?? 0}</span>
+                        <a href="${buildUrl(voteDownUrlTemplate, post.id)}" class="vote-btn">▼</a>
+                    </div>
+
+                    <a href="${buildUrl(commentsUrlTemplate, post.id)}" class="chip">💬 Commenter</a>
+
+                    <button type="button" class="chip report-btn" data-post-id="${post.id}">
+                        🚩 Signaler
+                    </button>
+                </div>
+
+                <div id="report-box-${post.id}" class="hidden report-box">
+                    <form method="post" action="${reportUrl}">
+                        <input type="hidden" name="targetType" value="POST">
+                        <input type="hidden" name="targetId" value="${post.id}">
+
+                        <textarea
+                            name="reason"
+                            rows="2"
+                            class="input-light create-textarea"
+                            placeholder="Raison du signalement..."
+                            required
+                        ></textarea>
+
+                        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+                            <button type="button" class="btn-outline cancel-report-btn" data-post-id="${post.id}">
+                                Annuler
+                            </button>
+                            <button type="submit" class="btn-primary">Envoyer</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderPosts(posts) {
+        const container = $('#posts-container');
+        container.empty();
+
+        if (!posts || posts.length === 0) {
+            container.html(`
+                <div class="post">
+                    <p class="muted">Aucun post trouvé.</p>
+                </div>
+            `);
+            return;
+        }
+
+        posts.forEach(function (post) {
+            container.append(buildPostHtml(post));
+        });
+
+        initSliders();
+    }
+
+    function ajaxSearch() {
+        const query = searchInput ? searchInput.value : '';
+
+        $.ajax({
+            url: ajaxSearchUrl,
+            method: 'GET',
+            dataType: 'json',
+            data: {
+                q: query,
+                filter: "{{ filter }}",
+                sort: "{{ sort }}"
+            },
+            success: function (response) {
+                if (response.success) {
+                    renderPosts(response.posts);
+                }
+            },
+            error: function () {
+                $('#posts-container').html(`
+                    <div class="post error-box">
+                        <p class="error-text">Erreur lors de la recherche.</p>
+                    </div>
+                `);
+            }
         });
     }
 
-    // image sliders
-    const sliders = document.querySelectorAll('[data-slider-id]');
-    sliders.forEach(slider => {
-        const sliderId = slider.dataset.sliderId;
-        const images = slider.querySelectorAll(`[data-slider-image="${sliderId}"]`);
-        const dots = slider.querySelectorAll(`[data-slider-dot="${sliderId}"]`);
-        const prevBtn = slider.querySelector(`[data-slider-prev="${sliderId}"]`);
-        const nextBtn = slider.querySelector(`[data-slider-next="${sliderId}"]`);
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            clearTimeout(searchTimeout);
 
-        if (images.length <= 1) return;
-
-        let currentIndex = 0;
-
-        function showImage(index) {
-            images.forEach((img, i) => {
-                img.classList.toggle('active', i === index);
-            });
-
-            dots.forEach((dot, i) => {
-                dot.classList.toggle('active-dot', i === index);
-            });
-
-            currentIndex = index;
-        }
-
-        if (prevBtn) {
-            prevBtn.addEventListener('click', function () {
-                let newIndex = currentIndex - 1;
-                if (newIndex < 0) newIndex = images.length - 1;
-                showImage(newIndex);
-            });
-        }
-
-        if (nextBtn) {
-            nextBtn.addEventListener('click', function () {
-                let newIndex = currentIndex + 1;
-                if (newIndex >= images.length) newIndex = 0;
-                showImage(newIndex);
-            });
-        }
-
-        dots.forEach(dot => {
-            dot.addEventListener('click', function () {
-                const index = parseInt(dot.dataset.index, 10);
-                showImage(index);
-            });
+            searchTimeout = setTimeout(function () {
+                ajaxSearch();
+            }, 400);
         });
+    }
 
-        showImage(0);
-    });
+    function initSliders() {
+        const sliders = document.querySelectorAll('[data-slider-id]');
 
-    // translation
-    const translateButtons = document.querySelectorAll('.translate-chip[data-post-id]');
+        sliders.forEach(function (slider) {
+            if (slider.dataset.ready === 'true') {
+                return;
+            }
 
-    translateButtons.forEach(button => {
-        button.addEventListener('click', async function () {
-            const postId = this.dataset.postId;
-            const lang = this.dataset.lang;
+            slider.dataset.ready = 'true';
+
+            const sliderId = slider.dataset.sliderId;
+            const images = slider.querySelectorAll(`[data-slider-image="${sliderId}"]`);
+            const dots = slider.querySelectorAll(`[data-slider-dot="${sliderId}"]`);
+            const prevBtn = slider.querySelector(`[data-slider-prev="${sliderId}"]`);
+            const nextBtn = slider.querySelector(`[data-slider-next="${sliderId}"]`);
+
+            if (images.length <= 1) {
+                return;
+            }
+
+            let currentIndex = 0;
+
+            function showImage(index) {
+                images.forEach(function (img, i) {
+                    img.classList.toggle('active', i === index);
+                });
+
+                dots.forEach(function (dot, i) {
+                    dot.classList.toggle('active-dot', i === index);
+                });
+
+                currentIndex = index;
+            }
+
+            if (prevBtn) {
+                prevBtn.addEventListener('click', function () {
+                    let newIndex = currentIndex - 1;
+
+                    if (newIndex < 0) {
+                        newIndex = images.length - 1;
+                    }
+
+                    showImage(newIndex);
+                });
+            }
+
+            if (nextBtn) {
+                nextBtn.addEventListener('click', function () {
+                    let newIndex = currentIndex + 1;
+
+                    if (newIndex >= images.length) {
+                        newIndex = 0;
+                    }
+
+                    showImage(newIndex);
+                });
+            }
+
+            dots.forEach(function (dot) {
+                dot.addEventListener('click', function () {
+                    const index = parseInt(dot.dataset.index, 10);
+                    showImage(index);
+                });
+            });
+
+            showImage(0);
+        });
+    }
+
+    document.addEventListener('click', async function (event) {
+        const translateBtn = event.target.closest('.translate-chip[data-post-id][data-lang]');
+
+        if (translateBtn) {
+            event.preventDefault();
+
+            const postId = translateBtn.dataset.postId;
+            const lang = translateBtn.dataset.lang;
             const contentElement = document.getElementById(`post-content-${postId}`);
             const translatedElement = document.getElementById(`translated-text-${postId}`);
             const hideBtn = document.getElementById(`hide-translation-${postId}`);
 
-            if (!contentElement || !translatedElement) return;
+            if (!contentElement || !translatedElement || !hideBtn) {
+                return;
+            }
 
             const originalText = contentElement.innerText.trim();
-            if (!originalText) return;
+
+            if (!originalText) {
+                return;
+            }
 
             translatedElement.classList.remove('hidden');
             translatedElement.innerText = 'Traduction...';
             hideBtn.classList.remove('hidden');
 
             try {
-                const response = await fetch('{{ path('app_translate') }}', {
+                const response = await fetch(translateUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
@@ -294,12 +513,16 @@ document.addEventListener('DOMContentLoaded', function () {
             } catch (error) {
                 translatedElement.innerText = '❌ Erreur de traduction.';
             }
-        });
-    });
 
-    document.querySelectorAll('[id^="hide-translation-"]').forEach(button => {
-        button.addEventListener('click', function () {
-            const postId = this.id.replace('hide-translation-', '');
+            return;
+        }
+
+        const hideTranslationBtn = event.target.closest('[id^="hide-translation-"]');
+
+        if (hideTranslationBtn) {
+            event.preventDefault();
+
+            const postId = hideTranslationBtn.id.replace('hide-translation-', '');
             const translatedElement = document.getElementById(`translated-text-${postId}`);
 
             if (translatedElement) {
@@ -307,32 +530,40 @@ document.addEventListener('DOMContentLoaded', function () {
                 translatedElement.classList.add('hidden');
             }
 
-            this.classList.add('hidden');
-        });
-    });
+            hideTranslationBtn.classList.add('hidden');
+            return;
+        }
 
-    // report buttons
-    document.querySelectorAll('.report-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const postId = this.dataset.postId;
+        const reportBtn = event.target.closest('.report-btn');
+
+        if (reportBtn) {
+            event.preventDefault();
+
+            const postId = reportBtn.dataset.postId;
             const box = document.getElementById(`report-box-${postId}`);
 
-            if (!box) return;
+            if (box) {
+                box.classList.toggle('hidden');
+            }
 
-            box.classList.toggle('hidden');
-        });
-    });
+            return;
+        }
 
-    document.querySelectorAll('.cancel-report-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const postId = this.dataset.postId;
+        const cancelReportBtn = event.target.closest('.cancel-report-btn');
+
+        if (cancelReportBtn) {
+            event.preventDefault();
+
+            const postId = cancelReportBtn.dataset.postId;
             const box = document.getElementById(`report-box-${postId}`);
 
-            if (!box) return;
-
-            box.classList.add('hidden');
-        });
+            if (box) {
+                box.classList.add('hidden');
+            }
+        }
     });
+
+    initSliders();
 });
 </script>
 {% endblock %}

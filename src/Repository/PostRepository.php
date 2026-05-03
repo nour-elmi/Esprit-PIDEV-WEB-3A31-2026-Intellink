@@ -13,29 +13,32 @@ class PostRepository extends ServiceEntityRepository
         parent::__construct($registry, Post::class);
     }
 
-    // ✅ afficherNewest()
     public function findNewest(): array
     {
         return $this->createQueryBuilder('p')
+            ->leftJoin('p.author', 'a')->addSelect('a')
+            ->leftJoin('p.images', 'i')->addSelect('i')
             ->orderBy('p.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
     }
 
-    // ✅ afficherAdminFeed()
     public function findAdminFeed(): array
     {
         return $this->createQueryBuilder('p')
+            ->leftJoin('p.author', 'a')->addSelect('a')
+            ->leftJoin('p.images', 'i')->addSelect('i')
             ->orderBy('p.isPinned', 'DESC')
             ->addOrderBy('p.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
     }
 
-    // ✅ afficherNewestActiveOnly()
     public function findNewestActiveOnly(): array
     {
         return $this->createQueryBuilder('p')
+            ->leftJoin('p.author', 'a')->addSelect('a')
+            ->leftJoin('p.images', 'i')->addSelect('i')
             ->andWhere('p.status = :status')
             ->setParameter('status', 'ACTIVE')
             ->orderBy('p.isPinned', 'DESC')
@@ -44,7 +47,46 @@ class PostRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    // ✅ updateContent()
+    public function searchActivePosts(string $search): array
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.author', 'a')->addSelect('a')
+            ->leftJoin('p.images', 'i')->addSelect('i')
+            ->andWhere('p.status = :status')
+            ->andWhere('LOWER(p.content) LIKE :search')
+            ->setParameter('status', 'ACTIVE')
+            ->setParameter('search', '%' . mb_strtolower(trim($search)) . '%')
+            ->orderBy('p.isPinned', 'DESC')
+            ->addOrderBy('p.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function searchAdminPosts(string $search, string $statusFilter = 'Tous'): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->leftJoin('p.author', 'a')->addSelect('a')
+            ->leftJoin('p.images', 'i')->addSelect('i')
+            ->andWhere('LOWER(p.content) LIKE :search')
+            ->setParameter('search', '%' . mb_strtolower(trim($search)) . '%');
+
+        if ($statusFilter === 'Actifs') {
+            $qb->andWhere('p.status = :status')
+                ->setParameter('status', 'ACTIVE');
+        }
+
+        if ($statusFilter === 'Masqués' || $statusFilter === 'Masques') {
+            $qb->andWhere('p.status = :status')
+                ->setParameter('status', 'HIDDEN');
+        }
+
+        return $qb
+            ->orderBy('p.isPinned', 'DESC')
+            ->addOrderBy('p.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function updateContent(int $postId, int $userId, string $content): bool
     {
         return $this->createQueryBuilder('p')
@@ -60,5 +102,4 @@ class PostRepository extends ServiceEntityRepository
             ->getQuery()
             ->execute() > 0;
     }
-    
 }

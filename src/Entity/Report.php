@@ -11,6 +11,7 @@ class Report
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: "id")]
+    /** @phpstan-ignore-next-line */
     private ?int $id = null;
 
     #[ORM\Column(name: "type", length: 20, nullable: true)]
@@ -26,10 +27,10 @@ class Report
     private ?string $reason = null;
 
     #[ORM\Column(name: "status", length: 20)]
-    private ?string $status = 'OPEN';
+    private string $status = 'OPEN';
 
     #[ORM\Column(name: "createdAt")]
-    private ?\DateTimeImmutable $createdAt = null;
+    private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(name: "handledBy", nullable: true)]
     private ?int $handledBy = null;
@@ -42,8 +43,6 @@ class Report
         $this->createdAt = new \DateTimeImmutable();
         $this->status = 'OPEN';
     }
-
-    // ---------------- GETTERS / SETTERS ----------------
 
     public function getId(): ?int
     {
@@ -94,7 +93,7 @@ class Report
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): string
     {
         return $this->status;
     }
@@ -105,7 +104,7 @@ class Report
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
     }

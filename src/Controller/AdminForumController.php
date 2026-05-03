@@ -7,7 +7,7 @@ use App\Repository\ReactionRepository;
 use App\Service\MailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -21,8 +21,8 @@ final class AdminForumController extends AbstractController
         ReactionRepository $reactionRepository
     ): Response {
         $search = trim((string) $request->query->get('q', ''));
-        $filter = $request->query->get('filter', 'Tous');
-        $statusFilter = $request->query->get('status', 'Tous');
+        $filter = (string) $request->query->get('filter', 'Tous');
+        $statusFilter = (string) $request->query->get('status', 'Tous');
 
         $posts = $postRepository->findAdminFeed();
 
@@ -43,9 +43,7 @@ final class AdminForumController extends AbstractController
 
         if ($filter === '24h') {
             $limit = new \DateTimeImmutable('-24 hours');
-            $posts = array_filter($posts, function ($post) use ($limit) {
-                return $post->getCreatedAt() && $post->getCreatedAt() >= $limit;
-            });
+            $posts = array_filter($posts, fn ($post) => $post->getCreatedAt() >= $limit);
         }
 
         $postScores = [];
@@ -73,27 +71,39 @@ final class AdminForumController extends AbstractController
         int $id,
         PostRepository $postRepository,
         EntityManagerInterface $entityManager,
-        MailService $mailService
-    ): RedirectResponse {
+        MailService $mailService,
+        Request $request
+    ): Response {
         $post = $postRepository->find($id);
 
-        if ($post) {
-            $willHide = $post->getStatus() !== 'HIDDEN';
-            $post->setStatus($willHide ? 'HIDDEN' : 'ACTIVE');
-            $entityManager->flush();
+        if (!$post) {
+            return $this->json(['success' => false, 'message' => 'Post introuvable.'], 404);
+        }
 
-            if ($willHide && $post->getAuthor() && $post->getAuthor()->getEmail()) {
-                try {
-                    $mailService->sendPostHiddenEmail($post->getAuthor(), $post);
-                    $this->addFlash('success', 'Post masque et email envoye au proprietaire.');
-                } catch (\Throwable $e) {
-                    $this->addFlash('error', 'Post masque, mais email non envoye.');
-                }
-            } elseif ($willHide) {
-                $this->addFlash('error', 'Post masque, mais aucun email utilisateur trouve.');
+        $willHide = $post->getStatus() !== 'HIDDEN';
+        $post->setStatus($willHide ? 'HIDDEN' : 'ACTIVE');
+        $entityManager->flush();
+
+        $message = $willHide ? 'Post masqué.' : 'Post affiché.';
+
+        if ($willHide && $post->getAuthor() && $post->getAuthor()->getEmail()) {
+            try {
+                $mailService->sendPostHiddenEmail($post->getAuthor(), $post);
+                $message = 'Post masqué et email envoyé au propriétaire.';
+            } catch (\Throwable) {
+                $message = 'Post masqué, mais email non envoyé.';
             }
         }
 
+        if ($request->isXmlHttpRequest()) {
+            return $this->json([
+                'success' => true,
+                'message' => $message,
+                'status' => $post->getStatus(),
+            ]);
+        }
+
+        $this->addFlash('success', $message);
         return $this->redirectToRoute('app_admin_forum');
     }
 
@@ -102,29 +112,39 @@ final class AdminForumController extends AbstractController
         int $id,
         PostRepository $postRepository,
         EntityManagerInterface $entityManager,
-        MailService $mailService
-    ): RedirectResponse {
+        MailService $mailService,
+        Request $request
+    ): Response {
         $post = $postRepository->find($id);
 
-        if ($post) {
-            $willLock = !$post->isLocked();
-            $post->setIsLocked($willLock);
-            $entityManager->flush();
+        if (!$post) {
+            return $this->json(['success' => false, 'message' => 'Post introuvable.'], 404);
+        }
 
-            $ownerEmail = $post->getAuthor()?->getEmail();
+        $willLock = !$post->isLocked();
+        $post->setIsLocked($willLock);
+        $entityManager->flush();
 
-            if ($willLock && $ownerEmail) {
-                try {
-                    $mailService->sendPostLockedEmail($post->getAuthor(), $post);
-                    $this->addFlash('success', 'Post verrouille et email envoye au proprietaire.');
-                } catch (\Throwable $e) {
-                    $this->addFlash('error', 'Post verrouille, mais email non envoye.');
-                }
-            } elseif ($willLock) {
-                $this->addFlash('error', 'Post verrouille, mais aucun email proprietaire trouve.');
+        $message = $willLock ? 'Post verrouillé.' : 'Post déverrouillé.';
+
+        if ($willLock && $post->getAuthor()?->getEmail()) {
+            try {
+                $mailService->sendPostLockedEmail($post->getAuthor(), $post);
+                $message = 'Post verrouillé et email envoyé au propriétaire.';
+            } catch (\Throwable) {
+                $message = 'Post verrouillé, mais email non envoyé.';
             }
         }
 
+        if ($request->isXmlHttpRequest()) {
+            return $this->json([
+                'success' => true,
+                'message' => $message,
+                'locked' => $post->isLocked(),
+            ]);
+        }
+
+        $this->addFlash('success', $message);
         return $this->redirectToRoute('app_admin_forum');
     }
 
@@ -132,13 +152,24 @@ final class AdminForumController extends AbstractController
     public function togglePin(
         int $id,
         PostRepository $postRepository,
-        EntityManagerInterface $entityManager
-    ): RedirectResponse {
+        EntityManagerInterface $entityManager,
+        Request $request
+    ): Response {
         $post = $postRepository->find($id);
 
-        if ($post) {
-            $post->setIsPinned(!$post->isPinned());
-            $entityManager->flush();
+        if (!$post) {
+            return $this->json(['success' => false, 'message' => 'Post introuvable.'], 404);
+        }
+
+        $post->setIsPinned(!$post->isPinned());
+        $entityManager->flush();
+
+        if ($request->isXmlHttpRequest()) {
+            return $this->json([
+                'success' => true,
+                'message' => $post->isPinned() ? 'Post épinglé.' : 'Post désépinglé.',
+                'pinned' => $post->isPinned(),
+            ]);
         }
 
         return $this->redirectToRoute('app_admin_forum');
@@ -148,13 +179,23 @@ final class AdminForumController extends AbstractController
     public function delete(
         int $id,
         PostRepository $postRepository,
-        EntityManagerInterface $entityManager
-    ): RedirectResponse {
+        EntityManagerInterface $entityManager,
+        Request $request
+    ): Response {
         $post = $postRepository->find($id);
 
-        if ($post) {
-            $entityManager->remove($post);
-            $entityManager->flush();
+        if (!$post) {
+            return $this->json(['success' => false, 'message' => 'Post introuvable.'], 404);
+        }
+
+        $entityManager->remove($post);
+        $entityManager->flush();
+
+        if ($request->isXmlHttpRequest()) {
+            return $this->json([
+                'success' => true,
+                'message' => 'Post supprimé.',
+            ]);
         }
 
         return $this->redirectToRoute('app_admin_forum');
