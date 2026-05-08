@@ -34,11 +34,10 @@ class FormationRepository extends ServiceEntityRepository
         }
 
         $qb = $this->createQueryBuilder('f')
-            ->leftJoin('f.participations', 'p')
-            ->addSelect('COUNT(p.idParticipation) AS HIDDEN popularity')
+            ->select('f.idFormation AS idFormation')
+            ->addSelect('(SELECT COUNT(p2.idParticipation) FROM App\Entity\formation\Participation p2 WHERE p2.formation = f) AS HIDDEN popularity')
             ->andWhere('f.domaine IN (:domaines)')
             ->setParameter('domaines', $domaines)
-            ->groupBy('f.idFormation')
             ->orderBy('popularity', 'DESC')
             ->addOrderBy('f.idFormation', 'DESC')
             ->setMaxResults(max(1, $limit));
@@ -49,7 +48,13 @@ class FormationRepository extends ServiceEntityRepository
                 ->setParameter('excludeIds', array_values(array_unique(array_map('intval', $excludeIds))));
         }
 
-        return $qb->getQuery()->getResult();
+        $rows = $qb->getQuery()->getArrayResult();
+        $ids = array_map(
+            static fn(array $row): int => (int) ($row['idFormation'] ?? 0),
+            $rows
+        );
+
+        return $this->fetchFormationsByOrderedIds($ids);
     }
 
     /**
@@ -60,9 +65,8 @@ class FormationRepository extends ServiceEntityRepository
     public function findTopFormationsExcludingIds(array $excludeIds, int $limit = 4): array
     {
         $qb = $this->createQueryBuilder('f')
-            ->leftJoin('f.participations', 'p')
-            ->addSelect('COUNT(p.idParticipation) AS HIDDEN popularity')
-            ->groupBy('f.idFormation')
+            ->select('f.idFormation AS idFormation')
+            ->addSelect('(SELECT COUNT(p2.idParticipation) FROM App\Entity\formation\Participation p2 WHERE p2.formation = f) AS HIDDEN popularity')
             ->orderBy('popularity', 'DESC')
             ->addOrderBy('f.idFormation', 'DESC')
             ->setMaxResults(max(1, $limit));
@@ -73,7 +77,42 @@ class FormationRepository extends ServiceEntityRepository
                 ->setParameter('excludeIds', array_values(array_unique(array_map('intval', $excludeIds))));
         }
 
-        return $qb->getQuery()->getResult();
+        $rows = $qb->getQuery()->getArrayResult();
+        $ids = array_map(
+            static fn(array $row): int => (int) ($row['idFormation'] ?? 0),
+            $rows
+        );
+
+        return $this->fetchFormationsByOrderedIds($ids);
+    }
+
+    /**
+     * @param int[] $ids
+     * @return Formation[]
+     */
+    private function fetchFormationsByOrderedIds(array $ids): array
+    {
+        $ids = array_values(array_unique(array_filter(array_map('intval', $ids))));
+        if ($ids === []) {
+            return [];
+        }
+
+        $formations = $this->createQueryBuilder('f')
+            ->andWhere('f.idFormation IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getResult();
+
+        $positionById = array_flip($ids);
+        usort(
+            $formations,
+            static fn(Formation $a, Formation $b): int =>
+                ($positionById[$a->getIdFormation() ?? 0] ?? PHP_INT_MAX)
+                <=>
+                ($positionById[$b->getIdFormation() ?? 0] ?? PHP_INT_MAX)
+        );
+
+        return $formations;
     }
 
     //    /**

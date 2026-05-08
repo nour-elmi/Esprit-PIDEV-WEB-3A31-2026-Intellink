@@ -14,10 +14,10 @@ class Quiz
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'idQuiz', type: 'integer')]
-    private ?int $idQuiz = null;
+    private int $idQuiz = 0; // CHANGEMENT: evite property.unusedType sur id Doctrine auto-genere
 
     #[ORM\ManyToOne(targetEntity: Formation::class, inversedBy: 'quizs')]
-    #[ORM\JoinColumn(name: 'idFormation', referencedColumnName: 'idFormation')]
+    #[ORM\JoinColumn(name: 'formation_id', referencedColumnName: 'idFormation')]
     private ?Formation $formation = null;
 
     #[ORM\Column(type: 'string', length: 100)]
@@ -32,6 +32,7 @@ class Quiz
     #[ORM\Column(name: 'scoreMax', type: 'float', nullable: true)]
     private ?float $scoreMax = null;
 
+    /** @var Collection<int, Question> */
     #[ORM\OneToMany(targetEntity: Question::class, mappedBy: 'quiz')]
     private Collection $questions;
 
@@ -57,6 +58,7 @@ class Quiz
     public function getScoreMax(): ?float { return $this->scoreMax; }
     public function setScoreMax(?float $scoreMax): self { $this->scoreMax = $scoreMax; return $this; }
 
+    /** @return Collection<int, Question> */
     public function getQuestions(): Collection { return $this->questions; }
 
     public function addQuestion(Question $question): self
@@ -74,3 +76,5 @@ class Quiz
         return $this;
     }
 }
+
+

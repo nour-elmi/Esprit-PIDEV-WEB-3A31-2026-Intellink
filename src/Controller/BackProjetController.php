@@ -116,8 +116,11 @@ class BackProjetController extends AbstractController
             $totalParticipations = 0;
             foreach ($projectsById as $pid => $projectEntity) {
                 $totals = $countsByProject[(int) $pid] ?? ['total' => 0, 'accepted' => 0];
-                $totalCount = (int) ($totals['total'] ?? 0);
-                $acceptedCount = (int) ($totals['accepted'] ?? 0);
+                // CHANGEMENT: les cles existent toujours dans $totals.
+                // Ancien code: $totalCount = (int) ($totals['total'] ?? 0);
+                $totalCount = (int) $totals['total'];
+                // Ancien code: $acceptedCount = (int) ($totals['accepted'] ?? 0);
+                $acceptedCount = (int) $totals['accepted'];
                 $totalParticipations += $totalCount;
 
                 $leaderboard[] = [
@@ -142,9 +145,11 @@ class BackProjetController extends AbstractController
                 }
             );
 
-            $bestProject = $leaderboard[0] ?? null;
+            // CHANGEMENT: $leaderboard est non-vide ici (projectsById non-vide).
+            // Ancien code: $bestProject = $leaderboard[0] ?? null;
+            $bestProject = $leaderboard[0];
             $coverage = 0;
-            if ($bestProject !== null && $totalParticipations > 0) {
+            if ($totalParticipations > 0) {
                 $coverage = (int) round(((int) $bestProject['total'] / $totalParticipations) * 100);
             }
 
@@ -295,7 +300,9 @@ class BackProjetController extends AbstractController
 
                 $projectId = (int) ($contract->getProjetId() ?? 0);
                 $projectTitle = 'Projet #' . $projectId;
-                if (isset($projectsById[$projectId]) && $projectsById[$projectId] instanceof Projet) {
+                // CHANGEMENT: le tableau est deja mappe avec des instances Projet.
+                // Ancien code: if (isset($projectsById[$projectId]) && $projectsById[$projectId] instanceof Projet) {
+                if (isset($projectsById[$projectId])) {
                     $projectTitle = (string) $projectsById[$projectId]->getTitre();
                 }
                 $eventDate = $contract->getUserSignedAt();
@@ -698,7 +705,10 @@ class BackProjetController extends AbstractController
         }
 
         $collaboration = $contrat->getCollaboration();
-        $projet = $collaboration?->getProjet();
+        if (!$collaboration) { // CHANGEMENT: garde null-safety pour PHPStan level 8
+            throw $this->createNotFoundException('Collaboration introuvable.');
+        }
+        $projet = $collaboration->getProjet();
         if (!$projet || $projet->getCreateur() !== (string) $chef->getEmail()) {
             throw $this->createAccessDeniedException('Acces refuse a ce contrat.');
         }
@@ -762,12 +772,10 @@ class BackProjetController extends AbstractController
             return $this->redirectToRoute('app_back_contrat_show', ['id' => $contrat->getId()]);
         }
 
-        if (!$collaboration) {
-            throw $this->createNotFoundException('Demande liee au contrat introuvable.');
-        }
-
         $pdfBinary = $contractPdfGenerator->generateSignedContractPdf($contrat, $collaboration);
-        $projectTitle = trim((string) ($projet?->getTitre() ?? 'projet'));
+        // CHANGEMENT: $projet est deja non-null a ce stade.
+        // Ancien code: $projectTitle = trim((string) ($projet?->getTitre() ?? 'projet'));
+        $projectTitle = trim((string) ($projet->getTitre() ?? 'projet'));
         $safeTitle = preg_replace('/[^a-zA-Z0-9\-_]+/', '-', $projectTitle) ?: 'projet';
         $filename = sprintf('contrat-signe-%s-%d.pdf', strtolower($safeTitle), (int) $contrat->getId());
 
@@ -849,42 +857,36 @@ class BackProjetController extends AbstractController
             $_ENV['OPENAI_API_KEY']
             ?? $_SERVER['OPENAI_API_KEY']
             ?? getenv('OPENAI_API_KEY')
-            ?? ''
         );
 
         $openAiModel = (string) (
             $_ENV['OPENAI_MODEL']
             ?? $_SERVER['OPENAI_MODEL']
             ?? getenv('OPENAI_MODEL')
-            ?? 'gpt-4o-mini'
         );
 
         $geminiApiKey = (string) (
             $_ENV['GEMINI_API_KEY']
             ?? $_SERVER['GEMINI_API_KEY']
             ?? getenv('GEMINI_API_KEY')
-            ?? ''
         );
 
         $geminiModel = (string) (
             $_ENV['GEMINI_MODEL']
             ?? $_SERVER['GEMINI_MODEL']
             ?? getenv('GEMINI_MODEL')
-            ?? 'gemini-2.0-flash'
         );
 
         $geminiBaseUrl = rtrim((string) (
             $_ENV['GEMINI_BASE_URL']
             ?? $_SERVER['GEMINI_BASE_URL']
             ?? getenv('GEMINI_BASE_URL')
-            ?? 'https://generativelanguage.googleapis.com/v1beta'
         ), '/');
 
         $provider = strtolower((string) (
             $_ENV['AI_PROVIDER']
             ?? $_SERVER['AI_PROVIDER']
             ?? getenv('AI_PROVIDER')
-            ?? ''
         ));
 
         if ($provider === '') {
@@ -895,14 +897,12 @@ class BackProjetController extends AbstractController
             $_ENV['OLLAMA_BASE_URL']
             ?? $_SERVER['OLLAMA_BASE_URL']
             ?? getenv('OLLAMA_BASE_URL')
-            ?? 'http://127.0.0.1:11434'
         ), '/');
 
         $ollamaModel = (string) (
             $_ENV['OLLAMA_MODEL']
             ?? $_SERVER['OLLAMA_MODEL']
             ?? getenv('OLLAMA_MODEL')
-            ?? 'llama3.2'
         );
 
         $providers = ['gemini', 'openai', 'ollama'];
@@ -914,12 +914,82 @@ class BackProjetController extends AbstractController
             $providers = ['gemini', 'openai', 'ollama'];
         }
 
+        $aiDescriptionInstruction = 'Redige UNE SEULE phrase en francais pour decrire le projet, entre 110 et 170 caracteres. '
+            . 'La phrase doit etre complete et se terminer par un point. '
+            . 'Style: clair, concret, professionnel. '
+            . 'Interdiction: pas d\'introduction (ex: "Bien sur"), pas de liste, pas de "Option 1", pas de markdown, pas d\'emoji.';
+
         $normalizeDescription = static function (string $description): string {
-            $description = preg_replace('/\s+/', ' ', $description) ?? $description;
+            $description = str_replace(["\r\n", "\r"], "\n", $description);
+            $description = strip_tags($description);
+            $description = preg_replace('/[*_`#>]+/u', ' ', $description) ?? $description;
+            $description = preg_replace('/[ \t]+/u', ' ', $description) ?? $description;
             $description = trim($description);
-            if (strlen($description) > 220) {
-                $description = substr($description, 0, 217) . '...';
+
+            if ($description === '') {
+                return '';
             }
+
+            $lines = preg_split('/\n+/u', $description) ?: [];
+            $candidates = [];
+            foreach ($lines as $line) {
+                $line = trim($line);
+                if ($line === '') {
+                    continue;
+                }
+
+                $line = preg_replace('/^\s*(?:[-*•]|\d+[\)\.\-:]?)\s*/u', '', $line) ?? $line;
+                $line = preg_replace('/^option\s*\d+\s*[:\-]\s*/iu', '', $line) ?? $line;
+                $line = preg_replace('/^bien\s*s[uû]r\s*!?\s*/iu', '', $line) ?? $line;
+                $line = preg_replace('/^voici[^:]{0,80}:\s*/iu', '', $line) ?? $line;
+                $line = trim($line, " \t\n\r\0\x0B\"'");
+
+                if ($line !== '') {
+                    $candidates[] = $line;
+                }
+            }
+
+            if (empty($candidates)) {
+                $candidates[] = $description;
+            }
+
+            $targetLen = 140;
+            usort(
+                $candidates,
+                static function (string $a, string $b) use ($targetLen): int {
+                    return abs(strlen($a) - $targetLen) <=> abs(strlen($b) - $targetLen);
+                }
+            );
+            // CHANGEMENT: $candidates contient toujours au moins un element.
+            // Ancien code: $description = trim((string) ($candidates[0] ?? ''));
+            $description = trim((string) $candidates[0]);
+
+            $description = preg_replace('/\s+/', ' ', $description) ?? $description;
+            $description = trim($description, " \t\n\r\0\x0B\"'");
+
+            // Si le modele renvoie plusieurs phrases, garder la premiere phrase complete.
+            if (preg_match('/^(.+?[\.!?])(\s|$)/u', $description, $m)) {
+                // CHANGEMENT: le groupe 1 existe deja quand preg_match retourne true.
+                // Ancien code: $description = trim((string) ($m[1] ?? $description));
+                $description = trim((string) $m[1]);
+            }
+
+            $maxLen = 170;
+            if (strlen($description) > $maxLen) {
+                $cut = substr($description, 0, $maxLen);
+                $lastSpace = strrpos($cut, ' ');
+                if ($lastSpace !== false && $lastSpace > 90) {
+                    $cut = substr($cut, 0, $lastSpace);
+                }
+                $description = rtrim($cut, " \t\n\r\0\x0B,;:-");
+            }
+
+            $description = preg_replace('/\.{2,}$/', '.', $description) ?? $description;
+            if (!preg_match('/[.!?]$/', $description)) {
+                $description .= '.';
+            }
+            $description = trim($description);
+
             return $description;
         };
 
@@ -948,7 +1018,7 @@ class BackProjetController extends AbstractController
                                             [
                                                 'text' => 'Tu rediges des descriptions de projet en francais, courtes, claires et professionnelles. Maximum 2 phrases. '
                                                     . 'Titre du projet: "' . $title . '". '
-                                                    . 'Genere une description concise (max 220 caracteres), concrete et attractive.',
+                                                    . $aiDescriptionInstruction,
                                             ],
                                         ],
                                     ],
@@ -1009,11 +1079,11 @@ class BackProjetController extends AbstractController
                             'messages' => [
                                 [
                                     'role' => 'system',
-                                    'content' => 'Tu rediges des descriptions de projet en francais, courtes, claires et professionnelles. Maximum 2 phrases.',
+                                    'content' => $aiDescriptionInstruction,
                                 ],
                                 [
                                     'role' => 'user',
-                                    'content' => 'Titre du projet: "' . $title . '". Genere une description concise (max 220 caracteres), concrete et attractive.',
+                                    'content' => 'Titre du projet: "' . $title . '".',
                                 ],
                             ],
                             'max_tokens' => 120,
@@ -1051,7 +1121,7 @@ class BackProjetController extends AbstractController
                         'model' => $ollamaModel,
                         'prompt' => 'Tu rediges des descriptions de projet en francais, courtes, claires et professionnelles. Maximum 2 phrases. '
                             . 'Titre du projet: "' . $title . '". '
-                            . 'Genere une description concise (max 220 caracteres), concrete et attractive.',
+                            . $aiDescriptionInstruction,
                         'stream' => false,
                         'options' => [
                             'temperature' => 0.8,
@@ -1083,7 +1153,9 @@ class BackProjetController extends AbstractController
             'description' => $this->buildFallbackDescription($title),
             'source' => 'fallback',
         ];
-        if ($isDebug && !empty($debugReasons)) {
+        // CHANGEMENT: PHPStan signale que $debugReasons est deja non-vide dans ce chemin (fallback).
+        // Ancienne condition (gardee): if ($isDebug && !empty($debugReasons)) {
+        if ($isDebug) {
             $json['reason'] = implode(' | ', $debugReasons);
         }
         return new JsonResponse($json);
@@ -1099,6 +1171,17 @@ class BackProjetController extends AbstractController
         return $user;
     }
 
+    /**
+     * @return array{
+     *   score:int,
+     *   level:string,
+     *   levelLabel:string,
+     *   recommendation:string,
+     *   breakdown: array{role:int, disponibilite:int, portfolio:int, motivation:int, profil:int},
+     *   highlights:list<string>,
+     *   motivationLength:int
+     * }
+     */
     private function buildDemandeScoreData(Collaboration $demande, ?Utilisateur $utilisateur): array
     {
         $score = 30;
@@ -1236,7 +1319,7 @@ class BackProjetController extends AbstractController
     ): void {
         $log = new ActionLog();
         $log->setActorId($actorId);
-        $log->setProjetId($projetId);
+        $log->setProjet($projetId !== null ? $entityManager->getReference(Projet::class, $projetId) : null);
         $log->setAction($action);
         $log->setDetails($details);
         $log->setCreatedAt(new \DateTimeImmutable());
@@ -1263,6 +1346,27 @@ class BackProjetController extends AbstractController
         return $description;
     }
 
+    /**
+     * @param array{
+     *   projectsCount:int,
+     *   acceptedDemandes:int,
+     *   totalDemandes:int,
+     *   totalActions:int,
+     *   weeklyActions:int
+     * } $stats
+     * @return array{
+     *   score:int,
+     *   level:string,
+     *   projectsCount:int,
+     *   acceptedDemandes:int,
+     *   totalDemandes:int,
+     *   acceptRate:int,
+     *   totalActions:int,
+     *   weeklyActions:int,
+     *   earnedBadges:list<array{title:string, rule:string, earned:bool}>,
+     *   nextBadge:array{title:string, rule:string, earned:bool}|null
+     * }
+     */
     private function buildChefBadgeProfile(array $stats): array
     {
         $projectsCount = (int) ($stats['projectsCount'] ?? 0);

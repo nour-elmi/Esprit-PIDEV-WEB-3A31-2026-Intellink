@@ -12,10 +12,10 @@ class Question
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'idQuestion', type: 'integer')]
-    private ?int $idQuestion = null;
+    private int $idQuestion = 0; // CHANGEMENT: evite property.unusedType sur id Doctrine auto-genere
 
     #[ORM\ManyToOne(targetEntity: Quiz::class, inversedBy: 'questions')]
-    #[ORM\JoinColumn(name: 'idQuiz', referencedColumnName: 'idQuiz')]
+    #[ORM\JoinColumn(name: 'quiz_id', referencedColumnName: 'idQuiz')]
     private ?Quiz $quiz = null;
 
     #[ORM\Column(type: 'text')]
@@ -41,3 +41,4 @@ class Question
     public function getPoints(): ?float { return $this->points; }
     public function setPoints(?float $points): self { $this->points = $points; return $this; }
 }
+

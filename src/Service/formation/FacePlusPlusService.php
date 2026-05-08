@@ -12,6 +12,9 @@ class FacePlusPlusService
     ) {
     }
 
+    /**
+     * @return array{ok:bool, error?:string, faceCount?:int, samePerson?:bool|null, confidence?:float|null, threshold?:float}
+     */
     public function analyzeFrames(string $referenceImage, string $currentImage): array
     {
         $apiKey = (string) ($_ENV['FACEPP_API_KEY'] ?? '');
@@ -95,6 +98,9 @@ class FacePlusPlusService
         }
     }
 
+    /**
+     * @return array{ok:bool, error?:string, faceCount?:int, samePerson?:bool|null, confidence?:float|null, threshold?:float}
+     */
     public function analyzeCurrentFrame(string $currentImage): array
     {
         $apiKey = (string) ($_ENV['FACEPP_API_KEY'] ?? '');
@@ -164,6 +170,9 @@ class FacePlusPlusService
         return max(3.0, min($timeout, 20.0));
     }
 
+    /**
+     * @param array<string, int|float|string> $body
+     */
     private function requestWithRetry(
         string $url,
         array $body,
@@ -213,6 +222,9 @@ class FacePlusPlusService
         throw new \RuntimeException('Face++ indisponible');
     }
 
+    /**
+     * @return array{ok:bool, error?:string, faceCount?:int}
+     */
     private function detectFaceCount(
         string $baseUrl,
         string $apiKey,

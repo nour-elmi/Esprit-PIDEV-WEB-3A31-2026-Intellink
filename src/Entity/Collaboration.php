@@ -11,10 +11,10 @@ class Collaboration
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id_collaboration', type: 'integer')]
-    private ?int $id = null;
+    private int $id = 0; // CHANGEMENT: evite property.unusedType sur id Doctrine auto-genere
 
     #[ORM\ManyToOne(targetEntity: Projet::class)]
-    #[ORM\JoinColumn(name: 'id_projet', referencedColumnName: 'id_projet', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'projet_id', referencedColumnName: 'id_projet', nullable: false, onDelete: 'CASCADE')]
     private ?Projet $projet = null;
 
     #[ORM\Column(name: 'id_user', type: 'integer')]
@@ -24,7 +24,7 @@ class Collaboration
     private ?\DateTimeInterface $dateCreation = null;
 
     #[ORM\Column(name: 'etat', type: 'string', length: 20, options: ['default' => 'EN_ATTENTE'])]
-    private ?string $etat = 'EN_ATTENTE';
+    private string $etat = 'EN_ATTENTE'; // CHANGEMENT: non-null, valeur par defaut toujours definie
 
     #[ORM\Column(name: 'role_souhaite', type: 'string', length: 60, nullable: true)]
     private ?string $roleSouhaite = null;
@@ -76,7 +76,7 @@ class Collaboration
         return $this;
     }
 
-    public function getEtat(): ?string
+    public function getEtat(): string // CHANGEMENT: type de retour aligne sur la propriete non-null
     {
         return $this->etat;
     }
@@ -131,3 +131,5 @@ class Collaboration
         return $this;
     }
 }
+
+

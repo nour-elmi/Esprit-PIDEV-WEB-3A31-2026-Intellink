@@ -1,0 +1,140 @@
+{% extends 'admin/base_back.html.twig' %}
+
+{% block title %}Admin Commentaires{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/forum.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="page-content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ path('app_admin_forum') }}" class="btn btn-outline-secondary">←</a>
+            <h2 class="mb-0">Admin • Commentaires</h2>
+        </div>
+
+        <form method="get" action="{{ path('app_admin_comments', {id: post.id}) }}" class="d-flex gap-2 flex-wrap">
+            <input
+                type="text"
+                name="q"
+                value="{{ search }}"
+                placeholder="Rechercher des commentaires"
+                class="form-control"
+                style="min-width: 280px;"
+            >
+            <input type="hidden" name="filter" value="{{ filter }}">
+        </form>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                <div>
+                    <div class="fw-bold text-primary">
+                        u/{{ post.author ? post.author.nom : 'Unknown' }}
+                    </div>
+                    <div class="text-muted small">
+                        • {{ post.createdAt ? post.createdAt|date('d/m/Y H:i') : '' }}
+                        {% if post.isPinned %} • 📌{% endif %}
+                        {% if post.isLocked %} • 🔒{% endif %}
+                        {% if post.status and post.status != 'ACTIVE' %} • {{ post.status }}{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div style="white-space: pre-wrap;">
+                {{ post.content }}
+            </div>
+
+            {% if post.images is not empty %}
+                <div class="mt-3">
+                    <div class="reddit-media">
+                        {% for image in post.images %}
+                            <img
+                                src="{{ asset('uploads/posts/' ~ image.imageUrl) }}"
+                                alt="Post image"
+                                class="post-image"
+                            >
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if post.isLocked %}
+        <div class="alert alert-warning mb-4">
+            🔒 Ce post est verrouillé. Les utilisateurs ne peuvent plus commenter.
+        </div>
+    {% endif %}
+
+    <div class="card mb-4">
+        <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <form method="get" action="{{ path('app_admin_comments', {id: post.id}) }}" class="d-flex gap-2 flex-wrap align-items-center">
+                <label class="text-muted">Trier par :</label>
+
+                <select name="filter" class="form-select" onchange="this.form.submit()">
+                    <option value="Tous" {{ filter == 'Tous' ? 'selected' : '' }}>Tous</option>
+                    <option value="Nouveau" {{ filter == 'Nouveau' ? 'selected' : '' }}>Nouveau</option>
+                    <option value="Ancien" {{ filter == 'Ancien' ? 'selected' : '' }}>Ancien</option>
+                    <option value="Actifs" {{ filter == 'Actifs' ? 'selected' : '' }}>Actifs</option>
+                    <option value="Masqués" {{ filter == 'Masqués' ? 'selected' : '' }}>Masqués</option>
+                </select>
+
+                <input type="hidden" name="q" value="{{ search }}">
+            </form>
+
+            <div class="text-muted">{{ count }} commentaire(s)</div>
+        </div>
+    </div>
+
+    <div class="d-flex flex-column gap-3">
+        {% for comment in comments %}
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                        <div>
+                            <div class="fw-bold text-primary">
+                                u/{{ comment.author ? comment.author.nom : 'Unknown' }}
+                            </div>
+                            <div class="text-muted small">
+                                • {{ comment.createdAt ? comment.createdAt|date('d/m/Y H:i') : '' }}
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 flex-wrap align-items-center">
+                            {% if comment.status and comment.status != 'ACTIVE' %}
+                                <span class="badge bg-secondary">{{ comment.status|upper }}</span>
+                            {% endif %}
+
+                            <form method="post" action="{{ path('app_admin_comment_toggle_hide', {id: comment.id}) }}" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-outline-warning">
+                                    {{ comment.status == 'HIDDEN' ? 'Afficher' : 'Masquer' }}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div style="white-space: pre-wrap;">
+                        {{ comment.content }}
+                    </div>
+
+                    {% if comment.parent %}
+                        <div class="text-muted small mt-2">
+                            Réponse à commentaire #{{ comment.parent.id }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="card-body text-muted">Aucun commentaire trouvé.</div>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+parameters:
+    level: 8
+    # CHANGEMENT: reduit les faux positifs "always true/false" derives des PHPDoc.
+    # Ancien comportement (garde): valeur par defaut true.
+    treatPhpDocTypesAsCertain: false
+    paths:
+        - src
+        

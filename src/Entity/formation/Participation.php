@@ -12,10 +12,10 @@ class Participation
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'idParticipation', type: 'integer')]
-    private ?int $idParticipation = null;
+    private int $idParticipation = 0; // CHANGEMENT: evite property.unusedType sur id Doctrine auto-genere
 
     #[ORM\ManyToOne(targetEntity: Formation::class, inversedBy: 'participations')]
-    #[ORM\JoinColumn(name: 'idFormation', referencedColumnName: 'idFormation')]
+    #[ORM\JoinColumn(name: 'formation_id', referencedColumnName: 'idFormation', nullable: false, onDelete: 'CASCADE')]
     private ?Formation $formation = null;
 
     #[ORM\Column(name: 'idUtilisateur', type: 'integer', nullable: true)]
@@ -36,7 +36,7 @@ class Participation
     public function getIdParticipation(): ?int { return $this->idParticipation; }
 
     public function getFormation(): ?Formation { return $this->formation; }
-    public function setFormation(?Formation $formation): self { $this->formation = $formation; return $this; }
+    public function setFormation(Formation $formation): self { $this->formation = $formation; return $this; }
 
     public function getIdUtilisateur(): ?int { return $this->idUtilisateur; }
     public function setIdUtilisateur(?int $idUtilisateur): self { $this->idUtilisateur = $idUtilisateur; return $this; }
@@ -53,3 +53,4 @@ class Participation
     public function getScore(): ?float { return $this->score; }
     public function setScore(?float $score): self { $this->score = $score; return $this; }
 }
+

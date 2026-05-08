@@ -2,6 +2,7 @@
 
 namespace App\Controller\formation;
 
+use App\Entity\Utilisateur;
 use App\Entity\formation\Formation;
 use App\Entity\formation\Question;
 use App\Entity\formation\Quiz;
@@ -26,7 +27,14 @@ final class FormationController extends AbstractController
         PaginatorInterface $paginator
     ): Response
     {
+        // CHANGEMENT: typer explicitement l'utilisateur connecte pour PHPStan.
+        // Ancien code (garde):
+        // $utilisateur = $this->getUser();
+        // $formateurId = $utilisateur->getId();
         $utilisateur = $this->getUser();
+        if (!$utilisateur instanceof Utilisateur) {
+            throw $this->createAccessDeniedException('Vous devez etre connecte.');
+        }
         $formateurId = $utilisateur->getId();
 
         $formationsQuery = $repo->createQueryBuilder('f')
@@ -103,7 +111,14 @@ final class FormationController extends AbstractController
                 $formation->setNiveau($niveau);
                 $formation->setUrlVideo($urlVideo);
 
+                // CHANGEMENT: typer explicitement l'utilisateur connecte pour PHPStan.
+                // Ancien code (garde):
+                // $utilisateur = $this->getUser();
+                // $formation->setIdFormateur($utilisateur->getId());
                 $utilisateur = $this->getUser();
+                if (!$utilisateur instanceof Utilisateur) {
+                    throw $this->createAccessDeniedException('Vous devez etre connecte.');
+                }
                 $formation->setIdFormateur($utilisateur->getId());
 
                 $em->persist($formation);
@@ -292,8 +307,12 @@ final class FormationController extends AbstractController
                 $sourceText = '';
                 if ($quizSource === 'youtube') {
                     $result = $youtubeTranscriptService->fetchTranscriptFromUrl((string) $formation->getUrlVideo());
-                    if (!($result['ok'] ?? false)) {
-                        $errors['generation'] = (string) ($result['error'] ?? 'Transcription YouTube indisponible.');
+                    // CHANGEMENT: 'ok' existe deja dans la shape de retour.
+                    // Ancien code (garde): if (!($result['ok'] ?? false)) {
+                    if (!$result['ok']) {
+                        // CHANGEMENT: dans ce chemin 'error' est renseigne.
+                        // Ancien code (garde): $errors['generation'] = (string) ($result['error'] ?? 'Transcription YouTube indisponible.');
+                        $errors['generation'] = isset($result['error']) ? (string) $result['error'] : 'Transcription YouTube indisponible.'; // CHANGEMENT
                     } else {
                         $sourceText = (string) ($result['transcript'] ?? '');
                     }
@@ -307,8 +326,12 @@ final class FormationController extends AbstractController
 
                 if (empty($errors)) {
                     $generatedResult = $localQuizGenerator->generate($sourceText, $nombreQuestions);
-                    if (!($generatedResult['ok'] ?? false)) {
-                        $errors['generation'] = (string) ($generatedResult['error'] ?? 'Generation impossible avec le contenu actuel.');
+                    // CHANGEMENT: 'ok' existe deja dans la shape de retour.
+                    // Ancien code (garde): if (!($generatedResult['ok'] ?? false)) {
+                    if (!$generatedResult['ok']) {
+                        // CHANGEMENT: dans ce chemin 'error' est renseigne.
+                        // Ancien code (garde): $errors['generation'] = (string) ($generatedResult['error'] ?? 'Generation impossible avec le contenu actuel.');
+                        $errors['generation'] = isset($generatedResult['error']) ? (string) $generatedResult['error'] : 'Generation impossible avec le contenu actuel.'; // CHANGEMENT
                     } else {
                         $questionsData = (array) ($generatedResult['questions'] ?? []);
                         if ($questionsData === []) {

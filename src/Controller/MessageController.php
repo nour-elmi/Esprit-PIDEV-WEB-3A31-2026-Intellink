@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Conversation;
 use App\Entity\Message;
+use App\Entity\Utilisateur;
 use Doctrine\ORM\EntityManagerInterface;
 use Pusher\Pusher;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,8 +21,12 @@ class MessageController extends AbstractController
         Request $request,
         EntityManagerInterface $em
     ): JsonResponse {
+        // CHANGEMENT: typer explicitement l'utilisateur connecte pour PHPStan.
+        // Ancien code (garde):
+        // $currentUser = $this->getUser();
+        // if (!$currentUser) {
         $currentUser = $this->getUser();
-        if (!$currentUser) {
+        if (!$currentUser instanceof Utilisateur) {
             return new JsonResponse(['error' => 'Non connectÃƒÂ©'], 403);
         }
 
@@ -53,7 +58,12 @@ class MessageController extends AbstractController
         $message->setContenu($texte);
 
         if ($file) {
-            $uploadsDir = $this->getParameter('kernel.project_dir') . '/public/uploads/messenger';
+            // CHANGEMENT: validation explicite du type avant concatenation.
+            $projectDir = $this->getParameter('kernel.project_dir');
+            if (!is_string($projectDir) || $projectDir === '') {
+                return new JsonResponse(['error' => 'Configuration uploads invalide'], 500);
+            }
+            $uploadsDir = $projectDir . '/public/uploads/messenger';
             if (!is_dir($uploadsDir)) {
                 mkdir($uploadsDir, 0777, true);
             }
@@ -81,7 +91,8 @@ class MessageController extends AbstractController
             'expediteur_nom' => $currentUser->getNom(),
             'conversation_id' => $conversation->getId(),
             'attachment' => $message->getAttachment(),
-            'heure' => $message->getCreatedAt()->format('H:i') // Ã°Å¸Å¸Â¢ NOUVEAU : On envoie l'heure exacte
+            // CHANGEMENT: createdAt peut etre null, on met une valeur par defaut.
+            'heure' => $message->getCreatedAt()?->format('H:i') ?? '' // Ã°Å¸Å¸Â¢ NOUVEAU : On envoie l'heure exacte
         ];
 
         // Ã°Å¸Å¸Â¢ DÃƒâ€°CLENCHEUR 1 : Pour mettre ÃƒÂ  jour la fenÃƒÂªtre de chat ouverte
@@ -116,8 +127,14 @@ class MessageController extends AbstractController
             ['cluster' => $_ENV['PUSHER_CLUSTER'], 'useTLS' => true, 'curl_options' => [CURLOPT_SSL_VERIFYPEER => false, CURLOPT_SSL_VERIFYHOST => 0]]
         );
 
+        // CHANGEMENT: typer explicitement l'utilisateur connecte pour PHPStan.
+        // Ancien code (garde): 'user_id' => $this->getUser()->getId()
+        $currentUser = $this->getUser();
+        if (!$currentUser instanceof Utilisateur) {
+            return new JsonResponse(['error' => 'Non connecte'], 403);
+        }
         $pusher->trigger('chat-conversation-' . $conversationId, 'user-typing', [
-            'user_id' => $this->getUser()->getId()
+            'user_id' => $currentUser->getId()
         ]);
 
         return new JsonResponse(['success' => true]);
@@ -126,8 +143,12 @@ class MessageController extends AbstractController
     #[Route('/api/message/history/{conversationId}', name: 'api_message_history', methods: ['GET'])]
     public function getHistory(int $conversationId, EntityManagerInterface $em): JsonResponse
     {
+        // CHANGEMENT: typer explicitement l'utilisateur connecte pour PHPStan.
+        // Ancien code (garde):
+        // $currentUser = $this->getUser();
+        // if (!$currentUser) {
         $currentUser = $this->getUser();
-        if (!$currentUser) {
+        if (!$currentUser instanceof Utilisateur) {
             return new JsonResponse(['error' => 'Non connectÃƒÂ©'], 403);
         }
 
@@ -152,10 +173,12 @@ class MessageController extends AbstractController
             $data[] = [
                 'id' => $msg->getId(),
                 'contenu' => $msg->getContenu(),
-                'expediteur_id' => $msg->getExpediteur()->getId(),
+                // CHANGEMENT: expediteur peut etre null.
+                'expediteur_id' => $msg->getExpediteur()?->getId(),
                 'attachment' => $msg->getAttachment(),
                 'isRead' => method_exists($msg, 'isRead') ? $msg->isRead() : false,
-                'heure' => $msg->getCreatedAt()->format('H:i'), 
+                // CHANGEMENT: createdAt peut etre null.
+                'heure' => $msg->getCreatedAt()?->format('H:i') ?? '', 
             ];
         }
 
@@ -165,8 +188,11 @@ class MessageController extends AbstractController
     #[Route('/api/message/read/{conversationId}', name: 'api_message_read', methods: ['POST'])]
     public function markAsRead(int $conversationId, EntityManagerInterface $em): JsonResponse
     {
+        // CHANGEMENT: typer explicitement l'utilisateur connecte pour PHPStan.
+        // Ancien code (garde): if ($conversation && $this->getUser()) {
+        $currentUser = $this->getUser();
         $conversation = $em->getRepository(Conversation::class)->find($conversationId);
-        if ($conversation && $this->getUser()) {
+        if ($conversation && $currentUser instanceof Utilisateur) {
             $messages = $em->getRepository(Message::class)->findBy([
                 'conversation' => $conversation,
                 'isRead' => false
@@ -174,7 +200,9 @@ class MessageController extends AbstractController
 
             $readCount = 0;
             foreach ($messages as $msg) {
-                if ($msg->getExpediteur() !== $this->getUser()) {
+                // CHANGEMENT: reutiliser $currentUser type Utilisateur pour PHPStan.
+                // Ancien code (garde): if ($msg->getExpediteur() !== $this->getUser()) {
+                if ($msg->getExpediteur() !== $currentUser) {
                     $msg->setIsRead(true);
                     $readCount++;
                 }
@@ -192,7 +220,9 @@ class MessageController extends AbstractController
                     );
 
                     $pusher->trigger('chat-conversation-' . $conversation->getId(), 'messages-read', [
-                        'reader_id' => $this->getUser()->getId()
+                        // CHANGEMENT: utiliser $currentUser type Utilisateur.
+                        // Ancien code (garde): 'reader_id' => $this->getUser()->getId()
+                        'reader_id' => $currentUser->getId()
                     ]);
                 } catch (\Throwable $e) {}
             }
@@ -204,13 +234,14 @@ class MessageController extends AbstractController
     public function intelLinkAi(Request $request, HttpClientInterface $httpClient): JsonResponse
     {
         // GÃƒÂ©rer le JSON ou le form-data
-        $contentType = $request->headers->get('Content-Type', '');
+        // CHANGEMENT: forcer string pour strpos().
+        $contentType = (string) $request->headers->get('Content-Type', '');
         
         if (strpos($contentType, 'application/json') !== false) {
             $data = json_decode($request->getContent(), true);
-            $userMessage = $data['contenu'] ?? '';
+            $userMessage = (string) ($data['contenu'] ?? '');
         } else {
-            $userMessage = $request->request->get('contenu', '');
+            $userMessage = (string) $request->request->get('contenu', '');
         }
 
         $userMessage = trim($userMessage);
@@ -270,4 +301,5 @@ class MessageController extends AbstractController
         }
     }
 }
+
 

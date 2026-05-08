@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Utilisateur;
 use App\Twig\AppExtension;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -12,14 +13,20 @@ class NotificationController extends AbstractController
     #[Route('/api/notifications/poll', name: 'api_notifications_poll', methods: ['GET'])]
     public function poll(AppExtension $appExtension): JsonResponse
     {
+        // CHANGEMENT: typer explicitement l'utilisateur connecte pour PHPStan.
+        // Ancien code (garde):
+        // $user = $this->getUser();
+        // if (!$user) {
         $user = $this->getUser();
-        if (!$user) {
+        if (!$user instanceof Utilisateur) {
             return $this->json(['error' => 'Not authenticated'], 401);
         }
 
         // Count Reclamations
         $unreadRecs = 0;
-        foreach ($user->getReclamations() ?? [] as $reclamation) {
+        // CHANGEMENT: getReclamations() retourne deja une collection non-null.
+        // Ancien code (garde): foreach ($user->getReclamations() ?? [] as $reclamation) {
+        foreach ($user->getReclamations() as $reclamation) {
             if ($reclamation->getStatut() === 'TRAITE' && !$reclamation->getIsRead()) {
                 $unreadRecs++;
             }

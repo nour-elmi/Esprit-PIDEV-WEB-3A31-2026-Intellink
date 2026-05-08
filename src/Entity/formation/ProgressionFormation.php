@@ -7,20 +7,20 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ProgressionFormationRepository::class)]
 #[ORM\Table(name: 'progression_formation')]
-#[ORM\UniqueConstraint(name: 'uniq_progression_participation', columns: ['idParticipation'])]
+#[ORM\UniqueConstraint(name: 'uniq_progression_participation', columns: ['participation_id'])]
 class ProgressionFormation
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'idProgression', type: 'integer')]
-    private ?int $idProgression = null;
+    private int $idProgression = 0; // CHANGEMENT: evite property.unusedType sur id Doctrine auto-genere
 
     #[ORM\ManyToOne(targetEntity: Formation::class)]
-    #[ORM\JoinColumn(name: 'idFormation', referencedColumnName: 'idFormation', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'formation_id', referencedColumnName: 'idFormation', nullable: false, onDelete: 'CASCADE')]
     private ?Formation $formation = null;
 
     #[ORM\ManyToOne(targetEntity: Participation::class)]
-    #[ORM\JoinColumn(name: 'idParticipation', referencedColumnName: 'idParticipation', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'participation_id', referencedColumnName: 'idParticipation', nullable: false, onDelete: 'CASCADE')]
     private ?Participation $participation = null;
 
     #[ORM\Column(name: 'idUtilisateur', type: 'integer')]
@@ -157,3 +157,5 @@ class ProgressionFormation
         return $this;
     }
 }
+
+

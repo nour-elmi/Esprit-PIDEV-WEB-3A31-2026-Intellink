@@ -22,7 +22,9 @@ final class LocalQuizGeneratorService
     public function generateTrueFalseQuestions(string $text, int $count = 5): array
     {
         $result = $this->generate($text, $count);
-        return ($result['ok'] ?? false) ? ($result['questions'] ?? []) : [];
+        // CHANGEMENT: 'ok' existe deja dans la shape de retour.
+        // Ancien code (garde): return ($result['ok'] ?? false) ? ($result['questions'] ?? []) : [];
+        return $result['ok'] ? ($result['questions'] ?? []) : [];
     }
 
     /**
@@ -52,10 +54,12 @@ final class LocalQuizGeneratorService
                 $apiKey,
                 2048
             );
-            if (!($translateResult['ok'] ?? false)) {
+            // CHANGEMENT: 'ok' existe deja dans la shape de retour.
+            // Ancien code (garde): if (!($translateResult['ok'] ?? false)) {
+            if (!$translateResult['ok']) {
                 return $translateResult;
             }
-            $text = trim($translateResult['content']);
+            $text = trim((string) ($translateResult['content'] ?? ''));
         }
 
         // Étape 2 : générer les questions
@@ -82,11 +86,13 @@ Réponds UNIQUEMENT avec un JSON valide, sans texte avant ni après :
 PROMPT;
 
         $result = $this->callGroq($prompt, $apiKey, 4096);
-        if (!($result['ok'] ?? false)) {
+        // CHANGEMENT: 'ok' existe deja dans la shape de retour.
+        // Ancien code (garde): if (!($result['ok'] ?? false)) {
+        if (!$result['ok']) {
             return $result;
         }
 
-        return $this->parseQuestions($result['content'], $count);
+        return $this->parseQuestions((string) ($result['content'] ?? ''), $count);
     }
 
     // -------------------------------------------------------------------------
@@ -168,6 +174,8 @@ PROMPT;
     {
         $data = json_decode($raw, true);
         if (!is_array($data) && preg_match('/\{.*\}/s', $raw, $m)) {
+            // CHANGEMENT: l'offset 0 est garanti par preg_match avec capture.
+            // Ancien code (garde): $data = json_decode($m[0], true);
             $data = json_decode($m[0], true);
         }
 
@@ -194,7 +202,7 @@ PROMPT;
             }
 
             // Supprimer "Vrai ou Faux : " si le modèle l'ajoute quand même
-            $enonce = preg_replace('/^vrai\s+ou\s+faux\s*:\s*/iu', '', $enonce);
+            $enonce = preg_replace('/^vrai\s+ou\s+faux\s*:\s*/iu', '', $enonce) ?? $enonce;
             $enonce = trim($enonce);
 
             if ($enonce === '') {
@@ -234,7 +242,9 @@ PROMPT;
         $enMarkers = ['the','and','or','to','of','in','on','for','with','is','are','this','that','can','must'];
 
         preg_match_all('/[a-zA-Z]{2,}/i', mb_strtolower($text), $m);
-        $tokens = array_unique($m[0] ?? []);
+        // CHANGEMENT: l'index 0 existe deja apres preg_match_all.
+        // Ancien code: $tokens = array_unique($m[0] ?? []);
+        $tokens = array_unique($m[0]);
 
         $fr = count(array_intersect($tokens, $frMarkers));
         $en = count(array_intersect($tokens, $enMarkers));

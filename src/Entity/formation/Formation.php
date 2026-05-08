@@ -14,7 +14,7 @@ class Formation
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'idFormation', type: 'integer')]
-    private ?int $idFormation = null;
+    private int $idFormation = 0; // CHANGEMENT: evite property.unusedType sur id Doctrine auto-genere
 
     #[ORM\Column(type: 'string', length: 100)]
     private ?string $titre = null;
@@ -34,9 +34,11 @@ class Formation
     #[ORM\Column(name: 'idFormateur', type: 'integer', nullable: true)]
     private ?int $idFormateur = null;
 
-    #[ORM\OneToMany(targetEntity: Participation::class, mappedBy: 'formation')]
+    /** @var Collection<int, Participation> */
+    #[ORM\OneToMany(targetEntity: Participation::class, mappedBy: 'formation', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $participations;
 
+    /** @var Collection<int, Quiz> */
     #[ORM\OneToMany(targetEntity: Quiz::class, mappedBy: 'formation')]
     private Collection $quizs;
 
@@ -117,6 +119,7 @@ class Formation
         return $this;
     }
 
+    /** @return Collection<int, Participation> */
     public function getParticipations(): Collection
     {
         return $this->participations;
@@ -137,6 +140,7 @@ class Formation
         return $this;
     }
 
+    /** @return Collection<int, Quiz> */
     public function getQuizs(): Collection
     {
         return $this->quizs;
@@ -157,3 +161,5 @@ class Formation
         return $this;
     }
 }
+
+

@@ -144,15 +144,21 @@ final class ListeParticipationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if ($participation->getScore() === null) {
-                $participation->setScore(0);
-            }
+            // CHANGEMENT: getScore() est desormais non-null (int), ce test est toujours faux.
+            // Ancienne logique conservee en commentaire:
+            // if ($participation->getScore() === null) {
+            //     $participation->setScore(0);
+            // }
             /** @var UploadedFile $cvFile */
             $cvFile = $form->get('cv')->getData();
             if ($cvFile) {
                 $newFilename = 'cv-' . uniqid() . '.' . $cvFile->guessExtension();
                 try {
-                    $cvFile->move($this->getParameter('cv_directory'), $newFilename);
+                    $cvDirectory = $this->getParameter('cv_directory'); // CHANGEMENT
+                    if (!is_string($cvDirectory) || $cvDirectory === '') { // CHANGEMENT
+                        throw new \RuntimeException('Parametre cv_directory invalide.');
+                    }
+                    $cvFile->move($cvDirectory, $newFilename);
                     $participation->setCv($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('error', 'Impossible d\'enregistrer le CV.');
@@ -171,7 +177,7 @@ final class ListeParticipationController extends AbstractController
     }
 
     #[Route('/deleteListe/{id}', name:'deleteListe')]
-    public function deleteListe($id, ManagerRegistry $Manager, ListeParticipationRepository $repo, Request $request)
+    public function deleteListe(int $id, ManagerRegistry $Manager, ListeParticipationRepository $repo, Request $request): Response
     {
         $user = $this->getUser();
         if (!$user instanceof Utilisateur) {
@@ -186,6 +192,9 @@ final class ListeParticipationController extends AbstractController
 
         // Autorisation : seul le candidat ou le recruteur propriétaire de l'offre peut supprimer
         $offre = $participation->getIdOffre();
+        if (!$offre) { // CHANGEMENT: securise appel sur offre nullable
+            throw $this->createNotFoundException('Offre introuvable.');
+        }
         if ($participation->getIdUser() !== $user->getId() && $offre->getIdUser() !== $user->getId()) {
             throw $this->createAccessDeniedException('Vous ne pouvez pas supprimer cette candidature.');
         }
@@ -214,6 +223,9 @@ final class ListeParticipationController extends AbstractController
 
         $offre = $participation->getIdOffre();
         // Seul le propriétaire de l'offre peut changer le statut
+        if (!$offre) { // CHANGEMENT: securise appel sur offre nullable
+            throw $this->createNotFoundException('Offre introuvable.');
+        }
         if ($offre->getIdUser() !== $recruteur->getId()) {
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier ce statut.');
         }

@@ -52,6 +52,7 @@ class AppExtension extends AbstractExtension
         return $request2 !== null;
     }
 
+    /** @return list<FriendRequest> */
     public function getPendingFriendRequests(Utilisateur $user): array
     {
         return $this->em->getRepository(FriendRequest::class)->findBy([

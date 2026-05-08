@@ -217,7 +217,9 @@ class Reclamation
         return $this;
     }
 
-    public function getDateCreation(): ?\DateTime
+    // CHANGEMENT: aligner le type de retour avec la propriete DateTimeInterface.
+    // Ancien code (garde): public function getDateCreation(): ?\DateTime
+    public function getDateCreation(): ?\DateTimeInterface
     {
         return $this->date_creation;
     }

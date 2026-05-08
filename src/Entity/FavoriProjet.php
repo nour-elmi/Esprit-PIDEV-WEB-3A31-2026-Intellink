@@ -6,19 +6,19 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'favori_projet')]
-#[ORM\UniqueConstraint(name: 'uniq_favori_user_projet', columns: ['id_user', 'id_projet'])]
+#[ORM\UniqueConstraint(name: 'uniq_favori_user_projet', columns: ['id_user', 'projet_id'])]
 class FavoriProjet
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id_favori', type: 'integer')]
-    private ?int $id = null;
+    private int $id = 0; // CHANGEMENT: evite property.unusedType sur id Doctrine auto-genere
 
     #[ORM\Column(name: 'id_user', type: 'integer')]
     private ?int $userId = null;
 
     #[ORM\ManyToOne(targetEntity: Projet::class)]
-    #[ORM\JoinColumn(name: 'id_projet', referencedColumnName: 'id_projet', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'projet_id', referencedColumnName: 'id_projet', nullable: false, onDelete: 'CASCADE')]
     private ?Projet $projet = null;
 
     #[ORM\Column(name: 'created_at', type: 'datetime')]
@@ -65,4 +65,6 @@ class FavoriProjet
         return $this;
     }
 }
+
+
 

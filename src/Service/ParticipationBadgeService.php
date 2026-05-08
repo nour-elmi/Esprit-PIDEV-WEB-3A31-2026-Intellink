@@ -8,6 +8,13 @@ class ParticipationBadgeService
 {
     /**
      * @param Collaboration[] $demandes
+     * @return array{
+     *   score:int,
+     *   levelLabel:string,
+     *   stats: array{total:int, accepted:int, pending:int, refused:int},
+     *   earnedBadges:list<array{code:string,title:string,subtitle:string,icon:string,tone:string,earned:bool,progress:string}>,
+     *   nextBadge:array{code:string,title:string,subtitle:string,icon:string,tone:string,earned:bool,progress:string}|null
+     * }
      */
     public function buildForDemandes(array $demandes): array
     {

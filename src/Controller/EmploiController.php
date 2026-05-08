@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Controller;
 
 use App\Entity\Emploi;
@@ -21,10 +20,11 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 final class EmploiController extends AbstractController
 {
     #[Route('/showoffre', name: 'showoffre')]
-    public function listOffresfromDB(EmploiRepository $repo, Request $request, PaginatorInterface $paginator)
+    public function listOffresfromDB(EmploiRepository $repo, Request $request, PaginatorInterface $paginator): Response
     {
         // Pas de filtre par user : visible par tout le monde
         $searchTerm = $request->query->get('search');
+        $searchTerm = is_string($searchTerm) ? $searchTerm : null;
         $data = $repo->searchByTerm($searchTerm);
         $offres = $paginator->paginate($data, $request->query->getInt('page', 1), 6);
         return $this->render('emploi/front/showOffre.html.twig', [
@@ -42,11 +42,12 @@ final class EmploiController extends AbstractController
     ): Response 
     {
         $searchTerm = $request->query->get('search');
+        $searchTerm = is_string($searchTerm) ? $searchTerm : null;
     
         $queryBuilder = $repo->createQueryBuilder('e');
 
         if ($searchTerm) {
-            $queryBuilder->where('e.titre LIKE :term OR e.nom_entreprise LIKE :term') // nom_entreprise avec underscore comme dans l'entité
+            $queryBuilder->where('e.titre LIKE :term OR e.nom_entreprise LIKE :term') // nom_entreprise avec underscore comme dans l'entitÃ©
                 ->setParameter('term', '%'.$searchTerm.'%');
         }
 
@@ -60,7 +61,7 @@ final class EmploiController extends AbstractController
             5 
         );
 
-        // --- Garde tes statistiques inchangées ---
+        // --- Garde tes statistiques inchangÃ©es ---
         $allOffres = $repo->findAll();
         $totalParticipations = $partRepo->count([]);
         $totalOffres = count($allOffres);
@@ -88,7 +89,7 @@ final class EmploiController extends AbstractController
     }
 
     #[Route('/showoffreRecruteur', name: 'showoffreRecruteur')]
-    public function listOffresRfromDB(EmploiRepository $repo, Request $request, PaginatorInterface $paginator)
+    public function listOffresRfromDB(EmploiRepository $repo, Request $request, PaginatorInterface $paginator): Response
     {
         // Vue "recruteur" : ne montrer que ses propres offres
         $user = $this->getUser();
@@ -97,22 +98,32 @@ final class EmploiController extends AbstractController
         }
 
         $searchTerm = $request->query->get('search');
+        $searchTerm = is_string($searchTerm) ? $searchTerm : null;
         $sortBy = $request->query->get('sortBy');
+        $sortBy = is_string($sortBy) ? $sortBy : null;
         
         // Base : toutes les offres du recruteur
         $data = $repo->findBy(['id_user' => $user->getId()]);
 
-        // Appliquer tri ou recherche sur ce sous‑ensemble
+        // Appliquer tri ou recherche sur ce sousâ€‘ensemble
         if ($sortBy) {
             if ($sortBy == 'salaire_desc') { 
-                $data = $repo->sortByField('salaire', 'DESC', $user->getId()); 
+                // CHANGEMENT: sortByField() prend 1-2 parametres, pas 3.
+                // Ancien appel (garde): $data = $repo->sortByField('salaire', 'DESC', $user->getId());
+                $data = $repo->sortByField('salaire', 'DESC'); 
             } elseif ($sortBy == 'salaire_asc') { 
-                $data = $repo->sortByField('salaire', 'ASC', $user->getId()); 
+                // CHANGEMENT: sortByField() prend 1-2 parametres, pas 3.
+                // Ancien appel (garde): $data = $repo->sortByField('salaire', 'ASC', $user->getId());
+                $data = $repo->sortByField('salaire', 'ASC'); 
             } elseif ($sortBy == 'expiration_asc') { 
-                $data = $repo->sortByField('date_expiration', 'ASC', $user->getId()); 
+                // CHANGEMENT: sortByField() prend 1-2 parametres, pas 3.
+                // Ancien appel (garde): $data = $repo->sortByField('date_expiration', 'ASC', $user->getId());
+                $data = $repo->sortByField('date_expiration', 'ASC'); 
             }
         } elseif ($searchTerm) {
-            $data = $repo->searchByTerm($searchTerm, $user->getId()); // à adapter dans le repository
+            // CHANGEMENT: searchByTerm() prend 1 parametre, pas 2.
+            // Ancien appel (garde): $data = $repo->searchByTerm($searchTerm, $user->getId());
+            $data = $repo->searchByTerm($searchTerm); // Ã  adapter dans le repository
         }
 
         $offres = $paginator->paginate(
@@ -129,11 +140,11 @@ final class EmploiController extends AbstractController
     }
 
     #[Route('/addOffre', name:'addOffre')]
-    public function addOffre(ManagerRegistry $Manager, Request $request)
+    public function addOffre(ManagerRegistry $Manager, Request $request): Response
     {
         $user = $this->getUser();
         if (!$user instanceof Utilisateur) {
-            throw $this->createAccessDeniedException('Vous devez être connecté.');
+            throw $this->createAccessDeniedException('Vous devez Ãªtre connectÃ©.');
         }
 
         $em = $Manager->getManager();
@@ -141,17 +152,21 @@ final class EmploiController extends AbstractController
         $form = $this->createForm(EmploiType::class, $newOffre);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $newOffre->setIdUser($user->getId());
+            $userId = $user->getId();
+            if ($userId === null) {
+                throw $this->createAccessDeniedException('Utilisateur invalide.');
+            }
+            $newOffre->setIdUser($userId);
             $em->persist($newOffre);
             $em->flush();
-            $this->addFlash('success', 'Offre ajoutée avec succès.');
+            $this->addFlash('success', 'Offre ajoutÃ©e avec succÃ¨s.');
             return $this->redirectToRoute('showoffreRecruteur');
         }
         return $this->render('emploi/front/addOffre.html.twig', ['formOffre' => $form]);
     }
 
     #[Route('/deleteOffre/{id}', name:'deleteOffre')]
-    public function deleteOffre($id, ManagerRegistry $Manager, EmploiRepository $repo)
+    public function deleteOffre(int $id, ManagerRegistry $Manager, EmploiRepository $repo): Response
     {
         $user = $this->getUser();
         if (!$user instanceof Utilisateur) {
@@ -161,20 +176,20 @@ final class EmploiController extends AbstractController
         $em = $Manager->getManager();
         $offre = $repo->find($id);
         if (!$offre || $offre->getIdUser() !== $user->getId()) {
-            throw $this->createNotFoundException('Offre introuvable ou accès non autorisé.');
+            throw $this->createNotFoundException('Offre introuvable ou accÃ¨s non autorisÃ©.');
         }
 
-        // Vérification CSRF (optionnelle mais recommandée)
+        // VÃ©rification CSRF (optionnelle mais recommandÃ©e)
         // if (!$this->isCsrfTokenValid('delete_offre_'.$id, $request->request->get('_token'))) { ... }
 
         $em->remove($offre);
         $em->flush();
-        $this->addFlash('success', 'Offre supprimée.');
+        $this->addFlash('success', 'Offre supprimÃ©e.');
         return $this->redirectToRoute('showoffreRecruteur');
     }
 
     #[Route('/updateOffre/{id}', name:'updateOffre')]
-    public function updateOffre($id, ManagerRegistry $Manager, EmploiRepository $repo, Request $request)
+    public function updateOffre(int $id, ManagerRegistry $Manager, EmploiRepository $repo, Request $request): Response
     {
         $user = $this->getUser();
         if (!$user instanceof Utilisateur) {
@@ -184,14 +199,14 @@ final class EmploiController extends AbstractController
         $em = $Manager->getManager();
         $offre = $repo->find($id);
         if (!$offre || $offre->getIdUser() !== $user->getId()) {
-            throw $this->createNotFoundException("Offre introuvable ou accès non autorisé.");
+            throw $this->createNotFoundException("Offre introuvable ou accÃ¨s non autorisÃ©.");
         }
 
         $form = $this->createForm(EmploiType::class, $offre);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
-            $this->addFlash('success', 'Offre mise à jour.');
+            $this->addFlash('success', 'Offre mise Ã  jour.');
             return $this->redirectToRoute('showoffreRecruteur');
         }
         return $this->render('emploi/front/addOffre.html.twig', [
@@ -260,6 +275,7 @@ final class EmploiController extends AbstractController
     public function getMarketSalary(Request $request, AdzunaService $adzunaService): JsonResponse
     {
         $jobTitle = $request->query->get('titre');
+        $jobTitle = is_string($jobTitle) ? $jobTitle : null;
         
         if (!$jobTitle) {
             return new JsonResponse(['error' => 'Titre manquant'], 400);
@@ -268,7 +284,7 @@ final class EmploiController extends AbstractController
         $data = $adzunaService->getSalaryStats($jobTitle);
         
         // On extrait la moyenne (Adzuna renvoie souvent un tableau de dates/valeurs)
-        // On simplifie pour renvoyer la dernière valeur connue
+        // On simplifie pour renvoyer la derniÃ¨re valeur connue
         $average = !empty($data['month']) ? end($data['month']) : null;
 
         return new JsonResponse([
@@ -282,34 +298,37 @@ public function getGapAnalysis(Emploi $emploi, MarketIntelligenceService $market
 {
     $analysis = $marketService->analyzeGap($emploi);
     
-    // 1. Nettoyage du titre pour Adzuna (on prend les 2 premiers mots pour plus de précision)
-    $words = explode(' ', $emploi->getTitre());
+    // 1. Nettoyage du titre pour Adzuna (on prend les 2 premiers mots pour plus de prÃ©cision)
+    $words = explode(' ', (string) ($emploi->getTitre() ?? ''));
     $shortTitle = count($words) > 1 ? $words[0] . ' ' . $words[1] : $words[0];
 
-    // 2. Appel à Gemini pour extraire les compétences du marché (Market Intelligence)
-    $prompt = "Pour un poste de '{$shortTitle}', quelles sont les 3 compétences techniques les plus demandées actuellement sur le marché ? 
-               Réponds uniquement par les noms des compétences séparés par des virgules, sans phrases.";
+    // 2. Appel Ã  Gemini pour extraire les compÃ©tences du marchÃ© (Market Intelligence)
+    $prompt = "Pour un poste de '{$shortTitle}', quelles sont les 3 compÃ©tences techniques les plus demandÃ©es actuellement sur le marchÃ© ? 
+               RÃ©ponds uniquement par les noms des compÃ©tences sÃ©parÃ©s par des virgules, sans phrases.";
     
     $marketSkills = "Non disponible";
-    try {
-        $marketSkills = "Non disponible";
-    } catch (\Exception $e) {
-        $marketSkills = "Erreur extraction";
-    }
+    // CHANGEMENT: suppression du try/catch mort (aucune exception possible ici).
+    // Ancien code (garde):
+    // try {
+    //     $marketSkills = "Non disponible";
+    // } catch (\Exception $e) {
+    //     $marketSkills = "Erreur extraction";
+    // }
 
     // 3. Construction du HTML enrichi
-    $salary = ($analysis['market_avg'] !== 'N/A') 
-        ? round($analysis['market_avg'] / 12) . " €/mois" 
-        : "Donnée Adzuna indisponible";
-
+    $marketAvg = $analysis['market_avg'];
+    $salary = is_numeric($marketAvg)
+        ? round(((float) $marketAvg) / 12) . ' EUR/mois'
+        : 'Donnee Adzuna indisponible';
     $html = "<div class='text-start p-1'>";
-    $html .= "<p class='mb-1'><i class='fas fa-coins text-warning me-2'></i><b>Estimation Marché:</b><br><span class='badge bg-light text-dark'>$salary</span></p>";
-    $html .= "<p class='mb-1'><i class='fas fa-chart-bar text-info me-2'></i><b>Tendances Marché:</b><br><small class='text-info'>$marketSkills</small></p>";
+    $html .= "<p class='mb-1'><i class='fas fa-coins text-warning me-2'></i><b>Estimation MarchÃ©:</b><br><span class='badge bg-light text-dark'>$salary</span></p>";
+    $html .= "<p class='mb-1'><i class='fas fa-chart-bar text-info me-2'></i><b>Tendances MarchÃ©:</b><br><small class='text-info'>$marketSkills</small></p>";
     $html .= "<hr class='my-1'>";
-    $html .= "<p class='mb-0'><i class='fas fa-user-graduate text-success me-2'></i><b>Compétences Candidats:</b><br><small>" . (empty($analysis['top_skills']) ? "Aucun candidat" : implode(', ', $analysis['top_skills'])) . "</small></p>";
+    $html .= "<p class='mb-0'><i class='fas fa-user-graduate text-success me-2'></i><b>CompÃ©tences Candidats:</b><br><small>" . (empty($analysis['top_skills']) ? "Aucun candidat" : implode(', ', $analysis['top_skills'])) . "</small></p>";
     $html .= "</div>";
 
     return new JsonResponse(['html' => $html]);
 }
 }
+
 

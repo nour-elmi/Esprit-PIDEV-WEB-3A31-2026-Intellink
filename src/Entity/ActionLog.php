@@ -11,13 +11,14 @@ class ActionLog
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    private ?int $id = null;
+    private int $id = 0; // CHANGEMENT: evite property.unusedType sur id Doctrine auto-genere
 
     #[ORM\Column(name: 'actor_id', type: 'integer')]
     private ?int $actorId = null;
 
-    #[ORM\Column(name: 'projet_id', type: 'integer', nullable: true)]
-    private ?int $projetId = null;
+    #[ORM\ManyToOne(targetEntity: Projet::class)]
+    #[ORM\JoinColumn(name: 'projet_id', referencedColumnName: 'id_projet', nullable: true, onDelete: 'SET NULL')]
+    private ?Projet $projet = null;
 
     #[ORM\Column(name: 'action', type: 'string', length: 40)]
     private ?string $action = null;
@@ -33,8 +34,9 @@ class ActionLog
     public function getActorId(): ?int { return $this->actorId; }
     public function setActorId(int $actorId): self { $this->actorId = $actorId; return $this; }
 
-    public function getProjetId(): ?int { return $this->projetId; }
-    public function setProjetId(?int $projetId): self { $this->projetId = $projetId; return $this; }
+    public function getProjetId(): ?int { return $this->projet?->getId(); }
+    public function getProjet(): ?Projet { return $this->projet; }
+    public function setProjet(?Projet $projet): self { $this->projet = $projet; return $this; }
 
     public function getAction(): ?string { return $this->action; }
     public function setAction(string $action): self { $this->action = $action; return $this; }
@@ -45,3 +47,5 @@ class ActionLog
     public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
     public function setCreatedAt(\DateTimeImmutable $createdAt): self { $this->createdAt = $createdAt; return $this; }
 }
+
+

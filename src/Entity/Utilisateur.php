@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Attribute\Ignore;
 
 use App\Repository\UtilisateurRepository;
 
@@ -142,7 +143,8 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, 
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: Reclamation::class, mappedBy: 'utilisateur')]
+    /** @var Collection<int, Reclamation> */
+    #[ORM\OneToMany(targetEntity: Reclamation::class, mappedBy: 'utilisateur', cascade: ['remove'])]
     private Collection $reclamations;
 
     public function __construct()
@@ -155,9 +157,8 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, 
      */
     public function getReclamations(): Collection
     {
-        if (!$this->reclamations instanceof Collection) {
-            $this->reclamations = new ArrayCollection();
-        }
+        // CHANGEMENT: propriete toujours initialisee dans le constructeur.
+        // Ancien code supprime: verif instanceof inutile.
         return $this->reclamations;
     }
 
@@ -221,7 +222,9 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, 
     }
     public function setPassword(string $password): self
     {
-        $this->password = $password;
+        // CHANGEMENT: corriger la propriete cible pour PHPStan.
+        // Ancien code (garde): $this->password = $password;
+        $this->mdp = $password;
 
         return $this;
     }
@@ -238,12 +241,14 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, 
     private ?\DateTimeInterface $lastActivityAt = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Ignore]
     private ?string $googleAuthenticatorSecret = null;
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $isGoogleAuthenticatorEnabled = false;
 
     #[ORM\Column(type: 'string', length: 255, options: ['default' => 'EMAIL'])]
+    #[Ignore]
     private string $passwordRecoveryMethod = 'EMAIL';
 
     public function getLastActivityAt(): ?\DateTimeInterface
@@ -257,12 +262,13 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, 
         return $this;
     }
 
+    #[Ignore]
     public function getGoogleAuthenticatorSecret(): ?string
     {
         return $this->googleAuthenticatorSecret;
     }
 
-    public function setGoogleAuthenticatorSecret(?string $googleAuthenticatorSecret): static
+    public function setGoogleAuthenticatorSecret(#[\SensitiveParameter] ?string $googleAuthenticatorSecret): static
     {
         $this->googleAuthenticatorSecret = $googleAuthenticatorSecret;
         return $this;
@@ -284,12 +290,13 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, 
         return $this;
     }
 
+    #[Ignore]
     public function getPasswordRecoveryMethod(): string
     {
         return $this->passwordRecoveryMethod;
     }
 
-    public function setPasswordRecoveryMethod(string $passwordRecoveryMethod): static
+    public function setPasswordRecoveryMethod(#[\SensitiveParameter] string $passwordRecoveryMethod): static
     {
         $this->passwordRecoveryMethod = $passwordRecoveryMethod;
         return $this;

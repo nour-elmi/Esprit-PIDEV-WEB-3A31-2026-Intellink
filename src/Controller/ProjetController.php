@@ -115,7 +115,9 @@ class ProjetController extends AbstractController
             usort(
                 $userStatusNotifications,
                 static function (array $a, array $b): int {
-                    return strcmp((string) ($b['createdAt'] ?? ''), (string) ($a['createdAt'] ?? ''));
+                    // CHANGEMENT: les cles 'createdAt' existent deja dans la shape des tableaux.
+                    // Ancien code (garde): return strcmp((string) ($b['createdAt'] ?? ''), (string) ($a['createdAt'] ?? ''));
+                    return strcmp((string) $b['createdAt'], (string) $a['createdAt']);
                 }
             );
         }
@@ -267,7 +269,14 @@ class ProjetController extends AbstractController
             ], 400);
         }
 
-        $cvDirectory = (string) $this->getParameter('cv_directory');
+        $cvDirectoryParam = $this->getParameter('cv_directory'); // CHANGEMENT
+        if (!is_string($cvDirectoryParam) || $cvDirectoryParam === '') { // CHANGEMENT
+            return new JsonResponse([
+                'ok' => false,
+                'message' => 'Configuration cv_directory invalide.',
+            ], 500);
+        }
+        $cvDirectory = $cvDirectoryParam;
         $cvPath = rtrim($cvDirectory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . basename($cvFile);
         if (!is_file($cvPath)) {
             return new JsonResponse([
@@ -476,7 +485,9 @@ class ProjetController extends AbstractController
             }
             if (empty($textParts)) {
                 preg_match_all('/[A-Za-z0-9\+\#\.\-\_\/]{3,}/', $raw, $fallback);
-                $textParts = $fallback[0] ?? [];
+                // CHANGEMENT: l'index 0 existe deja sur la structure retournee.
+                // Ancien code (garde): $textParts = $fallback[0] ?? [];
+                $textParts = $fallback[0];
             }
 
             $text = trim(implode(' ', array_slice($textParts, 0, 12000)));
@@ -486,6 +497,7 @@ class ProjetController extends AbstractController
         return trim($raw);
     }
 
+    /** @return list<string> */
     private function extractKeywords(string $text): array
     {
         $normalized = $this->normalizeText($text);
@@ -535,6 +547,7 @@ class ProjetController extends AbstractController
         return trim($value);
     }
 
+    /** @return list<string> */
     private function buildIgnoredTokens(Utilisateur $user): array
     {
         $source = $this->normalizeText((string) $user->getNom() . ' ' . (string) $user->getEmail());
@@ -549,6 +562,7 @@ class ProjetController extends AbstractController
         return array_values(array_unique(array_merge($base, $parts)));
     }
 
+    /** @param list<string> $ignoredTokens */
     private function isUsefulKeyword(string $kw, array $ignoredTokens): bool
     {
         if (in_array($kw, $ignoredTokens, true)) {
@@ -568,6 +582,7 @@ class ProjetController extends AbstractController
         return true;
     }
 
+    /** @param list<string> $projectTechnicalKeywords */
     private function isLikelyNoiseProject(string $title, string $description, array $projectTechnicalKeywords): bool
     {
         $titleNorm = $this->normalizeText($title);
@@ -583,6 +598,7 @@ class ProjetController extends AbstractController
         return ($veryShortDesc && $noTech) || ($fewTitleWords && $noTech) || $repeatedChars;
     }
 
+    /** @return list<string> */
     private function getTechnicalLexicon(): array
     {
         return [

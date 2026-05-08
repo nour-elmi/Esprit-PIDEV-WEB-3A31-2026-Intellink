@@ -19,13 +19,13 @@ class ListeParticipation
     private ?\DateTime $date_participation = null;
 
     #[ORM\Column(enumType: stat::class)]
-    private ?stat $statut = stat::en_attente;
+    private stat $statut = stat::en_attente; // CHANGEMENT: non-null, valeur par defaut
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $date_reponse = null;
 
     #[ORM\ManyToOne(inversedBy: 'listeParticipations')]
-    #[ORM\JoinColumn(name: "id_offre", referencedColumnName: "id_offre", nullable: true)]
+    #[ORM\JoinColumn(name: "offre_id", referencedColumnName: "id_offre", nullable: false, onDelete: 'CASCADE')]
     private ?Emploi $id_offre = null;
 
     #[ORM\Column(nullable: true)]
@@ -44,7 +44,7 @@ class ListeParticipation
     private ?string $skills = null;
 
     #[ORM\Column]
-    private ?int $score = 0;
+    private int $score = 0; // CHANGEMENT: non-null, valeur par defaut
 
     public function getIdParticipation(): ?int
     {
@@ -70,7 +70,7 @@ class ListeParticipation
         return $this;
     }
 
-    public function getStatut(): ?stat
+    public function getStatut(): stat // CHANGEMENT: type de retour non-null
     {
         return $this->statut;
     }
@@ -166,7 +166,7 @@ class ListeParticipation
         return $this;
     }
 
-    public function getScore(): ?int
+    public function getScore(): int // CHANGEMENT: type de retour non-null
     {
         return $this->score;
     }

@@ -25,6 +25,7 @@ class ContractPdfGenerator
         $html = $this->twig->render('contract/pdf_signed_contract.html.twig', [
             'contrat' => $contrat,
             'demande' => $demande,
+            'brandLogoDataUri' => $this->buildBrandLogoDataUri(),
             'signatureDataUri' => $supportsPng ? $this->buildSignatureDataUri($contrat) : null,
             'signatureRenderingDisabled' => !$supportsPng,
             'generatedAt' => new \DateTimeImmutable(),
@@ -74,5 +75,41 @@ class ContractPdfGenerator
     private function supportsPngRendering(): bool
     {
         return function_exists('imagecreatefrompng');
+    }
+
+    private function buildBrandLogoDataUri(): ?string
+    {
+        $candidates = [
+            $this->projectDir . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'img' . DIRECTORY_SEPARATOR . 'logo - petit.png',
+            $this->projectDir . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'img' . DIRECTORY_SEPARATOR . 'logo.png',
+            $this->projectDir . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'img' . DIRECTORY_SEPARATOR . 'logo' . DIRECTORY_SEPARATOR . 'logo.svg',
+        ];
+
+        foreach ($candidates as $path) {
+            if (!is_file($path)) {
+                continue;
+            }
+
+            $binary = @file_get_contents($path);
+            if ($binary === false || $binary === '') {
+                continue;
+            }
+
+            $extension = strtolower((string) pathinfo($path, PATHINFO_EXTENSION));
+            $mime = match ($extension) {
+                'png' => 'image/png',
+                'jpg', 'jpeg' => 'image/jpeg',
+                'svg' => 'image/svg+xml',
+                default => null,
+            };
+
+            if ($mime === null) {
+                continue;
+            }
+
+            return 'data:' . $mime . ';base64,' . base64_encode($binary);
+        }
+
+        return null;
     }
 }

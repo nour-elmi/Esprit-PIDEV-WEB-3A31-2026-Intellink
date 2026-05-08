@@ -55,8 +55,8 @@ class AuthController extends AbstractController
                 $this->addFlash('error_login', 'Veuillez cocher la case "Je ne suis pas un robot".');
                 return $this->redirectToRoute('app_login');
             }
-            $email = $request->request->get('_username');
-            $password = $request->request->get('_password');
+            $email = (string) $request->request->get('_username', '');
+            $password = (string) $request->request->get('_password', '');
             $user = $entityManager->getRepository(Utilisateur::class)->findOneBy(['email' => $email]);
 
             if ($user && $passwordHasher->isPasswordValid($user, $password)) {
@@ -87,7 +87,7 @@ class AuthController extends AbstractController
 
                     $emailMessage = (new Email())
                         ->from('liontn2004@gmail.com')
-                        ->to($user->getEmail())
+                        ->to((string) ($user->getEmail() ?? ''))
                         ->subject('Votre code de connexion 2FA - Intel_link')
                         ->html("
                             <h2 style='color:#2F80ED;'>Intel_link - Sécurité</h2>
@@ -157,9 +157,17 @@ class AuthController extends AbstractController
             $imgRes = $httpClient->request('GET', $imageName);
             $base64Profile = base64_encode($imgRes->getContent());
         } else {
-            $profileImagePath = $this->getParameter('profiles_directory') . '/' . $imageName;
+            $profilesDir = $this->getParameter('profiles_directory');
+            if (!is_string($profilesDir) || $profilesDir === '') {
+                return new JsonResponse(['success' => false, 'message' => 'Configuration profiles_directory invalide.']);
+            }
+            $profileImagePath = $profilesDir . '/' . $imageName;
             if (!file_exists($profileImagePath)) return new JsonResponse(['success' => false, 'message' => 'Image locale introuvable.']);
-            $base64Profile = base64_encode(file_get_contents($profileImagePath));
+            $profileContent = file_get_contents($profileImagePath);
+            if ($profileContent === false) {
+                return new JsonResponse(['success' => false, 'message' => 'Lecture image profile impossible.']);
+            }
+            $base64Profile = base64_encode($profileContent);
         }
 
         $apiKey = $_ENV['FACEPLUSPLUS_API_KEY'] ?? '';
@@ -193,18 +201,21 @@ class AuthController extends AbstractController
         if(!$userId) return new JsonResponse(['success'=>false], 400);
 
         $user = $em->getRepository(Utilisateur::class)->find($userId);
+        if (!$user instanceof Utilisateur || !$user->getEmail()) {
+            return new JsonResponse(['success' => false], 400);
+        }
         $code2FA = sprintf("%06d", mt_rand(1, 999999));
         $session->set('2fa_code', $code2FA);
 
         $emailMessage = (new Email())
             ->from('liontn2004@gmail.com')
-            ->to($user->getEmail())
+            ->to((string) $user->getEmail())
             ->subject('Code de sécurité de secours - IntelLink')
             ->html("<h2 style='color:#e74c3c;'>Alerte de sécurité</h2><p>La reconnaissance faciale a échoué. Voici votre code de secours : <b style='font-size: 24px; letter-spacing: 4px;'>{$code2FA}</b></p>");
         
         try {
             $mailer->send($emailMessage);
-            return new JsonResponse(['success'=>true, 'email'=>$user->getEmail()]);
+            return new JsonResponse(['success'=>true, 'email'=>(string) $user->getEmail()]);
         } catch (\Exception $e) {
             return new JsonResponse(['success'=>false]);
         }
@@ -222,6 +233,9 @@ class AuthController extends AbstractController
         $data = json_decode($request->getContent(), true);
         if (str_replace(' ', '', $data['code'] ?? '') === $correctCode) {
             $user = $em->getRepository(Utilisateur::class)->find($userId);
+            if (!$user instanceof Utilisateur) {
+                return new JsonResponse(['success'=>false, 'message'=>'Utilisateur introuvable'], 400);
+            }
             $security->login($user, 'security.authenticator.form_login.main');
             $session->remove('2fa_user_id');
             $session->remove('2fa_code');
@@ -244,15 +258,16 @@ class AuthController extends AbstractController
         ValidatorInterface $validator
     ): Response {
         $session = $request->getSession();
-        $email = $request->request->get('email');
-        $nom = $request->request->get('nom');
+        $email = (string) $request->request->get('email', '');
+        $nom = (string) $request->request->get('nom', '');
         
         // --- BAD WORD CHECK EARLY INTERVENTION AVEC PURGOMALUM ---
         $tempUser = new Utilisateur();
-        $tempUser->setNom($nom);
+            $tempUser->setNom($nom);
         $errors = $validator->validateProperty($tempUser, 'nom');
         if (count($errors) > 0) {
-            $this->addFlash('error_signup', $errors[0]->getMessage());
+            $firstError = $errors->get(0);
+            $this->addFlash('error_signup', $firstError->getMessage());
             return $this->redirectToRoute('app_login');
         }
 
@@ -302,14 +317,14 @@ class AuthController extends AbstractController
             } catch (FileException $e) {}
         }
 
-        $roleDemande = $request->request->get('role_demande');
+        $roleDemande = (string) $request->request->get('role_demande', '');
         $finalRole = (!$roleDemande || $roleDemande === 'utilisateur simple') ? 'ROLE_USER' : 'ROLE_' . str_replace(' ', '_', strtoupper($roleDemande));
         $statut = ($finalRole === 'ROLE_USER') ? 'ACTIF' : 'EN_ATTENTE';
 
         $pendingUser = [
-            'nom' => $request->request->get('nom'),
+            'nom' => (string) $request->request->get('nom', ''),
             'email' => $email,
-            'password' => $passwordHasher->hashPassword(new Utilisateur(), $request->request->get('password')),
+            'password' => $passwordHasher->hashPassword(new Utilisateur(), (string) $request->request->get('password', '')),
             'role' => $finalRole,
             'statut' => $statut,
             'image' => $imageToSave,
@@ -430,7 +445,7 @@ class AuthController extends AbstractController
 
             $emailMessage = (new Email())
                 ->from('liontn2004@gmail.com')
-                ->to($user->getEmail())
+                ->to((string) ($user->getEmail() ?? ''))
                 ->subject('Récupération de mot de passe - IntelLink')
                 ->html("<h2 style='color:#2F80ED;'>Code de récupération : {$code}</h2><p>Ce code est valable pour réinitialiser votre mot de passe.</p>");
             $mailer->send($emailMessage);
@@ -456,6 +471,9 @@ class AuthController extends AbstractController
             $isValid = ($enteredCode === $session->get('reset_code'));
         } else {
             $user = $em->getRepository(Utilisateur::class)->findOneBy(['email' => $email]);
+            if (!$user instanceof Utilisateur) {
+                return new JsonResponse(['success' => false, 'message' => 'Utilisateur introuvable.'], 400);
+            }
             $isValid = $authenticator->checkCode($user, $enteredCode);
         }
 
@@ -474,13 +492,16 @@ class AuthController extends AbstractController
         if (!$session->get('reset_verified')) return new JsonResponse(['success' => false, 'message' => 'Non autorisé.'], 403);
 
         $data = json_decode($request->getContent(), true);
-        $newPassword = $data['password'] ?? '';
+        $newPassword = (string) ($data['password'] ?? '');
 
         if (strlen($newPassword) < 8) {
             return new JsonResponse(['success' => false, 'message' => 'Mot de passe trop court.']);
         }
 
         $user = $em->getRepository(Utilisateur::class)->findOneBy(['email' => $session->get('reset_email')]);
+        if (!$user instanceof Utilisateur) {
+            return new JsonResponse(['success' => false, 'message' => 'Utilisateur introuvable.'], 400);
+        }
         $user->setMdp($hasher->hashPassword($user, $newPassword));
         $em->flush();
 

@@ -12,14 +12,14 @@ class Message
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private int $id = 0; // CHANGEMENT: evite property.unusedType sur id Doctrine auto-genere
 
-    // La conversation à laquelle appartient ce message
+    // La conversation Ã  laquelle appartient ce message
     #[ORM\ManyToOne(targetEntity: Conversation::class, inversedBy: 'messages')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Conversation $conversation = null;
 
-    // L'utilisateur qui a envoyé le message (Expéditeur)
+    // L'utilisateur qui a envoyÃ© le message (ExpÃ©diteur)
     #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Utilisateur $expediteur = null;
@@ -34,7 +34,7 @@ class Message
 
     public function __construct()
     {
-        // On initialise la date à l'instant présent dès la création de l'objet
+        // On initialise la date Ã  l'instant prÃ©sent dÃ¨s la crÃ©ation de l'objet
         $this->createdAt = new \DateTimeImmutable();
     }
 
@@ -87,9 +87,9 @@ class Message
         return $this;
     }
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
-    private ?bool $isRead = false;
+    private bool $isRead = false; // CHANGEMENT: non-null, valeur par defaut
 
-    public function getIsRead(): ?bool { return $this->isRead; }
+    public function getIsRead(): bool { return $this->isRead; } // CHANGEMENT: type de retour non-null
     public function setIsRead(bool $isRead): static { $this->isRead = $isRead; return $this; }
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -98,3 +98,5 @@ class Message
     public function getAttachment(): ?string { return $this->attachment; }
     public function setAttachment(?string $attachment): static { $this->attachment = $attachment; return $this; }
 }
+
+

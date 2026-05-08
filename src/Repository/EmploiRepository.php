@@ -17,6 +17,7 @@ class EmploiRepository extends ServiceEntityRepository
     }
 
 
+    /** @return list<Emploi> */
     public function searchByTerm(?string $term): array
     {
         $qb = $this->createQueryBuilder('e');
@@ -31,6 +32,7 @@ class EmploiRepository extends ServiceEntityRepository
                 ->getResult();
     }
 
+    /** @return list<Emploi> */
     public function sortByField(string $field, string $order = 'ASC'): array
     {
         $allowedFields = ['salaire', 'date_expiration', 'date_debut'];

@@ -11,7 +11,7 @@ class Projet
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id_projet', type: 'integer')]
-    private ?int $id = null;
+    private int $id = 0; // CHANGEMENT: evite property.unusedType sur id Doctrine auto-genere
 
     #[ORM\Column(name: 'titre', type: 'string', length: 200)]
     private ?string $titre = null;
@@ -23,7 +23,7 @@ class Projet
     private ?string $createur = null;
 
     #[ORM\Column(name: 'statut', type: 'string', length: 50, options: ['default' => 'en cours'])]
-    private ?string $statut = 'en cours';
+    private string $statut = 'en cours'; // CHANGEMENT: non-null, valeur par defaut
 
     #[ORM\Column(name: 'date_creation', type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $dateCreation = null;
@@ -69,7 +69,7 @@ class Projet
         return $this;
     }
 
-    public function getStatut(): ?string
+    public function getStatut(): string // CHANGEMENT: type de retour non-null
     {
         return $this->statut;
     }
@@ -102,3 +102,5 @@ class Projet
         return $this;
     }
 }
+
+

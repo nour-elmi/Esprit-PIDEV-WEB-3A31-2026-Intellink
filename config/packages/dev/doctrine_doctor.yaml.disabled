@@ -1,0 +1,14 @@
+doctrine_doctor:
+    analysis:
+        exclude_paths:
+            - 'vendor/'
+            - 'vendor\\'
+    analyzers:
+        dql_injection:
+            enabled: false
+        sql_injection_raw_queries:
+            enabled: false
+        naming_convention:
+            enabled: false
+        foreign_key_mapping:
+            enabled: false

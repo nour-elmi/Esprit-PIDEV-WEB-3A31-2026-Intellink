@@ -14,8 +14,14 @@ class MessengerController extends AbstractController
 {
     public function contactList(EntityManagerInterface $em): Response
     {
+        // CHANGEMENT: typer explicitement l'utilisateur connecte pour PHPStan.
+        // Ancien code (garde):
+        // $currentUser = $this->getUser();
+        // if (!$currentUser) return new Response('');
         $currentUser = $this->getUser();
-        if (!$currentUser) return new Response('');
+        if (!$currentUser instanceof Utilisateur) {
+            return new Response('');
+        }
 
         // 1. Analyser toutes les demandes liées à l'utilisateur connecté
         $allRequests = $em->getRepository(FriendRequest::class)->createQueryBuilder('fr')

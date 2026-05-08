@@ -75,6 +75,53 @@
                 <div class="form-group-custom form-col-full">
                     {{ form_label(form.motivation) }}
                     {{ form_widget(form.motivation) }}
+                    <div class="motivation-meter">
+                        <div class="motivation-meter-head">
+                            <span>Qualité de la motivation</span>
+                            <div class="motivation-meter-right">
+                                <span id="motivationMeterStats">0 caractères</span>
+                                <strong id="motivationMeterLabel">Faible</strong>
+                            </div>
+                        </div>
+                        <div class="motivation-meter-track">
+                            <div id="motivationMeterFill" class="motivation-meter-fill" style="width:0%;"></div>
+                        </div>
+                        <div id="motivationMeterHint" class="motivation-meter-hint">Commence à écrire: le score évolue même sans canevas.</div>
+                    </div>
+                    <div class="motivation-helper">
+                        <div class="motivation-helper-head">
+                            <div>
+                                <strong class="motivation-title">Canevas motivation intelligent</strong>
+                                <div class="motivation-subtitle">Optionnel: choisis un style et personnalise les pointillés.</div>
+                            </div>
+                            <button type="button" id="motivationHelperBtn" class="motivation-helper-btn">Inserer le canevas choisi</button>
+                        </div>
+                        <div class="motivation-meta">
+                            <span class="motivation-chip"><strong>Projet:</strong>&nbsp;{{ projet.titre }}</span>
+                            <span class="motivation-chip"><strong>Chef:</strong>&nbsp;{{ projet.createur }}</span>
+                        </div>
+                        <div class="motivation-template-grid" id="motivationTemplateGrid">
+                            <button type="button" class="motivation-template-card active" data-template-id="impact">
+                                <span class="motivation-template-badge">Style impact</span>
+                                <p>Candidature orientee resultats, valeur ajoutee et livrable rapide.</p>
+                            </button>
+                            <button type="button" class="motivation-template-card" data-template-id="technique">
+                                <span class="motivation-template-badge">Style technique</span>
+                                <p>Candidature orientee competences, methode et execution professionnelle.</p>
+                            </button>
+                            <button type="button" class="motivation-template-card" data-template-id="collaboration">
+                                <span class="motivation-template-badge">Style collaboration</span>
+                                <p>Candidature orientee communication, fiabilite equipe et suivi des delais.</p>
+                            </button>
+                        </div>
+                        <div id="motivationCanvasPreview" class="motivation-canvas-preview">
+Projet: {{ projet.titre }}
+Chef de projet: {{ projet.createur }}
+Je souhaite contribuer sur ........ avec mes competences en ........
+D ici 2 semaines, je peux livrer ........
+Je suis disponible ........ et je m engage a ........
+                        </div>
+                    </div>
                     <small class="text-muted d-block mt-2">Minimum 10 caractères.</small>
                     <div id="motivation-error" class="text-danger fw-semibold mt-2" style="display:none;"></div>
                     {{ form_errors(form.motivation) }}
@@ -109,6 +156,208 @@
     .alert-danger {
         line-height: 1.7;
     }
+
+    .motivation-helper {
+        margin-top: 12px;
+        border: 1px solid #d2e2ff;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #f8fbff 0%, #eef5ff 58%, #f8fffc 100%);
+        box-shadow: 0 10px 24px rgba(27, 67, 140, 0.08);
+        padding: 12px;
+    }
+
+    .motivation-helper-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    .motivation-title {
+        display: block;
+        color: #133a7a;
+        font-size: 20px;
+        line-height: 1.2;
+    }
+
+    .motivation-subtitle {
+        margin-top: 2px;
+        color: #58749f;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .motivation-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .motivation-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #ffffff;
+        border: 1px solid #cddfff;
+        border-radius: 999px;
+        padding: 6px 10px;
+        color: #153b7a;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .motivation-helper-btn {
+        border: 1px solid #9fc0fb;
+        background: linear-gradient(135deg, #ffffff 0%, #f2f7ff 100%);
+        color: #183f8a;
+        border-radius: 12px;
+        padding: 8px 12px;
+        font-size: 12px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: 0.18s ease;
+    }
+
+    .motivation-helper-btn:hover {
+        background: #eaf2ff;
+        transform: translateY(-1px);
+    }
+
+    .motivation-template-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .motivation-template-card {
+        text-align: left;
+        border: 1px solid #c9dcff;
+        border-radius: 12px;
+        background: #ffffff;
+        padding: 9px 10px;
+        cursor: pointer;
+        transition: .18s ease;
+        color: #1f427b;
+    }
+
+    .motivation-template-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 18px rgba(35, 74, 146, 0.12);
+    }
+
+    .motivation-template-card.active {
+        border-color: #3f7cff;
+        box-shadow: 0 0 0 2px rgba(63, 124, 255, 0.16);
+        background: linear-gradient(180deg, #f8fbff 0%, #f1f7ff 100%);
+    }
+
+    .motivation-template-badge {
+        display: inline-flex;
+        border-radius: 999px;
+        border: 1px solid #bed5ff;
+        background: #eef4ff;
+        color: #20488d;
+        font-size: 11px;
+        font-weight: 800;
+        padding: 3px 8px;
+        margin-bottom: 6px;
+    }
+
+    .motivation-template-card p {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.45;
+        color: #3b5f97;
+    }
+
+    .motivation-canvas-preview {
+        margin-top: 2px;
+        border: 1px dashed #8eadde;
+        border-radius: 12px;
+        background: #ffffff;
+        color: #1f427a;
+        font-size: 13px;
+        line-height: 1.75;
+        padding: 10px 12px;
+        white-space: pre-line;
+    }
+
+    .motivation-meter {
+        margin-top: 10px;
+        background: #ffffff;
+        border: 1px solid #d7e5ff;
+        border-radius: 12px;
+        padding: 10px 12px;
+    }
+
+    .motivation-meter-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 6px;
+        color: #184184;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .motivation-meter-right {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    #motivationMeterStats {
+        color: #5e759a;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .motivation-meter-track {
+        height: 9px;
+        border-radius: 999px;
+        background: #eef3fb;
+        overflow: hidden;
+    }
+
+    .motivation-meter-fill {
+        height: 100%;
+        width: 0;
+        border-radius: 999px;
+        background: #e24646;
+        transition: width .25s ease, background-color .25s ease;
+    }
+
+    .motivation-meter-hint {
+        margin-top: 7px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #5d7398;
+    }
+
+    @media (max-width: 768px) {
+        .motivation-helper-head {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .motivation-helper-btn {
+            width: 100%;
+            text-align: center;
+        }
+
+        .motivation-template-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .motivation-meter-head {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+    }
 </style>
 
 <script>
@@ -131,7 +380,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
 
-            if (selectedValue === '_autre_') {
+            if (selectedValue === 'autre') {
                 targetWrapper.style.display = 'block';
             } else {
                 targetWrapper.style.display = 'none';
@@ -157,6 +406,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const roleInputs = form.querySelectorAll('input[name$="[roleSouhaite]"]');
     const dispoInputs = form.querySelectorAll('input[name$="[disponibilite]"]');
     const motivationInput = document.getElementById('demande_participation_motivation');
+    const motivationHelperBtn = document.getElementById('motivationHelperBtn');
+    const motivationTemplateGrid = document.getElementById('motivationTemplateGrid');
+    const motivationTemplateCards = motivationTemplateGrid ? Array.from(motivationTemplateGrid.querySelectorAll('.motivation-template-card')) : [];
+    const motivationCanvasPreview = document.getElementById('motivationCanvasPreview');
+    const motivationMeterFill = document.getElementById('motivationMeterFill');
+    const motivationMeterLabel = document.getElementById('motivationMeterLabel');
+    const motivationMeterStats = document.getElementById('motivationMeterStats');
+    const motivationMeterHint = document.getElementById('motivationMeterHint');
     const portfolioInput = document.getElementById('demande_participation_portfolio');
 
     const roleError = document.getElementById('role-error');
@@ -165,6 +422,33 @@ document.addEventListener('DOMContentLoaded', function () {
     const globalBox = document.getElementById('front-validation-box');
     const roleGroup = document.getElementById('role-group');
     const dispoGroup = document.getElementById('dispo-group');
+    const projectTitle = '{{ projet.titre|e('js') }}';
+    const chefName = '{{ projet.createur|e('js') }}';
+
+    const motivationTemplates = {
+        impact: [
+            'Projet: ' + projectTitle,
+            'Chef de projet: ' + chefName,
+            'Je souhaite rejoindre ce projet pour generer un impact concret sur ........ grace a mes competences en ........',
+            'Dans les 2 prochaines semaines, je peux livrer ........',
+            'Je suis disponible ........ et je m engage a assurer un suivi clair avec le chef.'
+        ].join('\n'),
+        technique: [
+            'Projet: ' + projectTitle,
+            'Chef de projet: ' + chefName,
+            'Je candidate pour intervenir sur ........ en utilisant mes competences techniques en ........',
+            'Mon plan de livraison sur 2 semaines: ........',
+            'Je suis disponible ........ et je m engage a produire un travail propre, teste et documente.'
+        ].join('\n'),
+        collaboration: [
+            'Projet: ' + projectTitle,
+            'Chef de projet: ' + chefName,
+            'Je souhaite contribuer sur ........ et collaborer efficacement avec l equipe en apportant ........',
+            'En 2 semaines, je peux finaliser ........',
+            'Je suis disponible ........ et je m engage a communiquer regulierement et respecter les delais.'
+        ].join('\n')
+    };
+    let selectedTemplateId = 'impact';
 
     function anyChecked(nodeList) {
         return Array.from(nodeList).some(function (input) {
@@ -204,6 +488,66 @@ document.addEventListener('DOMContentLoaded', function () {
 
         globalBox.innerHTML = '<strong>Veuillez corriger les champs suivants :</strong><br>' + errors.join('<br>');
         globalBox.style.display = 'block';
+    }
+
+    function renderTemplatePreview() {
+        if (!motivationCanvasPreview) {
+            return;
+        }
+        motivationCanvasPreview.textContent = motivationTemplates[selectedTemplateId] || motivationTemplates.impact;
+    }
+
+    function setActiveTemplate(templateId) {
+        selectedTemplateId = motivationTemplates[templateId] ? templateId : 'impact';
+        motivationTemplateCards.forEach(function (card) {
+            const isActive = card.getAttribute('data-template-id') === selectedTemplateId;
+            card.classList.toggle('active', isActive);
+        });
+        renderTemplatePreview();
+    }
+
+    function updateMotivationMeter() {
+        if (!motivationInput || !motivationMeterFill || !motivationMeterLabel || !motivationMeterHint) {
+            return;
+        }
+
+        const text = (motivationInput.value || '').trim();
+        const len = text.length;
+        const dotsCount = (text.match(/\.{6,}/g) || []).length;
+        const lines = text.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+        const sentenceCount = (text.match(/[.!?]+/g) || []).length;
+        const hasProjectRef = /projet|mission|objectif/i.test(text);
+        const hasActionRef = /livrer|contribuer|realiser|developper|implementer/i.test(text);
+        const hasAvailability = /disponible|semaine|horaire|week-end|soir/i.test(text);
+
+        let score = 0;
+        score += Math.min(60, Math.round((len / 260) * 60)); // base caracteres
+        score += Math.min(14, lines.length * 4); // lisibilite par structure
+        score += Math.min(10, sentenceCount * 4); // phrases completes
+        score += hasProjectRef ? 6 : 0;
+        score += hasActionRef ? 6 : 0;
+        score += hasAvailability ? 6 : 0;
+        score -= dotsCount * 10;
+        score = Math.max(0, Math.min(100, score));
+
+        const hue = Math.round((score / 100) * 120);
+        motivationMeterFill.style.width = score + '%';
+        motivationMeterFill.style.backgroundColor = 'hsl(' + hue + ', 72%, 46%)';
+        if (motivationMeterStats) {
+            const placeholdersLeft = dotsCount > 0 ? ' | ' + dotsCount + ' zone(s) a completer' : '';
+            motivationMeterStats.textContent = len + ' caractères' + placeholdersLeft;
+        }
+
+        if (score < 40) {
+            motivationMeterLabel.textContent = 'Faible';
+            motivationMeterHint.textContent = 'Ajoute ce que tu apportes, ce que tu peux livrer, et ta disponibilite.';
+        } else if (score < 70) {
+            motivationMeterLabel.textContent = 'Moyenne';
+            motivationMeterHint.textContent = 'Bonne base. Donne un livrable plus precis et finalise toutes les zones pointillees.';
+        } else {
+            motivationMeterLabel.textContent = 'Forte';
+            motivationMeterHint.textContent = 'Excellent niveau. Motivation claire et convaincante pour etre acceptee.';
+        }
     }
 
     function validateForm() {
@@ -297,6 +641,7 @@ document.addEventListener('DOMContentLoaded', function () {
             motivationError.textContent = '';
             motivationInput.classList.remove('is-invalid-textarea');
             globalBox.style.display = 'none';
+            updateMotivationMeter();
         });
     }
 
@@ -306,6 +651,34 @@ document.addEventListener('DOMContentLoaded', function () {
             globalBox.style.display = 'none';
         });
     }
+
+    if (motivationTemplateCards.length > 0) {
+        motivationTemplateCards.forEach(function (card) {
+            card.addEventListener('click', function () {
+                const templateId = card.getAttribute('data-template-id') || 'impact';
+                setActiveTemplate(templateId);
+            });
+        });
+    }
+
+    if (motivationHelperBtn && motivationInput) {
+        motivationHelperBtn.addEventListener('click', function () {
+            const sample = motivationTemplates[selectedTemplateId] || motivationTemplates.impact;
+            motivationInput.value = sample;
+            motivationInput.dispatchEvent(new Event('input', { bubbles: true }));
+            motivationInput.focus();
+            const firstDots = motivationInput.value.indexOf('........');
+            if (firstDots >= 0) {
+                motivationInput.setSelectionRange(firstDots, firstDots + 8);
+            } else {
+                motivationInput.setSelectionRange(motivationInput.value.length, motivationInput.value.length);
+            }
+            updateMotivationMeter();
+        });
+    }
+
+    renderTemplatePreview();
+    updateMotivationMeter();
 });
 </script>
 {% endblock %}

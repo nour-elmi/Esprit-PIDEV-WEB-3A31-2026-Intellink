@@ -1,0 +1,106 @@
+<div class="comment-thread-wrap">
+    <div class="comment-card {% if depth > 0 %}comment-reply{% endif %}" style="margin-left: {{ depth * 22 }}px;">
+        <div class="post-header">
+            <div>
+                <span class="subreddit">u/{{ comment.author ? comment.author.nom : 'Unknown' }}</span>
+                <span class="muted">
+                    • {{ comment.createdAt ? comment.createdAt|date('d/m/Y H:i') : '' }}
+                    {% if comment.isEdited %} • (modifié){% endif %}
+                </span>
+            </div>
+        </div>
+
+        <div class="translated-text" style="font-style: normal;">
+            {{ comment.content }}
+        </div>
+
+        <div class="post-actions">
+            {% if not post.isLocked %}
+                <button
+                    type="button"
+                    class="chip reply-toggle-btn"
+                    data-target="reply-box-{{ comment.id }}"
+                    data-hide="edit-box-{{ comment.id }}"
+                >
+                    ↩ Répondre
+                </button>
+            {% endif %}
+
+            {% if comment.author and comment.author.id == currentUserId %}
+                <button
+                    type="button"
+                    class="chip edit-toggle-btn"
+                    data-target="edit-box-{{ comment.id }}"
+                    data-hide="reply-box-{{ comment.id }}"
+                >
+                    ✏ Modifier
+                </button>
+
+                <form method="post" action="{{ path('app_comment_delete', {id: comment.id}) }}" style="display:inline;">
+                    <button type="submit" class="chip">🗑 Supprimer</button>
+                </form>
+            {% else %}
+                <a href="#" class="chip">🚩 Signaler</a>
+            {% endif %}
+        </div>
+
+        {% if not post.isLocked %}
+            <div id="reply-box-{{ comment.id }}" class="hidden" style="margin-top: 10px;">
+                <form method="post" action="{{ path('app_comment_reply', {id: comment.id}) }}">
+                    <textarea
+                        name="content"
+                        rows="2"
+                        class="input-light create-textarea"
+                        placeholder="Écrire une réponse..."
+                    ></textarea>
+
+                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+                        <button
+                            type="button"
+                            class="btn-outline cancel-toggle-btn"
+                            data-target="reply-box-{{ comment.id }}"
+                        >
+                            Annuler
+                        </button>
+                        <button type="submit" class="btn-primary">Répondre</button>
+                    </div>
+                </form>
+            </div>
+        {% endif %}
+
+        {% if comment.author and comment.author.id == currentUserId %}
+            <div id="edit-box-{{ comment.id }}" class="hidden" style="margin-top: 10px;">
+                <form method="post" action="{{ path('app_comment_edit', {id: comment.id}) }}">
+                    <textarea
+                        name="content"
+                        rows="2"
+                        class="input-light create-textarea"
+                    >{{ comment.content }}</textarea>
+
+                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+                        <button
+                            type="button"
+                            class="btn-outline cancel-toggle-btn"
+                            data-target="edit-box-{{ comment.id }}"
+                        >
+                            Annuler
+                        </button>
+                        <button type="submit" class="btn-primary">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if groupedReplies[comment.id] is defined %}
+        {% for reply in groupedReplies[comment.id] %}
+            {% include 'comment/_comment.html.twig' with {
+                comment: reply,
+                groupedReplies: groupedReplies,
+                depth: depth + 1,
+                currentUserId: currentUserId,
+                post: post
+            } only %}
+        {% endfor %}
+    {% endif %}
+</div>

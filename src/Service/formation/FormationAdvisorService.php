@@ -2,13 +2,13 @@
 
 namespace App\Service\formation;
 
-use Symfony\Contracts\HttpClient\HttpClientInterface;
-
 final class FormationAdvisorService
 {
-    public function __construct(
-        private readonly HttpClientInterface $httpClient,
-    ) {}
+    // CHANGEMENT: suppression de la propriete injectee mais jamais lue.
+    // Ancien code (garde):
+    // public function __construct(
+    //     private readonly HttpClientInterface $httpClient,
+    // ) {}
 
     /**
      * @param array<string, string> $answers

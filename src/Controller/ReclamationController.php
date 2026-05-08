@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Reclamation;
+use App\Entity\Utilisateur;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,8 +22,12 @@ class ReclamationController extends AbstractController
     #[Route('/', name: 'app_reclamation_index', methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager): Response
     {
+        // CHANGEMENT: typer explicitement l'utilisateur connecte.
+        // Ancien code (garde):
+        // $user = $this->getUser();
+        // if (!$user) { return $this->redirectToRoute('app_login'); }
         $user = $this->getUser();
-        if (!$user) { return $this->redirectToRoute('app_login'); }
+        if (!$user instanceof Utilisateur) { return $this->redirectToRoute('app_login'); }
 
         // CORRECTION ICI : On utilise 'utilisateur' et 'date_creation' pour correspondre à votre entité
         $reclamations = $entityManager->getRepository(Reclamation::class)->findBy(
@@ -41,8 +46,12 @@ class ReclamationController extends AbstractController
     #[Route('/new', name: 'app_reclamation_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
+        // CHANGEMENT: typer explicitement l'utilisateur connecte.
+        // Ancien code (garde):
+        // $user = $this->getUser();
+        // if (!$user) { return $this->redirectToRoute('app_login'); }
         $user = $this->getUser();
-        if (!$user) { return $this->redirectToRoute('app_login'); }
+        if (!$user instanceof Utilisateur) { return $this->redirectToRoute('app_login'); }
 
         if ($request->isMethod('POST')) {
             $reclamation = new Reclamation();
@@ -50,10 +59,10 @@ class ReclamationController extends AbstractController
             // CORRECTION ICI : setUtilisateur au lieu de setUser
             $reclamation->setUtilisateur($user);
             
-            $reclamation->setObjet($request->request->get('objet'));
-            $reclamation->setType($request->request->get('type'));
-            $reclamation->setPriorite($request->request->get('priorite'));
-            $reclamation->setDescription($request->request->get('description'));
+            $reclamation->setObjet((string) $request->request->get('objet', ''));
+            $reclamation->setType((string) $request->request->get('type', ''));
+            $reclamation->setPriorite((string) $request->request->get('priorite', ''));
+            $reclamation->setDescription((string) $request->request->get('description', ''));
             $reclamation->setStatut('OUVERT');
             $reclamation->setDateCreation(new \DateTime());
 
@@ -86,10 +95,10 @@ class ReclamationController extends AbstractController
         }
 
         if ($request->isMethod('POST') && $reclamation->getStatut() === 'OUVERT') {
-            $reclamation->setObjet($request->request->get('objet'));
-            $reclamation->setType($request->request->get('type'));
-            $reclamation->setPriorite($request->request->get('priorite'));
-            $reclamation->setDescription($request->request->get('description'));
+            $reclamation->setObjet((string) $request->request->get('objet', ''));
+            $reclamation->setType((string) $request->request->get('type', ''));
+            $reclamation->setPriorite((string) $request->request->get('priorite', ''));
+            $reclamation->setDescription((string) $request->request->get('description', ''));
 
             $file = $request->files->get('pieceJointe');
             if ($file) {
@@ -114,7 +123,7 @@ class ReclamationController extends AbstractController
     #[Route('/{id}/delete', name: 'app_reclamation_delete', methods: ['POST'])]
     public function delete(Reclamation $reclamation, Request $request, EntityManagerInterface $entityManager): Response
     {
-        if ($reclamation->getStatut() === 'OUVERT' && $this->isCsrfTokenValid('delete'.$reclamation->getId(), $request->request->get('_token'))) {
+        if ($reclamation->getStatut() === 'OUVERT' && $this->isCsrfTokenValid('delete'.$reclamation->getId(), (string) $request->request->get('_token'))) {
             $entityManager->remove($reclamation);
             $entityManager->flush();
             $this->addFlash('success', 'Réclamation supprimée définitivement.');

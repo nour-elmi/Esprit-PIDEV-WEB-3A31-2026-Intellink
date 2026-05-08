@@ -22,7 +22,9 @@ final class YouTubeTranscriptService
 
         // 1) First try YouTube Data API (key-based).
         $apiResult = $this->fetchTextWithYouTubeApi($videoId);
-        if (($apiResult['ok'] ?? false) === true) {
+        // CHANGEMENT: 'ok' existe toujours dans la shape retournee.
+        // Ancien code (garde): if (($apiResult['ok'] ?? false) === true) {
+        if ($apiResult['ok'] === true) {
             return $apiResult;
         }
 
@@ -38,16 +40,22 @@ final class YouTubeTranscriptService
             ]);
             $watchHtml = $watchResponse->getContent();
         } catch (\Throwable) {
+            // CHANGEMENT: dans ce chemin, 'error' est deja present.
+            // Ancien code (garde): return ['ok' => false, 'error' => (string) ($apiResult['error'] ?? 'Impossible de charger la page YouTube.')];
             return ['ok' => false, 'error' => (string) ($apiResult['error'] ?? 'Impossible de charger la page YouTube.')];
         }
 
         $tracks = $this->extractCaptionTracks($watchHtml);
         if ($tracks === []) {
+            // CHANGEMENT: dans ce chemin, 'error' est deja present.
+            // Ancien code (garde): return ['ok' => false, 'error' => (string) ($apiResult['error'] ?? 'Aucune transcription disponible pour cette video YouTube.')];
             return ['ok' => false, 'error' => (string) ($apiResult['error'] ?? 'Aucune transcription disponible pour cette video YouTube.')];
         }
 
         $trackUrl = $this->pickBestTrackUrl($tracks);
         if ($trackUrl === null) {
+            // CHANGEMENT: dans ce chemin, 'error' est deja present.
+            // Ancien code (garde): return ['ok' => false, 'error' => (string) ($apiResult['error'] ?? 'Aucun track de sous-titres exploitable.')];
             return ['ok' => false, 'error' => (string) ($apiResult['error'] ?? 'Aucun track de sous-titres exploitable.')];
         }
 
@@ -61,6 +69,8 @@ final class YouTubeTranscriptService
             ]);
             $captionsRaw = $captionsResponse->getContent();
         } catch (\Throwable) {
+            // CHANGEMENT: dans ce chemin, 'error' est deja present.
+            // Ancien code (garde): return ['ok' => false, 'error' => (string) ($apiResult['error'] ?? 'Impossible de recuperer la transcription YouTube.')];
             return ['ok' => false, 'error' => (string) ($apiResult['error'] ?? 'Impossible de recuperer la transcription YouTube.')];
         }
 
@@ -85,6 +95,8 @@ final class YouTubeTranscriptService
         }
 
         if (trim($transcript) === '') {
+            // CHANGEMENT: dans ce chemin, 'error' est deja present.
+            // Ancien code (garde): return ['ok' => false, 'error' => (string) ($apiResult['error'] ?? 'Transcription YouTube introuvable.')];
             return ['ok' => false, 'error' => (string) ($apiResult['error'] ?? 'Transcription YouTube introuvable.')];
         }
 
@@ -118,7 +130,8 @@ final class YouTubeTranscriptService
 
         if (str_contains($host, 'youtube.com')) {
             parse_str((string) ($parts['query'] ?? ''), $query);
-            $id = (string) ($query['v'] ?? '');
+            $vParam = $query['v'] ?? '';
+            $id = is_string($vParam) ? $vParam : '';
             if (preg_match('/^[A-Za-z0-9_-]{11}$/', $id)) {
                 return $id;
             }

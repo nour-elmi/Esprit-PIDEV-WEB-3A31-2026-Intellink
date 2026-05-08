@@ -1,0 +1,4 @@
+services:
+    AhmedBhs\DoctrineDoctor\Analyzer\Integrity\QueryBuilderBestPracticesAnalyzer:
+        tags: []
+

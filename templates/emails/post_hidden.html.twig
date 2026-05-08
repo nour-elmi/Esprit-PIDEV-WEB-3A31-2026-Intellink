@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Publication masquee</title>
+</head>
+<body style="margin:0; padding:24px; background-color:#f5f7fb; font-family:Arial, sans-serif; color:#1f2937;">
+    <div style="max-width:640px; margin:0 auto; background:#ffffff; border-radius:12px; padding:32px; box-shadow:0 8px 24px rgba(15, 23, 42, 0.08);">
+        <h1 style="margin-top:0; margin-bottom:16px; font-size:24px; color:#111827;">
+            Bonjour {{ user.nom ?: 'utilisateur' }},
+        </h1>
+
+        <p style="margin:0 0 16px; line-height:1.6;">
+            Votre publication a ete masquee par un administrateur.
+        </p>
+
+        <p style="margin:0 0 8px; font-weight:700;">Contenu concerne :</p>
+
+        <blockquote style="margin:0 0 24px; padding:16px 20px; border-left:4px solid #f59e0b; background:#fffbeb; border-radius:8px; line-height:1.6;">
+            {{ post.content|default('Contenu indisponible') }}
+        </blockquote>
+
+        <p style="margin:0 0 16px; line-height:1.6;">
+            Si vous pensez qu'il s'agit d'une erreur, vous pouvez contacter l'administration du forum.
+        </p>
+
+        <p style="margin:24px 0 0; color:#6b7280;">
+            UniForum
+        </p>
+    </div>
+</body>
+</html>

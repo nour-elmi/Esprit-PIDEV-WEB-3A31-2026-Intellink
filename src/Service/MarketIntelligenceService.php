@@ -6,16 +6,19 @@ use App\Entity\Emploi;
 
 class MarketIntelligenceService
 {
-    private $adzunaService;
+    private AdzunaService $adzunaService;
 
     public function __construct(AdzunaService $adzunaService)
     {
         $this->adzunaService = $adzunaService;
     }
 
+    /**
+     * @return array{market_avg:int|string, candidats_count:int, top_skills:list<string>}
+     */
     public function analyzeGap(Emploi $emploi): array
     {
-        $marketData = $this->adzunaService->getSalaryStats($emploi->getTitre());
+        $marketData = $this->adzunaService->getSalaryStats((string) ($emploi->getTitre() ?? ''));
         
         // Extraction des compétences des candidats (colonne 'skills' de ta table participation)
         $candidatsSkills = [];

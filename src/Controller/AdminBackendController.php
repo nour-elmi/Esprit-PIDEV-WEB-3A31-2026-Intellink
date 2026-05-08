@@ -53,7 +53,7 @@ class AdminBackendController extends AbstractController
     #[Route('/utilisateurs/{id}/statut/{statut}', name: 'app_admin_user_status', methods: ['POST'])]
     public function changeUserStatus(Utilisateur $user, string $statut, EntityManagerInterface $em, Request $request): Response // ✅ CORRIGÉ
     {
-        if ($this->isCsrfTokenValid('status'.$user->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('status'.$user->getId(), (string) $request->request->get('_token'))) {
             $user->setStatutCompte($statut);
             $em->flush();
             $this->addFlash('success', "Le statut de l'utilisateur a été mis à jour.");
@@ -64,7 +64,7 @@ class AdminBackendController extends AbstractController
     #[Route('/utilisateurs/{id}/delete', name: 'app_admin_user_delete', methods: ['POST'])]
     public function deleteUser(Utilisateur $user, EntityManagerInterface $em, Request $request): Response // ✅ CORRIGÉ
     {
-        if ($this->isCsrfTokenValid('delete'.$user->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete'.$user->getId(), (string) $request->request->get('_token'))) {
             $em->remove($user);
             $em->flush();
             $this->addFlash('success', "L'utilisateur a été supprimé.");
@@ -121,10 +121,10 @@ class AdminBackendController extends AbstractController
     {
         // Si l'administrateur a cliqué sur "Envoyer la réponse" (Requête POST)
         if ($request->isMethod('POST')) {
-            $statut = $request->request->get('statut');
-            $reponse = $request->request->get('reponse');
+            $statut = (string) $request->request->get('statut', '');
+            $reponse = (string) $request->request->get('reponse', '');
 
-            if ($statut && $reponse) {
+            if ($statut !== '' && $reponse !== '') {
                                                 $reclamation->setStatut($statut);
                 $reclamation->setReponseAdmin($reponse);
 
@@ -146,8 +146,8 @@ class AdminBackendController extends AbstractController
                         
                         $payloadToUser = [
                             "reclamationId" => $reclamation->getId(),
-                            "objet" => substr($reclamation->getObjet(), 0, 15),
-                            "message" => "Votre réclamation \"" . substr($reclamation->getObjet(), 0, 20) . "...\" a été traitée."
+                            "objet" => substr((string) ($reclamation->getObjet() ?? ''), 0, 15),
+                            "message" => "Votre reclamation \"" . substr((string) ($reclamation->getObjet() ?? ''), 0, 20) . "...\" a ete traitee."
                         ];
                         
                         $pusher->trigger("user-channel-" . $user->getId(), "reclamation-treated", $payloadToUser);
@@ -166,8 +166,8 @@ class AdminBackendController extends AbstractController
                                             '<h2 style="color: #fff; margin: 0;">Mise à jour de votre ticket</h2>' .
                                         '</div>' .
                                         '<div style="padding: 20px; line-height: 1.6;">' .
-                                            '<p>Bonjour <strong>' . htmlspecialchars($user->getNom()) . '</strong>,</p>' .
-                                            '<p>Votre réclamation "<strong>' . htmlspecialchars($reclamation->getObjet()) . '</strong>" a été mise à jour par un administrateur.</p>' .
+                                            '<p>Bonjour <strong>' . htmlspecialchars((string) ($user->getNom() ?? '')) . '</strong>,</p>' .
+                                            '<p>Votre reclamation "<strong>' . htmlspecialchars((string) ($reclamation->getObjet() ?? '')) . '</strong>" a ete mise a jour par un administrateur.</p>' .
                                             '<p><strong>Nouveau statut :</strong> <span style="background: ' . ($statut === 'TRAITE' ? '#10b981' : '#f39c12') . '; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">' . $statut . '</span></p>' .
                                             '<div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #2F80ED; margin: 20px 0;">' .
                                                 '<strong style="color: #2F80ED;">Réponse de l\'administration :</strong><br>' .

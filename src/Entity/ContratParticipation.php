@@ -12,7 +12,7 @@ class ContratParticipation
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id', type: 'integer')]
-    private ?int $id = null;
+    private int $id = 0; // CHANGEMENT: evite property.unusedType sur id Doctrine auto-genere
 
     #[ORM\ManyToOne(targetEntity: Collaboration::class)]
     #[ORM\JoinColumn(name: 'collaboration_id', referencedColumnName: 'id_collaboration', nullable: false, onDelete: 'CASCADE')]
@@ -28,7 +28,7 @@ class ContratParticipation
     private ?int $userId = null;
 
     #[ORM\Column(name: 'statut', type: 'string', length: 30)]
-    private ?string $statut = 'ENVOYE_AU_USER';
+    private string $statut = 'ENVOYE_AU_USER'; // CHANGEMENT: non-null, valeur par defaut
 
     #[ORM\Column(name: 'contenu', type: 'text')]
     private ?string $contenu = null;
@@ -103,7 +103,7 @@ class ContratParticipation
         return $this;
     }
 
-    public function getStatut(): ?string
+    public function getStatut(): string // CHANGEMENT: type de retour non-null
     {
         return $this->statut;
     }
@@ -202,4 +202,6 @@ class ContratParticipation
         return $this;
     }
 }
+
+
 

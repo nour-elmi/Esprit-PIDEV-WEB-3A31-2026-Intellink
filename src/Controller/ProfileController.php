@@ -29,25 +29,28 @@ class ProfileController extends AbstractController
         SluggerInterface $slugger,
         MailerInterface $mailer
     ): Response {
-        /** @var Utilisateur $user */
         $user = $this->getUser();
 
-        if (!$user) {
+        if (!$user instanceof Utilisateur) {
             return $this->redirectToRoute('app_login');
         }
 
         if ($request->isMethod('POST')) {
-            $nom = $request->request->get('nom');
-            $newEmail = $request->request->get('email');
-            $authMethod = $request->request->get('auth_method');
-            $avatarUrl = $request->request->get('avatar_url');
+            $nom = (string) $request->request->get('nom', '');
+            $newEmail = (string) $request->request->get('email', '');
+            $authMethod = (string) $request->request->get('auth_method', '');
+            $avatarUrl = (string) $request->request->get('avatar_url', '');
 
             // --- GESTION DES FICHIERS (IMAGE & PDF) ---
             $imageFile = $request->files->get('image_profil');
             if ($imageFile) {
                 $newFilename = $slugger->slug(pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME)).'-'.uniqid().'.'.$imageFile->guessExtension();
                 try {
-                    $imageFile->move($this->getParameter('profiles_directory'), $newFilename);
+                    $profilesDirectory = $this->getParameter('profiles_directory');
+                    if (!is_string($profilesDirectory) || $profilesDirectory === '') {
+                        throw new FileException('profiles_directory invalide');
+                    }
+                    $imageFile->move($profilesDirectory, $newFilename);
                     $user->setImage($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('danger', 'Erreur lors de l\'upload de l\'image.');
@@ -60,7 +63,11 @@ class ProfileController extends AbstractController
             if ($pdfFile) {
                 $newFilename = $slugger->slug(pathinfo($pdfFile->getClientOriginalName(), PATHINFO_FILENAME)).'-'.uniqid().'.'.$pdfFile->guessExtension();
                 try {
-                    $pdfFile->move($this->getParameter('cv_directory'), $newFilename);
+                    $cvDirectory = $this->getParameter('cv_directory');
+                    if (!is_string($cvDirectory) || $cvDirectory === '') {
+                        throw new FileException('cv_directory invalide');
+                    }
+                    $pdfFile->move($cvDirectory, $newFilename);
                     $user->setSkills($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('danger', 'Erreur lors de l\'upload du CV.');
@@ -68,7 +75,7 @@ class ProfileController extends AbstractController
             }
 
             // --- GESTION DU RECOUVREMENT DE MOT DE PASSE ---
-            $recoveryMethod = $request->request->get('recovery_method');
+            $recoveryMethod = (string) $request->request->get('recovery_method', '');
             
             if ($recoveryMethod === 'GOOGLE_AUTHENTICATOR') {
                 if (!$user->isGoogleAuthenticatorEnabled()) {
@@ -81,7 +88,7 @@ class ProfileController extends AbstractController
                 $user->setPasswordRecoveryMethod('EMAIL');
             }
 
-            if ($authMethod) {
+            if ($authMethod !== '') {
                 $user->setAuthMethod($authMethod);
             }
 
@@ -103,7 +110,7 @@ class ProfileController extends AbstractController
 
                 $emailMessage = (new Email())
                     ->from('liontn2004@gmail.com')
-                    ->to($newEmail)
+                    ->to((string) $newEmail)
                     ->subject('Vérification de votre nouvelle adresse e-mail - IntelLink')
                     ->html("<h2>Votre code de sécurité : {$codeVerification}</h2>");
                 
@@ -136,9 +143,12 @@ class ProfileController extends AbstractController
         $session = $request->getSession();
         $pendingData = $session->get('pending_profile_update');
         $correctCode = $session->get('profile_verification_code');
+        // CHANGEMENT: typer explicitement l'utilisateur connecte pour PHPStan.
+        // Ancien code (garde): $user = $this->getUser();
         $user = $this->getUser();
 
-        if (!$pendingData || !$user) {
+        // Ancien code (garde): if (!$pendingData || !$user) {
+        if (!$pendingData || !($user instanceof Utilisateur)) {
             return $this->redirectToRoute('app_profile');
         }
 
@@ -172,7 +182,7 @@ class ProfileController extends AbstractController
     public function deleteAccount(Request $request, EntityManagerInterface $entityManager, Security $security): Response
     {
         $user = $this->getUser();
-        if ($user && $this->isCsrfTokenValid('delete-account', $request->request->get('_token'))) {
+        if ($user instanceof Utilisateur && $this->isCsrfTokenValid('delete-account', (string) $request->request->get('_token'))) {
             $request->getSession()->invalidate();
             $security->logout(false);
 
@@ -196,18 +206,18 @@ class ProfileController extends AbstractController
         /** @var \App\Entity\Utilisateur $user */
         $user = $this->getUser();
 
-        if (!$user) {
+        if (!$user instanceof Utilisateur) {
             return $this->redirectToRoute('app_login');
         }
 
-        if (!$this->isCsrfTokenValid('change_password', $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('change_password', (string) $request->request->get('_token'))) {
             $this->addFlash('danger', 'Erreur de sécurité : Token invalide.');
             return $this->redirectToRoute('app_profile');
         }
 
-        $oldPassword = $request->request->get('old_password');
-        $newPassword = $request->request->get('new_password');
-        $confirmPassword = $request->request->get('confirm_password');
+        $oldPassword = (string) $request->request->get('old_password', '');
+        $newPassword = (string) $request->request->get('new_password', '');
+        $confirmPassword = (string) $request->request->get('confirm_password', '');
 
         if ($newPassword !== $confirmPassword) {
             $this->addFlash('danger', 'Les nouveaux mots de passe ne correspondent pas.');
@@ -236,11 +246,10 @@ class ProfileController extends AbstractController
         GoogleAuthenticatorInterface $authenticator, 
         EntityManagerInterface $em
     ): JsonResponse {
-        /** @var \App\Entity\Utilisateur $user */
         $user = $this->getUser();
 
-        if (!$user) {
-            return new JsonResponse(['error' => 'Non autorisé'], 403);
+        if (!$user instanceof Utilisateur) {
+            return new JsonResponse(['error' => 'Non autorise'], 403);
         }
 
         if (!$user->getGoogleAuthenticatorSecret()) {
@@ -267,11 +276,10 @@ class ProfileController extends AbstractController
         GoogleAuthenticatorInterface $authenticator, 
         EntityManagerInterface $em
     ): JsonResponse {
-        /** @var \App\Entity\Utilisateur $user */
         $user = $this->getUser();
 
-        if (!$user) {
-            return new JsonResponse(['success' => false, 'message' => 'Non autorisé.'], 403);
+        if (!$user instanceof Utilisateur) {
+            return new JsonResponse(['success' => false, 'message' => 'Non autorise.'], 403);
         }
 
         // 1. Lire les données de façon 100% sécurisée
@@ -294,3 +302,5 @@ class ProfileController extends AbstractController
         return new JsonResponse(['success' => false, 'message' => 'Le code est incorrect ou a expiré.']);
     }
 }
+
+

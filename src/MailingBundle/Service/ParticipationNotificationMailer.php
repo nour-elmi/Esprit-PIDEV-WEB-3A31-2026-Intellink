@@ -126,7 +126,6 @@ class ParticipationNotificationMailer
             $_ENV['MAILING_FROM_EMAIL']
             ?? $_SERVER['MAILING_FROM_EMAIL']
             ?? getenv('MAILING_FROM_EMAIL')
-            ?? ''
         );
 
         if ($this->isValidEmail($fromEmail)) {
@@ -137,7 +136,6 @@ class ParticipationNotificationMailer
             $_ENV['MAILER_FROM']
             ?? $_SERVER['MAILER_FROM']
             ?? getenv('MAILER_FROM')
-            ?? ''
         );
 
         if ($this->isValidEmail($mailerFrom)) {
@@ -153,7 +151,6 @@ class ParticipationNotificationMailer
             $_ENV['MAILING_FROM_NAME']
             ?? $_SERVER['MAILING_FROM_NAME']
             ?? getenv('MAILING_FROM_NAME')
-            ?? 'PiDev'
         ));
 
         return $name !== '' ? $name : 'PiDev';

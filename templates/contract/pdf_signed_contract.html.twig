@@ -3,66 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        body { font-family: Helvetica, Arial, sans-serif; color: #1a2a44; font-size: 13px; line-height: 1.5; }
-        .title { font-size: 24px; font-weight: 700; margin: 0 0 16px; }
-        .meta { margin: 0 0 18px; }
-        .meta p { margin: 0 0 4px; }
+        @page { margin: 26px 24px 22px 24px; }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            color: #14253f;
+            font-size: 12.5px;
+            line-height: 1.5;
+            margin: 0;
+        }
+        .sheet {
+            border: 1px solid #dbe6fa;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .header {
+            background: #eaf2ff;
+            border-bottom: 1px solid #d4e2fb;
+            padding: 16px 18px 14px 18px;
+        }
+        .header-table { width: 100%; border-collapse: collapse; }
+        .header-logo { width: 44%; vertical-align: middle; }
+        .header-logo img { max-width: 190px; max-height: 48px; }
+        .header-title { width: 56%; text-align: right; vertical-align: middle; }
+        .header-title h1 {
+            margin: 0;
+            font-size: 24px;
+            line-height: 1.1;
+            color: #123371;
+        }
+        .header-title p {
+            margin: 5px 0 0 0;
+            color: #345891;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+        .body {
+            padding: 16px 18px 14px 18px;
+            background: #ffffff;
+        }
+        .status-wrap { margin-bottom: 12px; }
+        .status-pill {
+            display: inline-block;
+            background: #e7f8ef;
+            color: #146c3e;
+            border: 1px solid #b7e6cb;
+            border-radius: 100px;
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 5px 11px;
+        }
+        .meta-grid { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin-bottom: 10px; }
+        .meta-cell { width: 50%; vertical-align: top; padding-right: 8px; }
+        .meta-card {
+            border: 1px solid #dce7fb;
+            border-left: 4px solid #2a66d9;
+            border-radius: 8px;
+            padding: 9px 10px;
+            background: #f8fbff;
+        }
+        .meta-label {
+            margin: 0 0 2px 0;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.45px;
+            color: #56739f;
+            font-weight: 700;
+        }
+        .meta-value {
+            margin: 0;
+            color: #102a60;
+            font-size: 13px;
+            font-weight: 700;
+            word-break: break-word;
+        }
+        .section-title {
+            margin: 12px 0 8px 0;
+            color: #123371;
+            font-size: 14px;
+            font-weight: 700;
+        }
         .content {
             white-space: pre-line;
-            border: 1px solid #d8e2f2;
+            border: 1px solid #d9e5fb;
             border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 16px;
+            padding: 11px 12px;
+            background: #fcfdff;
+            color: #213a65;
+            font-size: 12.5px;
+            line-height: 1.58;
         }
-        .badge {
-            display: inline-block;
-            background: #e8f7ee;
-            color: #176b39;
-            border: 1px solid #bde7cb;
-            border-radius: 999px;
-            padding: 5px 10px;
-            font-weight: 700;
+        .signature-box {
+            margin-top: 14px;
+            border: 1px solid #d9e5fb;
+            border-radius: 8px;
+            background: #f8fbff;
+            padding: 10px 12px;
+        }
+        .signature-label {
+            margin: 0 0 8px 0;
+            color: #14356d;
             font-size: 12px;
-            margin-bottom: 12px;
+            font-weight: 700;
         }
-        .signature img {
-            max-width: 320px;
-            border: 1px solid #d8e2f2;
-            padding: 6px;
+        .signature-image {
+            max-width: 300px;
+            max-height: 90px;
+            border: 1px solid #d5e1f9;
             border-radius: 6px;
-            background: #fff;
+            background: #ffffff;
+            padding: 6px;
+        }
+        .signature-muted {
+            margin: 0;
+            color: #6a7f9f;
+            font-size: 11.5px;
         }
         .footer {
-            margin-top: 20px;
-            color: #52627d;
-            font-size: 11px;
+            margin-top: 14px;
+            border-top: 1px solid #e2ebfb;
+            padding-top: 8px;
+            color: #60779b;
+            font-size: 10.5px;
+            text-align: right;
         }
     </style>
 </head>
 <body>
-    <h1 class="title">Contrat de participation signe</h1>
-
-    <div class="meta">
-        <p><strong>Projet:</strong> {{ demande.projet.titre }}</p>
-        <p><strong>Date de signature:</strong> {{ contrat.userSignedAt ? contrat.userSignedAt|date('d/m/Y H:i') : 'N/A' }}</p>
-        <p><strong>Statut:</strong> {{ contrat.statut }}</p>
-    </div>
-
-    <div class="badge">Contrat finalise</div>
-
-    <div class="content">{{ contrat.contenu }}</div>
-
-    {% if signatureDataUri %}
-        <div class="signature">
-            <p><strong>Signature du participant:</strong></p>
-            <img src="{{ signatureDataUri }}" alt="Signature du participant">
+    <div class="sheet">
+        <div class="header">
+            <table class="header-table">
+                <tr>
+                    <td class="header-logo">
+                        {% if brandLogoDataUri %}
+                            <img src="{{ brandLogoDataUri }}" alt="Logo IntelLink">
+                        {% endif %}
+                    </td>
+                    <td class="header-title">
+                        <h1>Contrat de Participation</h1>
+                        <p>Document officiel signe</p>
+                    </td>
+                </tr>
+            </table>
         </div>
-    {% elseif signatureRenderingDisabled %}
-        <p><strong>Signature du participant:</strong> indisponible dans ce PDF (extension GD non installee sur le serveur).</p>
-    {% endif %}
 
-    <div class="footer">
-        PDF genere le {{ generatedAt|date('d/m/Y H:i') }}.
+        <div class="body">
+            <div class="status-wrap">
+                <span class="status-pill">Contrat finalise</span>
+            </div>
+
+            <table class="meta-grid">
+                <tr>
+                    <td class="meta-cell">
+                        <div class="meta-card">
+                            <p class="meta-label">Projet</p>
+                            <p class="meta-value">{{ demande.projet.titre }}</p>
+                        </div>
+                    </td>
+                    <td class="meta-cell">
+                        <div class="meta-card">
+                            <p class="meta-label">Statut</p>
+                            <p class="meta-value">{{ contrat.statut }}</p>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="meta-cell">
+                        <div class="meta-card">
+                            <p class="meta-label">Date de signature</p>
+                            <p class="meta-value">{{ contrat.userSignedAt ? contrat.userSignedAt|date('d/m/Y H:i') : 'N/A' }}</p>
+                        </div>
+                    </td>
+                    <td class="meta-cell">
+                        <div class="meta-card">
+                            <p class="meta-label">Reference</p>
+                            <p class="meta-value">CNT-{{ contrat.id }}-DEM-{{ demande.id }}</p>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
+            <h2 class="section-title">Contenu du contrat</h2>
+            <div class="content">{{ contrat.contenu }}</div>
+
+            <div class="signature-box">
+                <p class="signature-label">Signature du participant</p>
+                {% if signatureDataUri %}
+                    <img class="signature-image" src="{{ signatureDataUri }}" alt="Signature du participant">
+                {% elseif signatureRenderingDisabled %}
+                    <p class="signature-muted">Signature indisponible dans ce PDF (extension GD non installee sur le serveur).</p>
+                {% else %}
+                    <p class="signature-muted">Signature non disponible.</p>
+                {% endif %}
+            </div>
+
+            <div class="footer">
+                PDF genere le {{ generatedAt|date('d/m/Y H:i') }} | IntelLink
+            </div>
+        </div>
     </div>
 </body>
 </html>

@@ -62,7 +62,7 @@ class Emploi
     /**
      * @var Collection<int, ListeParticipation>
      */
-    #[ORM\OneToMany(targetEntity: ListeParticipation::class, mappedBy: 'id_offre')]
+    #[ORM\OneToMany(targetEntity: ListeParticipation::class, mappedBy: 'id_offre', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $listeParticipations;
 
     public function __construct()
@@ -223,12 +223,7 @@ class Emploi
 
     public function removeListeParticipation(ListeParticipation $listeParticipation): static
     {
-        if ($this->listeParticipations->removeElement($listeParticipation)) {
-            // set the owning side to null (unless already changed)
-            if ($listeParticipation->getIdOffre() === $this) {
-                $listeParticipation->setIdOffre(null);
-            }
-        }
+        $this->listeParticipations->removeElement($listeParticipation);
 
         return $this;
     }

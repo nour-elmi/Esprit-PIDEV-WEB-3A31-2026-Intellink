@@ -193,21 +193,18 @@ class ParticipationController extends AbstractController
             $_ENV['CALENDAR_API_URL']
             ?? $_SERVER['CALENDAR_API_URL']
             ?? getenv('CALENDAR_API_URL')
-            ?? 'https://calendarific.com/api/v2/holidays'
         ), '/');
 
         $calendarApiKey = (string) (
             $_ENV['CALENDAR_API_KEY']
             ?? $_SERVER['CALENDAR_API_KEY']
             ?? getenv('CALENDAR_API_KEY')
-            ?? ''
         );
 
         $calendarApiCountry = strtoupper((string) (
             $_ENV['CALENDAR_API_COUNTRY']
             ?? $_SERVER['CALENDAR_API_COUNTRY']
             ?? getenv('CALENDAR_API_COUNTRY')
-            ?? 'TN'
         ));
 
         $holidaysByDate = [];
@@ -427,7 +424,9 @@ class ParticipationController extends AbstractController
         }
 
         $base64 = substr($dataUri, strlen('data:image/png;base64,'));
-        if ($base64 === false || $base64 === '') {
+        // CHANGEMENT: substr retourne toujours string ici.
+        // Ancien code: if ($base64 === false || $base64 === '') {
+        if ($base64 === '') {
             return null;
         }
 
@@ -440,7 +439,11 @@ class ParticipationController extends AbstractController
             return null;
         }
 
-        $projectDir = (string) $this->getParameter('kernel.project_dir');
+        $projectDirParam = $this->getParameter('kernel.project_dir'); // CHANGEMENT
+        if (!is_string($projectDirParam) || $projectDirParam === '') { // CHANGEMENT
+            return null;
+        }
+        $projectDir = $projectDirParam;
         $relativeDir = 'uploads/signatures';
         $absoluteDir = $projectDir . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'signatures';
         if (!is_dir($absoluteDir) && !@mkdir($absoluteDir, 0775, true) && !is_dir($absoluteDir)) {

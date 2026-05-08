@@ -174,7 +174,11 @@ final class AdminController extends AbstractController
             throw $this->createNotFoundException('Participation introuvable');
         }
 
-        $formationId = $participation->getFormation()->getIdFormation();
+        $formation = $participation->getFormation(); // CHANGEMENT
+        if (!$formation) { // CHANGEMENT: securise appel sur relation nullable
+            throw $this->createNotFoundException('Formation introuvable pour cette participation.');
+        }
+        $formationId = $formation->getIdFormation();
 
         $em->remove($participation);
         $em->flush();

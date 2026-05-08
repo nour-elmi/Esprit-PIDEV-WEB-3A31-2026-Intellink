@@ -2,6 +2,7 @@
 
 namespace App\Controller\formation;
 
+use App\Entity\Utilisateur;
 use App\Entity\formation\FavoriFormation;
 use App\Entity\formation\Participation;
 use App\Entity\formation\ProgressionFormation;
@@ -13,6 +14,7 @@ use App\Repository\QuizRepository;
 use App\Service\formation\CertificateMailerService;
 use App\Service\formation\FormationAdvisorService;
 use App\Service\formation\FacePlusPlusService;
+use App\Service\formation\QuizScoreService;
 use App\Service\formation\TechNewsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
@@ -35,8 +37,11 @@ final class ParticipationFormationController extends AbstractController
         PaginatorInterface $paginator
     ): Response
     {
-        $utilisateur = $this->getUser();
-        $idUtilisateur = $utilisateur->getId();
+        // CHANGEMENT: typer explicitement l'utilisateur connecte pour PHPStan.
+        // Ancien code (garde):
+        // $utilisateur = $this->getUser();
+        // $idUtilisateur = $utilisateur->getId();
+        $idUtilisateur = $this->getAuthenticatedUserId(); // CHANGEMENT
 
         $formationsQuery = $repo->createQueryBuilder('f')
             ->orderBy('f.idFormation', 'DESC');
@@ -51,10 +56,10 @@ final class ParticipationFormationController extends AbstractController
             ['idUtilisateur' => $idUtilisateur],
             ['dateInscription' => 'DESC', 'idParticipation' => 'DESC']
         );
-        $inscritIds = array_map(
-            fn($p) => $p->getFormation()->getIdFormation(),
+        $inscritIds = array_values(array_filter(array_map( // CHANGEMENT: relation formation peut etre nulle
+            static fn($p) => $p->getFormation()?->getIdFormation(),
             $participations
-        );
+        ), static fn($idFormation) => is_int($idFormation)));
         $formationEnCours = null;
         foreach ($participations as $participation) {
             $formation = $participation->getFormation();
@@ -175,8 +180,11 @@ final class ParticipationFormationController extends AbstractController
             throw $this->createNotFoundException('Formation introuvable');
         }
 
-        $utilisateur = $this->getUser();
-        $idUtilisateur = $utilisateur->getId();
+        // CHANGEMENT: typer explicitement l'utilisateur connecte pour PHPStan.
+        // Ancien code (garde):
+        // $utilisateur = $this->getUser();
+        // $idUtilisateur = $utilisateur->getId();
+        $idUtilisateur = $this->getAuthenticatedUserId(); // CHANGEMENT
 
         $dejaInscrit = $participationRepo->findOneBy([
             'formation' => $formation,
@@ -228,8 +236,11 @@ final class ParticipationFormationController extends AbstractController
             return $this->json(['ok' => false, 'error' => 'Formation introuvable'], 404);
         }
 
-        $utilisateur = $this->getUser();
-        $idUtilisateur = $utilisateur->getId();
+        // CHANGEMENT: typer explicitement l'utilisateur connecte pour PHPStan.
+        // Ancien code (garde):
+        // $utilisateur = $this->getUser();
+        // $idUtilisateur = $utilisateur->getId();
+        $idUtilisateur = $this->getAuthenticatedUserId(); // CHANGEMENT
 
         $participation = $participationRepository->findOneBy([
             'formation' => $formation,
@@ -336,8 +347,11 @@ final class ParticipationFormationController extends AbstractController
             throw $this->createAccessDeniedException('Token CSRF invalide.');
         }
 
-        $utilisateur = $this->getUser();
-        $idUtilisateur = $utilisateur->getId();
+        // CHANGEMENT: typer explicitement l'utilisateur connecte pour PHPStan.
+        // Ancien code (garde):
+        // $utilisateur = $this->getUser();
+        // $idUtilisateur = $utilisateur->getId();
+        $idUtilisateur = $this->getAuthenticatedUserId(); // CHANGEMENT
 
         $favori = $favoriRepository->findOneBy([
             'formation' => $formation,
@@ -395,8 +409,11 @@ final class ParticipationFormationController extends AbstractController
             throw $this->createNotFoundException('Formation introuvable');
         }
 
-        $utilisateur = $this->getUser();
-        $idUtilisateur = $utilisateur->getId();
+        // CHANGEMENT: typer explicitement l'utilisateur connecte pour PHPStan.
+        // Ancien code (garde):
+        // $utilisateur = $this->getUser();
+        // $idUtilisateur = $utilisateur->getId();
+        $idUtilisateur = $this->getAuthenticatedUserId(); // CHANGEMENT
 
         $dejaInscrit = $participationRepo->findOneBy([
             'formation' => $formation,
@@ -404,7 +421,7 @@ final class ParticipationFormationController extends AbstractController
         ]);
 
         if ($dejaInscrit) {
-            $this->addFlash('warning', 'Vous êtes déjà inscrit à cette formation !');
+            $this->addFlash('warning', 'Vous Ãªtes dÃ©jÃ  inscrit Ã  cette formation !');
             return $this->redirectToRoute('app_utilisateur_formation_show', ['id' => $id]);
         }
 
@@ -413,23 +430,23 @@ final class ParticipationFormationController extends AbstractController
 
         if ($request->isMethod('POST')) {
 
-            $posteActuel = trim($request->request->get('posteActuel'));
-            $attentes = trim($request->request->get('attentes'));
+            $posteActuel = trim((string) $request->request->get('posteActuel')); // CHANGEMENT
+            $attentes = trim((string) $request->request->get('attentes')); // CHANGEMENT
 
             $old = $request->request->all();
 
             if (empty($posteActuel)) {
                 $errors['posteActuel'] = "Le poste est obligatoire";
             } elseif (strlen($posteActuel) < 3) {
-                $errors['posteActuel'] = "Minimum 3 caractères";
-            } elseif (!preg_match("/^[a-zA-ZÀ-ÿ\s]+$/", $posteActuel)) {
-                $errors['posteActuel'] = "Seulement des lettres autorisées";
+                $errors['posteActuel'] = "Minimum 3 caractÃ¨res";
+            } elseif (!preg_match("/^[a-zA-ZÃ€-Ã¿\s]+$/", $posteActuel)) {
+                $errors['posteActuel'] = "Seulement des lettres autorisÃ©es";
             }
 
             if (empty($attentes)) {
                 $errors['attentes'] = "Les attentes sont obligatoires";
             } elseif (strlen($attentes) < 10) {
-                $errors['attentes'] = "Minimum 10 caractères";
+                $errors['attentes'] = "Minimum 10 caractÃ¨res";
             }
 
             if (empty($errors)) {
@@ -444,7 +461,7 @@ final class ParticipationFormationController extends AbstractController
                 $em->persist($participation);
                 $em->flush();
 
-                $this->addFlash('success', 'Inscription réussie !');
+                $this->addFlash('success', 'Inscription rÃ©ussie !');
                 return $this->redirectToRoute('app_utilisateur_mes_participations');
             }
 
@@ -469,6 +486,7 @@ final class ParticipationFormationController extends AbstractController
         ProgressionFormationRepository $progressionRepository,
         QuizRepository $quizRepository,
         CertificateMailerService $certificateMailerService,
+        QuizScoreService $quizScoreService,
         EntityManagerInterface $em
     ): Response {
         $formation = $formationRepository->find($id);
@@ -476,8 +494,11 @@ final class ParticipationFormationController extends AbstractController
             throw $this->createNotFoundException('Formation introuvable');
         }
 
-        $utilisateur = $this->getUser();
-        $idUtilisateur = $utilisateur->getId();
+        // CHANGEMENT: typer explicitement l'utilisateur connecte pour PHPStan.
+        // Ancien code (garde):
+        // $utilisateur = $this->getUser();
+        // $idUtilisateur = $utilisateur->getId();
+        $idUtilisateur = $this->getAuthenticatedUserId(); // CHANGEMENT
 
         $participation = $participationRepository->findOneBy([
             'formation' => $formation,
@@ -506,20 +527,10 @@ final class ParticipationFormationController extends AbstractController
                 $cheatEvents = [];
             }
 
-            $score = 0.0;
-            foreach ($questions as $question) {
-                $questionId = (string) $question->getIdQuestion();
-                $selected = strtolower(trim((string) ($answers[$questionId] ?? '')));
-                $correct = strtolower(trim((string) ($question->getReponseCorrecte() ?? '')));
-                if ($selected !== '' && $selected === $correct) {
-                    $score += (float) ($question->getPoints() ?? 1.0);
-                }
-            }
-            $scoreMax = 0.0;
-            foreach ($questions as $question) {
-                $scoreMax += (float) ($question->getPoints() ?? 1.0);
-            }
-            $isQuizValide = $scoreMax > 0 ? $score >= ($scoreMax * 0.6) : $score > 0;
+            $result = $quizScoreService->calculate($questions, $answers);
+            $score = $result['score'];
+            $scoreMax = $result['scoreMax'];
+            $isQuizValide = $result['isQuizValide'];
 
             $participation->setScore($score);
 
@@ -602,8 +613,11 @@ final class ParticipationFormationController extends AbstractController
             return $this->json(['ok' => false, 'error' => 'Formation introuvable'], 404);
         }
 
-        $utilisateur = $this->getUser();
-        $idUtilisateur = $utilisateur->getId();
+        // CHANGEMENT: typer explicitement l'utilisateur connecte pour PHPStan.
+        // Ancien code (garde):
+        // $utilisateur = $this->getUser();
+        // $idUtilisateur = $utilisateur->getId();
+        $idUtilisateur = $this->getAuthenticatedUserId(); // CHANGEMENT
 
         $participation = $participationRepository->findOneBy([
             'formation' => $formation,
@@ -648,8 +662,11 @@ final class ParticipationFormationController extends AbstractController
     #[Route('/mes-participations', name: 'app_utilisateur_mes_participations')]
     public function mesParticipations(ParticipationRepository $repo): Response
     {
-        $utilisateur = $this->getUser();
-        $idUtilisateur = $utilisateur->getId();
+        // CHANGEMENT: typer explicitement l'utilisateur connecte pour PHPStan.
+        // Ancien code (garde):
+        // $utilisateur = $this->getUser();
+        // $idUtilisateur = $utilisateur->getId();
+        $idUtilisateur = $this->getAuthenticatedUserId(); // CHANGEMENT
 
         $participations = $repo->findBy(['idUtilisateur' => $idUtilisateur]);
 
@@ -661,8 +678,11 @@ final class ParticipationFormationController extends AbstractController
     #[Route('/annuler/{id}', name: 'app_utilisateur_annuler')]
     public function annuler(int $id, ParticipationRepository $repo, EntityManagerInterface $em): Response
     {
-        $utilisateur = $this->getUser();
-        $idUtilisateur = $utilisateur->getId();
+        // CHANGEMENT: typer explicitement l'utilisateur connecte pour PHPStan.
+        // Ancien code (garde):
+        // $utilisateur = $this->getUser();
+        // $idUtilisateur = $utilisateur->getId();
+        $idUtilisateur = $this->getAuthenticatedUserId(); // CHANGEMENT
 
         $participation = $repo->find($id);
 
@@ -673,7 +693,7 @@ final class ParticipationFormationController extends AbstractController
         $em->remove($participation);
         $em->flush();
 
-        $this->addFlash('success', 'Participation annulée avec succès !');
+        $this->addFlash('success', 'Participation annulÃ©e avec succÃ¨s !');
         return $this->redirectToRoute('app_utilisateur_mes_participations');
     }
 
@@ -684,7 +704,11 @@ final class ParticipationFormationController extends AbstractController
         ParticipationRepository $repo,
         EntityManagerInterface $em
     ): Response {
-        $utilisateur = $this->getUser();
+        // CHANGEMENT: typer explicitement l'utilisateur connecte pour PHPStan.
+        // Ancien code (garde):
+        // $utilisateur = $this->getUser();
+        // $idUtilisateur = $utilisateur->getId();
+        $utilisateur = $this->getAuthenticatedUser();
         $idUtilisateur = $utilisateur->getId();
 
         $participation = $repo->find($id);
@@ -698,23 +722,23 @@ final class ParticipationFormationController extends AbstractController
 
         if ($request->isMethod('POST')) {
 
-            $posteActuel = trim($request->request->get('posteActuel'));
-            $attentes = trim($request->request->get('attentes'));
+            $posteActuel = trim((string) $request->request->get('posteActuel')); // CHANGEMENT
+            $attentes = trim((string) $request->request->get('attentes')); // CHANGEMENT
 
             $old = $request->request->all();
 
             if (empty($posteActuel)) {
                 $errors['posteActuel'] = "Le poste est obligatoire";
             } elseif (strlen($posteActuel) < 3) {
-                $errors['posteActuel'] = "Minimum 3 caractères";
-            } elseif (!preg_match("/^[a-zA-ZÀ-ÿ\s]+$/", $posteActuel)) {
-                $errors['posteActuel'] = "Seulement des lettres autorisées";
+                $errors['posteActuel'] = "Minimum 3 caractÃ¨res";
+            } elseif (!preg_match("/^[a-zA-ZÃ€-Ã¿\s]+$/", $posteActuel)) {
+                $errors['posteActuel'] = "Seulement des lettres autorisÃ©es";
             }
 
             if (empty($attentes)) {
                 $errors['attentes'] = "Les attentes sont obligatoires";
             } elseif (strlen($attentes) < 10) {
-                $errors['attentes'] = "Minimum 10 caractères";
+                $errors['attentes'] = "Minimum 10 caractÃ¨res";
             }
 
             if (empty($errors)) {
@@ -723,7 +747,7 @@ final class ParticipationFormationController extends AbstractController
 
                 $em->flush();
 
-                $this->addFlash('success', 'Participation modifiée avec succès !');
+                $this->addFlash('success', 'Participation modifiÃ©e avec succÃ¨s !');
                 return $this->redirectToRoute('app_utilisateur_mes_participations');
             }
 
@@ -738,4 +762,27 @@ final class ParticipationFormationController extends AbstractController
             'participation' => $participation
         ]);
     }
+
+    // CHANGEMENT: helper type-safe pour PHPStan sur l'utilisateur connecte.
+    // Ancien code (garde): $utilisateur = $this->getUser();
+    private function getAuthenticatedUser(): Utilisateur
+    {
+        $utilisateur = $this->getUser();
+        if (!$utilisateur instanceof Utilisateur) {
+            throw $this->createAccessDeniedException('Vous devez etre connecte.');
+        }
+
+        return $utilisateur;
+    }
+
+    private function getAuthenticatedUserId(): int
+    {
+        $idUtilisateur = $this->getAuthenticatedUser()->getId();
+        if (!is_int($idUtilisateur)) { // CHANGEMENT: securise id utilisateur pour appels qui exigent int
+            throw $this->createAccessDeniedException('Identifiant utilisateur invalide.');
+        }
+
+        return $idUtilisateur;
+    }
 }
+
